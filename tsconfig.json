@@ -5,13 +5,7 @@
     "compilerOptions": {
         "strict": true,
         "noImplicitAny": false,
-        "esModuleInterop": true,
         "baseUrl": "src",
-        "lib": [
-            "esnext.asynciterable",
-            "dom",
-            "dom.iterable"
-        ],
         "target": "es5",
         "downlevelIteration": true,
         "lib": ["es6", "esnext.asynciterable", "dom", "dom.iterable", "esnext"],
