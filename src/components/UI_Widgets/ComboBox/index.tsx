@@ -18,15 +18,14 @@ type CustomElementTagProps<T extends React.ElementType> =
   };
 
 const Trigger: FC<
-  CustomElementTagProps<"input"> &
-    Pick<React.ComponentProps<"input">, "onClick"> &
-    Omit<React.ComponentProps<"input">, "labels" | "type"> & {
-      type?: "button" | "text";
+  CustomElementTagProps<"button"> &
+    Omit<React.ComponentProps<"button">, "labels" | "type"> & {
+      type?: "button";
       composite?: ComboBoxComposite;
       onTriggerClick?: () => void;
     }
 > = ({
-  as: Component = "input",
+  as: Component = "button",
   children,
   className,
   style,
@@ -66,18 +65,15 @@ const Trigger: FC<
           }
         }}
         className={className}
-        role={type === "button" ? "button" : "group"}
+        role={"button"}
         style={style}
         {...props}
         type={type}
       >
-        {type === "button"
+        {Component === "button"
           ? getLabelText(composite.selectedItem, children, placeholder)
           : null}
       </Component>
-      {type === "text" ? (
-        <span aria-hidden="true" data-trigger="multiselect"></span>
-      ) : null}
     </>
   );
 };
