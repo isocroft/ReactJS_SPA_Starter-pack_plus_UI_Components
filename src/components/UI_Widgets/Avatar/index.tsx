@@ -10,6 +10,8 @@ export enum AvatarSizes {
 
 export interface AvatarProps extends React.ComponentPropsWithRef<"div"> {
   size?: AvatarSizes;
+  imageClassName?: string;
+  letterClassName?: string;
   src?: string;
   letters?: string;
 }
@@ -17,8 +19,11 @@ export interface AvatarProps extends React.ComponentPropsWithRef<"div"> {
 const Avatar: React.FC<AvatarProps> = ({
   size = AvatarSizes.Small,
   src = defaultImagePath,
-  className, 
-  letters
+  className,
+  imageClassName,
+  letterClassName,
+  letters,
+  ...props
 }: AvatarProps) => {
   React.useEffect(() => {  
     const styleSheetsOnly = [].slice.call(
@@ -69,8 +74,11 @@ const Avatar: React.FC<AvatarProps> = ({
   }, []);
 
   return (
-    <div className={`${className} avatar_wrapper-box`} data-letter={letters ? letters : undefined}>
-      {letters ? <span className="avatar_letter-box">{letters}</span> : <img alt="avatar" className="avatar_image-box" src={src} />}
+    <div className={`${className} avatar_wrapper-box`} data-letter={letters ? letters : undefined} {...props}>
+      {letters
+        ? <span className={`${letterClassName} avatar_letter-box`} data-letter-size={letters ? size : undefined}>{letters}</span>
+        : <img alt="avatar" className={`${imageClassName} avatar_image-box`} src={src} data-image-size={size ? size : undefined} />
+      }
     </div>
   );
 };
