@@ -71,6 +71,48 @@ const BasicTextBox: FC<
   tabIndex = 0,
   ...props
 }) => {
+  React.useEffect(() => {  
+    const styleSheetsOnly = [].slice.call(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => sheet.ownerNode.nodeName === "STYLE"
+    ).map(
+      (sheet) => sheet.ownerNode.id
+    ).filter(
+      (id) => id !== ""
+    );
+
+    if (styleSheetsOnly.length === 0
+      || stlyeSheetsOnly.includes("react-busser-headless-ui_basictextbox")) {
+      return;
+    }
+
+    const avatarStyle = window.document.createElement('style');
+    avatarStyle.id = "react-busser-headless-ui_basictextbox";
+
+    avatarStyle.innerHTML = `  
+      .basictextbox_wrapper-box {
+        overflow: hidden;
+      }
+
+      .basictextbox_placeholder-marker {
+        display: inline-block;
+        vertical-align: middle;
+        position: relative;
+      }
+    
+      .basictextbox_required-marker {
+        display: inline-block;
+        color: red;
+      }
+    `;  
+    window.document.head.appendChild(avatarStyle);  
+ 
+    return () => {  
+      window.document.head.removeChild(avatarStyle);  
+    };  
+  }, []);
+
   return (
     <>
       <div className={wrapperClassName}>
@@ -120,7 +162,7 @@ const BasicTextBox: FC<
             </span>
             {props.required && (
               <span tabIndex={-1} className="required-marker">
-                *
+                <sup>*</sup>
               </span>
             )}
           </label>
