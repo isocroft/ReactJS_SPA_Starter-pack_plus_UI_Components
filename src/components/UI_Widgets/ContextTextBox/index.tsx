@@ -17,7 +17,7 @@ const ContextTexBox: BasicTextBoxProps = <F extends FieldValues>({
 }) => {
   const { register, unregister, formState, resetField } = useFormContext<F>();
 
-  const { isDirty, touchedFields, errors } = getFieldState(name, formState)
+  const { isDirty, errors } = getFieldState(name, formState)
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
     setTimeout(() => {
       if (!props.value && !props.defaultValue) {
@@ -52,7 +52,6 @@ const ContextTexBox: BasicTextBoxProps = <F extends FieldValues>({
 
         return React.cloneElement(child, {
           isDirty,
-          touchedFields,
           errors
         });
       })}
