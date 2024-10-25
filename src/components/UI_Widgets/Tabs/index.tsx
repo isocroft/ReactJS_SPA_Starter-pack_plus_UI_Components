@@ -79,75 +79,77 @@ interface TabsProps extends React.ComponentPropsWithRef<"section"> {
 }
 
 const Tabs: FC<TabsProps> = ({ activeTabIndex = 0, activeTabIndexQuery = 'active_tab__react-busser', className, children, ...props }) => {
-    const [activeTab, onClick] = useTabsCore(activeTabIndex, activeTabIndexQuery);
+  const [activeTab, onClick] = useTabsCore(activeTabIndex, activeTabIndexQuery);
 
-    React.useEffect(() => {  
-      const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-        window.document.styleSheets
-      ).filter(
-        (sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-      }).map(
-        (sheet) => {
-          if (sheet.ownerNode
-            && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-      }).filter(
-        (id) => id !== ""
-      );
-  
-      if (styleSheetsOnly.length === 0
-        || styleSheetsOnly.includes("react-busser-headless-ui_tabs")) {
-        return;
-      }
-  
-      const tabsStyle = window.document.createElement('style');
-      tabsStyle.id = "react-busser-headless-ui_tabs";
-  
-      tabsStyle.innerHTML = `  
-        .tabs_body-box {
-          width: 100%;
-          min-height: 1;
+  React.useEffect(() => {  
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE";
         }
-  
-        .tabs_header-box {
-          min-height: 1;
-          width: 100%;
-          max-width: 100%;
+        return false;
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id;
         }
-  
-        .tabs_header-inner-box {
-          overflow-x: auto;
-        }
-      `;  
-      window.document.head.appendChild(tabsStyle);  
-    
-      return () => {  
-        window.document.head.removeChild(tabsStyle);  
-      };  
-    }, []);
-    
-    return (
-      <section className={className} {...props}>
-        {renderChildren(children, {
-          onClick,
-          activeTab
-        })}
-      </section>
+        return "";
+    }).filter(
+      (id) => id !== ""
     );
+
+    if (styleSheetsOnly.length === 0
+      || styleSheetsOnly.includes("react-busser-headless-ui_tabs")) {
+      return;
+    }
+
+    const tabsStyle = window.document.createElement('style');
+    tabsStyle.id = "react-busser-headless-ui_tabs";
+
+    tabsStyle.innerHTML = `  
+      .tabs_body-box {
+        width: 100%;
+        min-height: 1;
+      }
+
+      .tabs_header-box {
+        min-height: 1;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .tabs_header-inner-box {
+        overflow-x: auto;
+      }
+    `;  
+    window.document.head.appendChild(tabsStyle);  
+  
+    return () => {  
+      window.document.head.removeChild(tabsStyle);  
+    };  
+  }, []);
+  
+  return (
+    <section className={className} {...props} role="tabs">
+      {renderChildren(children, {
+        onClick,
+        activeTab
+      })}
+    </section>
+  );
 };
 
 interface TabTitleProps extends React.ComponentPropsWithRef<"li"> {
   isActive?: boolean
 }
 
-const TabTitle: FC<TabTitleProps> = ({ children, className, ...props }) => {
-  return (<li className={className} {...props}>{children}</li>)
+const TabTitle: FC<TabTitleProps> = ({ children, className, isActive, ...props }) => {
+  return (<li className={className} {...props} role="tab" aria-selected={isActive ? "true" : "false"} tabIndex={isActive ? "0" : "-1"}>
+    {children}
+  </li>);
 };
 
 interface TabsHeaderProps extends CustomElementTagProps<"menu" | "ul"> {
@@ -156,8 +158,8 @@ interface TabsHeaderProps extends CustomElementTagProps<"menu" | "ul"> {
 };
 
 const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wrapperClassName, activeTabTitleIndex, children, ...props }) => {
-  return (<div className={`tabs_header-box ${wrapperClassName}`}>
-    <Component className={`tabs_header-inner-box ${className}`} {...props}>
+  return (<div className={`tabs_header-box ${wrapperClassName}`} role="group">
+    <Component className={`tabs_header-inner-box ${className}`} {...props} role="tablist">
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement<TabTitleProps>(child) || !isSubChild(child, "TabTitle")) {
           return null;
@@ -175,7 +177,7 @@ const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wra
 type TabPanelProps = React.ComponentPropsWithRef<"div">;
 
 const TabPanel: FC<TabPanelProps> = ({ children, className, ...props }) => {
-  return <div className={className} {...props}>
+  return <div className={className} {...props} role="tabpanel" tabIndex="0">
     {children}
   </div>
 };
@@ -184,10 +186,10 @@ interface TabsBodyProps extends React.ComponentPropsWithRef<"section"> {
   activeTabPanelIndex: number;
 }
   
-const TabsBody: FC<TabsBodyProps> = ({ children, className, activeTabPanelIndex }) => {
+const TabsBody: FC<TabsBodyProps> = ({ children, className, activeTabPanelIndex, ...props }) => {
   const activeTabPanel = React.Children.toArray(children)[activeTabPanelIndex];
 
-  return (<section className={`tabs_body-box ${className}`}>
+  return (<section className={`tabs_body-box ${className}`} role="group" {...props}>
     {isSubChild(activeTabPanel, "TabPanel") ? activeTabPanel : null}
   </section>);
 };
