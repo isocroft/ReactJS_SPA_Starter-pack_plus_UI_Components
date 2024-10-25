@@ -8,30 +8,30 @@ type CustomElementTagProps<T extends React.ElementType> =
   };
 
 const useTabsCore = (initialActiveTabIndex: number, activeTabIndexQuery: string) => {
-    const pageParamsQuery = new URLSearchParams(window.location.search);
-    const activeTabfromUrlQuery = Number(pageParamsQuery.get(activeTabIndexQuery) || initialActiveTabIndex + 1);
+  const pageParamsQuery = new URLSearchParams(window.location.search);
+  const activeTabfromUrlQuery = Number(pageParamsQuery.get(activeTabIndexQuery) || initialActiveTabIndex + 1);
 
-    const [activeTabIndex, setActiveTabIndex] = useState(() => activeTabfromUrlQuery - 1);
+  const [activeTabIndex, setActiveTabIndex] = useState(() => activeTabfromUrlQuery - 1);
 
-    const handleSetActiveTab = useCallback<React.MouseEventHandler<HTMLElement>>((event: React.MouseEvent<HTMLElement>) => {
-      const tabHeaderNode = event.currentTarget as Node;
-      const targetNode = event.target as Node;
-      const parentNode = targetNode.parentNode as HTMLElement;
-      const clickedTabIndex = Number(tabHeaderNode.contains(targetNode) && (event.target as HTMLElement).hasAttribute('data-tab-title-index')
-        ? (event.target as HTMLElement).dataset.tabTitleIndex
-        : targetNode.parentNode && tabHeaderNode.contains(targetNode.parentNode) && parentNode.hasAttribute('data-tab-title-index') 
-          ? parentNode.dataset.tabTitleIndex
-          : parentNode?.parentNode && tabHeaderNode.contains(parentNode.parentNode) && (parentNode?.parentNode as HTMLElement).hasAttribute('data-tab-title-index')
-            ? (parentNode?.parentNode as HTMLElement).dataset.tabTitleIndex
-            : '-1'
-        );
+  const handleSetActiveTab = useCallback<React.MouseEventHandler<HTMLElement>>((event: React.MouseEvent<HTMLElement>) => {
+    const tabHeaderNode = event.currentTarget as Node;
+    const targetNode = event.target as Node;
+    const parentNode = targetNode.parentNode as HTMLElement;
+    const clickedTabIndex = Number(tabHeaderNode.contains(targetNode) && (event.target as HTMLElement).hasAttribute('data-tab-title-index')
+      ? (event.target as HTMLElement).dataset.tabTitleIndex
+      : targetNode.parentNode && tabHeaderNode.contains(targetNode.parentNode) && parentNode.hasAttribute('data-tab-title-index') 
+        ? parentNode.dataset.tabTitleIndex
+        : parentNode?.parentNode && tabHeaderNode.contains(parentNode.parentNode) && (parentNode?.parentNode as HTMLElement).hasAttribute('data-tab-title-index')
+          ? (parentNode?.parentNode as HTMLElement).dataset.tabTitleIndex
+          : '-1'
+      );
 
-        if (clickedTabIndex !== -1) {
-          setActiveTabIndex(clickedTabIndex);
-        }
-    }, [setActiveTabIndex]);
+      if (clickedTabIndex !== -1) {
+        setActiveTabIndex(clickedTabIndex);
+      }
+  }, [setActiveTabIndex]);
 
-    return [activeTabIndex, handleSetActiveTab] as const;
+  return [activeTabIndex, handleSetActiveTab] as const;
 };
 
 const renderChildren = (
