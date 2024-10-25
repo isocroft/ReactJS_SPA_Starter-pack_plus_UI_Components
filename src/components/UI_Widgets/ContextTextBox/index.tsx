@@ -15,7 +15,7 @@ const ContextTexBox: BasicTextBoxProps = <F extends FieldValues>({
   hidePlaceholder,
   ...props
 }) => {
-  const { register, unregister, formState, resetField } = useFormContext<F>();
+  const { register, unregister, getFieldState, formState, resetField } = useFormContext<F>();
 
   const { isDirty, errors } = getFieldState(name, formState)
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>

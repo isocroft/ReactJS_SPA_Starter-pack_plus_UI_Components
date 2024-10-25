@@ -16,7 +16,7 @@ export interface AvatarProps extends React.ComponentPropsWithRef<"div"> {
   letters?: string;
 }
   
-const Avatar: React.FC<AvatarProps> = ({
+const Avatar: FC<AvatarProps> = ({
   size = AvatarSizes.Small,
   src = defaultImagePath,
   className,
@@ -26,18 +26,27 @@ const Avatar: React.FC<AvatarProps> = ({
   ...props
 }: AvatarProps) => {
   React.useEffect(() => {  
-    const styleSheetsOnly = [].slice.call(
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
     ).filter(
-      (sheet) => sheet.ownerNode.nodeName === "STYLE"
-    ).map(
-      (sheet) => sheet.ownerNode.id
-    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE";
+        }
+        return false;
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id;
+        }
+        return "";
+    }).filter(
       (id) => id !== ""
     );
 
     if (styleSheetsOnly.length === 0
-      || stlyeSheetsOnly.includes("react-busser-headless-ui_avatar")) {
+      || styleSheetsOnly.includes("react-busser-headless-ui_avatar")) {
       return;
     }
 

@@ -72,18 +72,27 @@ const BasicTextBox: FC<
   ...props
 }) => {
   React.useEffect(() => {  
-    const styleSheetsOnly = [].slice.call(
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
     ).filter(
-      (sheet) => sheet.ownerNode.nodeName === "STYLE"
-    ).map(
-      (sheet) => sheet.ownerNode.id
-    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE"
+        }
+        return false
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id
+        }
+        return "";
+    }).filter(
       (id) => id !== ""
     );
 
     if (styleSheetsOnly.length === 0
-      || stlyeSheetsOnly.includes("react-busser-headless-ui_basictextbox")) {
+      || styleSheetsOnly.includes("react-busser-headless-ui_basictextbox")) {
       return;
     }
 
