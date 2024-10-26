@@ -143,8 +143,8 @@ interface TabsProps extends React.ComponentPropsWithRef<"section"> {
   disableTabIdOnUrlQuery?: boolean;
 }
 
-const Tabs = ({ activeTabIndex = 0, activeTabIdQuery = 'active_tab__react-busser', className, children, ...props }: TabsProps) => {
-  const [activeTab, onClick] = useTabsCore(activeTabIndex, activeTabIdQuery);
+const Tabs = ({ activeTabIndex = 0, activeTabIdQuery = 'active_tab__react-busser', className, disableTabIdOnUrlQuery = false, children, ...props }: TabsProps) => {
+  const [activeTab, onClick] = useTabsCore(activeTabIndex, activeTabIdQuery, disableTabIdOnUrlQuery);
 
   useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
