@@ -1,4 +1,5 @@
 import React, { FC, useState, useRef, useEffect, useCallback } from "react";
+import { useHistory } from "react-router-dom";
 
 import { hasChildren, isSubChild } from "../../../helpers/render-utils";
 
@@ -30,12 +31,15 @@ const isActiveTabTitleInOverflow = (element: HTMLLIElement) => {
   return (element.offsetLeft + element.clientWidth) > element.offsetParent.clientWidth;
 };
 
-const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string) => {
-  const pageSearchParams = new URLSearchParams(window.location.search);
-  const activeTabfromUrlQuery = Number(pageSearchParams.get(activeTabIdQuery) || initialActiveTabIndex + 1);
+const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string, disableTabIdOnUrlQuery = false) => {
+  const pageSearchParams = new window.URLSearchParams(window.location.search);
+  const previousActiveTabIdQuery = useRef<string>(pageSearchParams.get(activeTabIdQuery) || String(initialActiveTabIndex + 1));
 
   const history = useHistory();
-  const [activeTabIndex, setActiveTabIndex] = useState(() => activeTabfromUrlQuery - 1);
+  const [activeTabIndex, setActiveTabIndex] = useState<number>(() => {
+    const activeTabIdFromUrlQuery = Number(previousActiveTabIdQuery.current);
+    return activeTabFromUrlQuery - 1;
+  });
 
   const handleSetActiveTab = useCallback<React.MouseEventHandler<HTMLElement>>((event: React.MouseEvent<HTMLElement>) => {
     const tabHeaderNode = event.currentTarget as Node;
@@ -50,12 +54,50 @@ const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string) =>
           : '-1'
       );
 
-      if (clickedTabIndex !== -1) {
-        setActiveTabIndex(clickedTabIndex);
+      if (clickedTabIndex !== NaN
+        && clickedTabIndex !== -1) {
+        setActiveTabIndex((prevTabIndex) => {
+          if (prevTabIndex === clickedTabIndex) {
+            return prevTabIndex;
+          }
+          return clickedTabIndex;
+        });
       }
-  /* eslint-disable-next-line */
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
+
+  useEffect(() => {
+    if (disableTabIdOnUrlQuery) {
+      return;
+    }
+    
+    const onTabIdQueryChange = ($location) => {
+      const currentPageSearchParams = new window.URLSearchParams($location.search);
+      const currentTabfromUrlQuery = Number(currentPageSearchParams.get(activeTabIdQuery));
+
+      if (currentTabfromUrlQuery !== NaN
+        && previousActiveTabIdQuery.current !== String(currentTabfromUrlQuery)) {
+        previousActiveTabIdQuery.current = String(currentTabfromUrlQuery)
+        setActiveTabIndex((prevTabIndex) => {
+          if (prevTabIndex === currentTabfromUrlQuery) {
+            return prevTabIndex;
+          }
+          return currentTabfromUrlQuery;
+        });
+      }
+    };
+    
+    const unlisten = history.listen((location) => {
+			return onTabIdQueryChange(location)
+		})
+
+		return () => {
+      unlisten();
+    }
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [history, activeTabIdQuery]);
+  
   return [activeTabIndex, handleSetActiveTab] as const;
 };
 
@@ -98,6 +140,7 @@ const renderChildren = (
 interface TabsProps extends React.ComponentPropsWithRef<"section"> {
   activeTabIndex?: number;
   activeTabIdQuery?: string;
+  disableTabIdOnUrlQuery?: boolean;
 }
 
 const Tabs = ({ activeTabIndex = 0, activeTabIdQuery = 'active_tab__react-busser', className, children, ...props }: TabsProps) => {
@@ -145,7 +188,7 @@ const Tabs = ({ activeTabIndex = 0, activeTabIdQuery = 'active_tab__react-busser
 
       .tabs_header-inner-box {
         overflow-x: auto;
-        position: relative; /* Needed to calculate offsetParent for tab titles */
+        position: relative; /* @HINT: Needed to correctly calculate 'offsetParent' for tab titles */
       }
     `;  
     window.document.head.appendChild(tabsStyle);  
@@ -200,10 +243,11 @@ const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wra
       if (isActiveTabTitleInOverflow(
         activeTabElement
       ) {
-        /* Make sure that no active tab is hidden within a CSS overflow */
+        /* @HINT: Make sure that no active tab is hidden within a CSS overflow */
         tabTitleElement.current.scrollBy(5000, 0);
       }
     }
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [activeTabTitleIndex]);
 
   return (<div className={`tabs_header-box ${wrapperClassName}`} role="group">
@@ -271,6 +315,6 @@ Tabs.TabPanel = TabPanel;
 //   </TabsBody>
 // </Tabs>
 
-export type { TabsBodyProps, TabPanelProps };
+export type { TabsProps, TabsHeaderProps, TabTitleProps, TabsBodyProps, TabPanelProps };
 
 export default Tabs;
