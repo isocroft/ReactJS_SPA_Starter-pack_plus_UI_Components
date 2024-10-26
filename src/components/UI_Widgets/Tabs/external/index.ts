@@ -1,6 +1,6 @@
 import { useSearchParamsState } from "react-busser";
 
-export const useTabs = (activeTabIdQuery= 'active_tab__react-busser', activeTabIndex = 0, replaceInHistory = false) => {
+export const useTabs = (activeTabIdQuery = 'active_tab__react-busser', activeTabIndex = 0, replaceInHistory = false) => {
   const [, setUrlSearchParamsState] = useSearchParamsState(activeTabIdQuery, replaceInHistory, String(activeTabIndex + 1));
   const activate = (currentTabIndex: number) => {
     setUrlSearchParamsState((previousTabIdQuery) => {
