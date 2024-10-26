@@ -11,7 +11,7 @@ export const useTabs = (activeTabIdQuery = 'active_tab__react-busser', activeTab
     });
   };
 
-  return [activate];
+  return [activate] as const;
 };
 
 
