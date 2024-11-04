@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from "react";
+import React, { FC, useCallback, useEffect } from "react";
 
 import { isSubChild } from "../../../helpers/render-utils";
 
@@ -45,11 +45,63 @@ const Option: FC<
     [value, name]
   );
 
+  useEffect(() => {  
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE";
+        }
+        return false;
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id;
+        }
+        return "";
+    }).filter(
+      (id) => id !== ""
+    );
+
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_radio")) {
+      return;
+    }
+
+    const radioStyle = window.document.createElement('style');
+    radioStyle.id = "react-busser-headless-ui_radio";
+
+    radioStyle.innerHTML = `  
+      .radio_hidden-input {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      .radio_control-icon-box {
+        min-height: 0;
+        min-width: fit-content;
+        position: relative;
+        display: block;
+      }
+    `;  
+    window.document.head.appendChild(tabsStyle);  
+  
+    return () => {  
+      window.document.head.removeChild(tabsStyle);  
+    };  
+  }, []);
+
   return (
     <div className={wrapperClassName}>
       <span
         className={
-          "all:block[shrink-to-fit] display-block block position-relative relative"
+          "radio_control-icon-box"
         }
       >
         {controlIcon ? (
@@ -63,7 +115,7 @@ const Option: FC<
           value={value}
           className={`${className} ${
             controlIcon
-              ? "opacity-none opacity-0 position-absolute absolute inset-cover inset-0"
+              ? "radio_hidden-input"
               : ""
           }`}
           checked={selected}
