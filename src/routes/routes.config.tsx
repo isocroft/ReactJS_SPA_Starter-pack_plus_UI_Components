@@ -8,14 +8,12 @@ import {
   useIsFirstRender,
   usePreviousRoutePathname,
 } from "react-busser";
+import { useRoutingBreadCrumbsData } from "../layouts/GlobalRoutingProvider";
 
 import { HomeRoute } from "./pages.groupings/home.pages";
 import { VehicleRoute } from "./pages.groupings/vehicles.pages";
 
-type ReactRoutingFunctionalComponent = (props: {
-  breadcrumbs: Location[];
-  location: Location;
-}) => JSX.Element | null;
+type ReactRoutingFunctionalComponent = () => JSX.Element | null;
 
 export interface RoutesInterface {
   path: string;
@@ -37,8 +35,6 @@ interface DecoratedComponentProps<T = object> {
       breadcrumbs: Location[];
     }
   >;
-  breadcrumbs: Location[];
-  location: Location;
   PageElement: React.LazyExoticComponent<
     React.ComponentType<{ query: UseQueryResult | null } | undefined>
   >;
@@ -60,10 +56,8 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   Header,
   renderProp,
   useDataLoader,
-  breadcrumbs,
   Title,
   PageElement,
-  location,
 }) => {
   const [titleTag] = Array.from(
     document.documentElement.getElementsByTagName("title")
@@ -77,6 +71,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   const { getFromStorage } = useBrowserStorage({
     storageType: "local",
   });
+  const { breadcrumbs } = useRoutingBreadCrumbsData();
   const previousPathname = usePreviousRoutePathname();
   const history = useHistory<object>();
 
@@ -87,7 +82,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
       }
     }
   }, [
-    location.key,
+    query,
     isFirstRender,
     previousPathname,
     history.location.pathname,
@@ -106,7 +101,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
         />
       }
       {renderProp(
-        location,
+        history.location,
         query,
         PageElement,
         getFromStorage("user", {
@@ -123,16 +118,8 @@ export const ProtectedRoutes: RoutesInterface[] = [
     path: VehicleRoute.path,
     exact: true,
     isPrivate: true,
-    component: ({
-      breadcrumbs = [],
-      location,
-    }: {
-      breadcrumbs: Location[];
-      location: Location;
-    }) => (
+    component: () => (
       <PageRenderer
-        breadcrumbs={breadcrumbs}
-        location={location}
         Header={VehicleRoute.Header}
         renderProp={VehicleRoute.renderProp}
         Title={VehicleRoute.Title}
@@ -148,16 +135,8 @@ export const UnProtectedRoutes: RoutesInterface[] = [
     path: HomeRoute.path,
     exact: true,
     isPrivate: false,
-    component: ({
-      breadcrumbs = [],
-      location,
-    }: {
-      breadcrumbs: Location[];
-      location: Location;
-    }) => (
+    component: () => (
       <PageRenderer
-        breadcrumbs={breadcrumbs}
-        location={location}
         Header={HomeRoute.Header}
         renderProp={HomeRoute.renderProp}
         Title={HomeRoute.Title}
