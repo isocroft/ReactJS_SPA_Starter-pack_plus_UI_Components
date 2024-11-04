@@ -90,10 +90,10 @@ const Option: FC<
         display: block;
       }
     `;  
-    window.document.head.appendChild(tabsStyle);  
+    window.document.head.appendChild(radioStyle);  
   
     return () => {  
-      window.document.head.removeChild(tabsStyle);  
+      window.document.head.removeChild(radioStyle);  
     };  
   }, []);
 
