@@ -45,8 +45,8 @@ const Avatar: FC<AvatarProps> = ({
       (id) => id !== ""
     );
 
-    if (styleSheetsOnly.length === 0
-      || styleSheetsOnly.includes("react-busser-headless-ui_avatar")) {
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_avatar")) {
       return;
     }
 
