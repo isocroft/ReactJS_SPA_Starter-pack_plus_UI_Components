@@ -89,10 +89,10 @@ const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string, di
     };
     
     const unlisten = history.listen((location) => {
-			return onTabIdQueryChange(location)
-		})
+      return onTabIdQueryChange(location)
+    })
 
-		return () => {
+    return () => {
       unlisten();
     }
   /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -102,8 +102,8 @@ const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string, di
 };
 
 const renderChildren = (
-    children: React.ReactNode,
-    props: { activeTab: number, onClick: React.MouseEventHandler<HTMLElement> }
+  children: React.ReactNode,
+  props: { activeTab: number, onClick: React.MouseEventHandler<HTMLElement> }
 ) => {
   const oneChild = hasChildren(children, 1);
   const noChild = hasChildren(children, 0);
@@ -166,8 +166,8 @@ const Tabs = ({ activeTabIndex = 0, activeTabIdQuery = 'active_tab__react-busser
       (id) => id !== ""
     );
 
-    if (styleSheetsOnly.length === 0
-      || styleSheetsOnly.includes("react-busser-headless-ui_tabs")) {
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_tabs")) {
       return;
     }
 
