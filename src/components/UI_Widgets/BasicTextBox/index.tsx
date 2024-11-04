@@ -91,8 +91,8 @@ const BasicTextBox: FC<
       (id) => id !== ""
     );
 
-    if (styleSheetsOnly.length === 0
-      || styleSheetsOnly.includes("react-busser-headless-ui_basictextbox")) {
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_basictextbox")) {
       return;
     }
 
