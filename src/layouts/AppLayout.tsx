@@ -1,32 +1,26 @@
-import React, { useEffect, useMemo } from "react";
-import { useRoutingMonitor, useUnsavedChangesLock } from "react-busser";
+import React, { useEffect, useMemo, PropsWithChildren } from "react";
 import {
-  BrowserRouter as Router,
-  HashRouterProps,
   Route,
 } from "react-router-dom";
 import { Redirect, Switch } from "react-router";
-import type { Location } from "history";
 
+import GlobalRoutingProvider, { GlobalRoutingContextProps, useRoutingBreadCrumbsData } from "./GlobalRoutingProvider";
 import { RoutePaths } from "../routes/routes.paths";
-import { ProtectedRoutes, UnProtectedRoutes } from "../routes/routes.config";
+
+import type { Location } from "history";
+import type { RoutesInterface } from "./routes/routes.config";
+//import type { HashRouterProps } from "react-router-dom";
 
 const AppLayout = ({
-  lockUnsavedChanges = false,
+  breadcrumbsMap = {}
   className = "",
-  children = null,
-}: {
-  lockUnsavedChanges?: boolean;
+  children,
+  onAppNavigation
+}: PropsWithChildren<{
+  breadcrumbsMap?: Record<string, string>; 
   className?: string;
-  children?: React.ReactNode;
-}) => {
-  document.documentElement.classList.toggle("app-layout");
-
-  /* @NOTE: Using the `useUnsavedChangesLock()` ReactJS hook */
-  const { getUserConfirmation } = useUnsavedChangesLock({
-    useBrowserPrompt: true,
-  });
-
+  onAppNavigation?: GlobalRoutingContextProps["onGlobalNavigation"];
+}>) => {
   useEffect(() => {
     () => {
       document.documentElement.classList.toggle("app-layout");
@@ -35,56 +29,34 @@ const AppLayout = ({
 
   return (
     <main className={className}>
-      <Router
-        getUserConfirmation={
-          lockUnsavedChanges ? getUserConfirmation : undefined
-        }
-      >
+      <GlobalRoutingProvider onGlobalNavigation={onAppNavigation} breadcrumbsMap={breadcrumbsMap}>
         {children}
-      </Router>
+      </GlobalRoutingProvider>
     </main>
   );
 };
 
-const ProtectedPages = ({
-  getUserConfirmation,
-}: Pick<HashRouterProps, "getUserConfirmation">) => {
-  /* @NOTE: Using the `useRoutingMonitor()` ReactJS hook */
-  const { getBreadCrumbsList } = useRoutingMonitor({
-    getUserConfirmation: getUserConfirmation || (() => false),
-    /* onNavigation() gets called each time the route changes */
-    onNavigation: (
-      history,
-      { previousPathname, currentPathname, navigationDirection }
-    ) => {
-      /* Can setup Hotjar Events API, Segment or Rudderstack analytics here */
-      console.log(
-        previousPathname,
-        currentPathname,
-        navigationDirection,
-        history
-      );
-    },
-  });
+const RouteNavigation = () => {
+  return (
+    <>{children}</>
+  );
+};
 
+const RoutePages = (routes: RoutesInterface[]) => { 
+/* {
+  getUserConfirmation,
+}: Pick<HashRouterProps, "getUserConfirmation"> */
   return (
     <Switch>
-      {ProtectedRoutes.map((route) => {
+      {routes.map((route) => {
         return (
           <Route
             key={route.path}
             exact={route.exact}
             path={route.path}
-            component={({ location }: { location: Location }) => {
-              const breadcrumbs = useMemo(
-                () => getBreadCrumbsList(route.path),
-                [location.key]
-              );
+            component={() => {
               return (
-                <route.component
-                  breadcrumbs={breadcrumbs}
-                  location={location}
-                />
+                <route.component />
               );
             }}
           />
@@ -95,56 +67,8 @@ const ProtectedPages = ({
   );
 };
 
-const UnprotectedPages = ({
-  getUserConfirmation,
-}: Pick<HashRouterProps, "getUserConfirmation">) => {
-  /* @NOTE: Using the `useRoutingMonitor()` ReactJS hook */
-  const { getBreadCrumbsList } = useRoutingMonitor({
-    getUserConfirmation: getUserConfirmation || (() => false),
-    /* onNavigation() gets called each time the route changes */
-    onNavigation: (
-      history,
-      { previousPathname, currentPathname, navigationDirection }
-    ) => {
-      /* Can setup Hotjar Events API, Segment or Rudderstack analytics here */
-      console.log(
-        previousPathname,
-        currentPathname,
-        navigationDirection,
-        history
-      );
-    },
-  });
 
-  return (
-    <Switch>
-      {UnProtectedRoutes.map((route) => {
-        return (
-          <Route
-            key={route.path}
-            exact={route.exact}
-            path={route.path}
-            component={({ location }: { location: Location }) => {
-              const breadcrumbs = useMemo(
-                () => getBreadCrumbsList(route.path),
-                [location.key]
-              );
-              return (
-                <route.component
-                  breadcrumbs={breadcrumbs}
-                  location={location}
-                />
-              );
-            }}
-          />
-        );
-      })}
-      <Redirect to={RoutePaths.ERROR} />
-    </Switch>
-  );
-};
-
-AppLayout.ProtectedPages = ProtectedPages;
-AppLayout.UnprotectedPages = UnprotectedPages;
+AppLayout.RoutePages = RoutePages;
+AppLayout.RouteNavigation = RouteNavigation;
 
 export default AppLayout;
