@@ -1,7 +1,9 @@
 import React, { SVGAttributes } from "react";
 
 interface CircleIconProps extends SVGAttributes<SVGElement> {
-  size?: number
+  size?: number;
+  iconFill?: string;
+  iconStroke?: string;
 }
 
 export const CircleIcon = ({ size = 16, iconFill = "#ffffff", iconStroke = "currentColor", ...props }: CircleIconProps) => {
