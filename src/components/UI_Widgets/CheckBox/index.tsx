@@ -1,8 +1,8 @@
-import React, { FC } from "react";
+import React, { FC, Ref, useEffect } from "react";
 
-type ControlIconProp<T extends React.ElementType> = {
-  ControlIcon?: T;
-};
+import { hasChildren } from "../../../helpers/render-utils";
+import { MarkIcon } form "./assets/MarkIcon";
+
 
 const CheckBox: FC<
   {
@@ -10,52 +10,132 @@ const CheckBox: FC<
     wrapperClassName?: string;
     labelClassName?: string;
     children?: React.ReactNode;
-  } & React.ComponentPropsWithRef<"input"> &
-    Omit<React.ComponentProps<"input">, "type">
-> &
-  ControlIconProp<"span"> = ({
+    checkIconSize?: number,
+    checkIconFillColor?: string;
+  } &
+   Omit<React.ComponentPropsWithRef<"input">, "type" | "placeholder">
+> = React.forwardRef(({
   id,
   name,
   tabIndex = 0,
-  placeholder,
   wrapperClassName,
   labelClassName,
   className,
-  ControlIcon,
+  children,
+  checkIconSize,
+  checkIconFillColor,
   ...props
-}) => {
+}, ref: Ref<HTMLInputElement>) => {
+  useEffect(() => {
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE";
+        }
+        return false;
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id;
+        }
+        return "";
+    }).filter(
+      (id) => id !== ""
+    );
+
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_check")) {
+      return;
+    }
+
+    const checkStyle = window.document.createElement('style');
+    checkStyle.id = "react-busser-headless-ui_check";
+
+    checkStyle.innerHTML = `
+      .check_wrapper-box {
+        position: static;
+        display: inline-block; /* shrink-to-fit trigger */
+        min-height: 0;
+        min-width: fit-content;
+      }
+
+      .check_hidden-input {
+        opacity: 0;
+        position: absolute;
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      /*.check_hidden-input:checked + svg path {
+        stroke: #888888;
+      }*/
+
+      .check_control-icon-box {
+        min-height: 0;
+        min-width: fit-content;
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+      }
+    `;  
+    window.document.head.appendChild(checkStyle);  
+  
+    return () => {  
+      window.document.head.removeChild(checkStyle);  
+    };
+  }, []);
+
   return (
     <>
       <div className={wrapperClassName}>
         <span
-          className={
-            "all:block[shrink-to-fit] display-block block position-relative relative"
-          }
+          className={`
+            check_control-icon-box ${className}
+          `}
         >
           <input
             id={id}
             name={name}
             type="checkbox"
             tabIndex={tabIndex}
-            className={className}
             {...props}
+            className={"check_hidden-input"}
+            ref={ref}
           />
+          {typeof checkIconSize === "number" ? (<MarkIcon
+            size={checkIconSize}
+            iconFill={checkIconFillColor}
+          />) : null}
         </span>
-        <label htmlFor={name} className={labelClassName}>
-          <span tabIndex={-1} className={"placeholder-marker"}>
-            {placeholder}
-          </span>
-          {props.required && (
-            <span tabIndex={-1} className="required-marker">
-              *
-            </span>
-          )}
-        </label>
+        {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
+          {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
+        </label>}
       </div>
-      {children}
     </>
   );
-};
+});
 
 type CheckBoxProps = React.ComponentProps<typeof CheckBox>;
 
