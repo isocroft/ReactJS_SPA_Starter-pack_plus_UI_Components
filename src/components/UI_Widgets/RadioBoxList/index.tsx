@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect } from "react";
+import React, { FC, useRef, useCallback, useEffect } from "react";
 
 import { hasChildren, isSubChild } from "../../../helpers/render-utils";
 import { CircleIcon } from "./assets/CircleIcon";
@@ -8,24 +8,23 @@ type CustomElementTagProps<T extends React.ElementType> =
     as?: T;
   };
 
-type RadioBoxControlProps = {
-  name?;
-  value: string | number;
-  onChange?: (
-    event: React.ChangeEvent<HTMLInputElement>,
-    selectedValue?: string | number,
-  ) => void;
+type RadioBoxListControlProps = {
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
-} & Omit<React.ComponentProps<"input">, "type" | "onChange" | "crossOrigin">;
+} & Omit<React.ComponentProps<"input">, "type" | "value" | "crossOrigin">;
 
 const Option: FC<
   {
-    selected: boolean;
+    selected?: boolean;
+    value?: string;
     labelClassName?: string;
+    onChange?: (
+      event: React.ChangeEvent<HTMLInputElement>,
+      selectedValue: string | number,
+    ) => void;
     wrapperClassName?: string;
-  } & RadioBoxControlProps
+  } & Omit<RadioBoxListControlProps, "onChange">
 > = ({
   value,
   selected = false,
@@ -50,7 +49,7 @@ const Option: FC<
       }
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [value, name]
+    [value]
   );
 
   return (
@@ -63,16 +62,16 @@ const Option: FC<
         <CircleIcon
           size={radioIconSize}
           iconFill={selected ? radioIconFillColor : "transparent"}
-          iconStroke={selected ? radioIconStrokeColor : "transparent"}
+          iconStroke={radioIconStrokeColor}
         />
         <input
           id={id}
           tabIndex={0}
           name={name}
           type="radio"
+          {...props}
           value={value}
           className={"radio_hidden-input"}
-          {...props}
           onChange={onChangeHandler}
           checked={selected}
         />
@@ -95,21 +94,23 @@ const Option: FC<
   );
 };
 
-const RadioBox = ({
+const RadioBoxList = ({
   as: Component = "div",
   className = "",
   name,
-  value,
   onChange,
   children,
+  radioDefaultValue = "",
   radioIconFillColor,
   radioIconStrokeColor,
   radioIconSize,
   ...props
-}: RadioBoxControlProps &
+}: Pick<RadioBoxListControlProps, "name" | "onChange" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor"> &
+  { radioDefaultValue?: string } &
   CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
 
+  const radioValue = useRef<string>(radioDefaultValue);
   useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
@@ -152,7 +153,9 @@ const RadioBox = ({
         display: inline-block;
         width: 100%;
         height: 100%;
-        pointer-events: none;
+        margin: 0;
+        padding: 0;
+        border: none;
         top: 0;
         right: 0;
         bottom: 0;
@@ -164,6 +167,7 @@ const RadioBox = ({
         min-width: fit-content;
         position: relative;
         display: inline-block;
+        vertical-align: middle;
       }
     `;  
     window.document.head.appendChild(radioStyle);  
@@ -173,28 +177,33 @@ const RadioBox = ({
     };  
   }, []);
 
-  let index = 0;
-
   const childrenProps = React.Children.map(children, (child) => {
-    if (!React.isValidElement(child) || !isSubChild("Option")) {
+    if (!React.isValidElement(child) || !isSubChild(child, "Option")) {
       return null;
     }
 
-    const childValue: number | string = child.props.value
-      ? child.props.value
-      : index;
-
-    index += 1;
+    const childValue: string = child.props.value;
 
     return React.cloneElement(
       child as React.ReactElement<
-        { selected: boolean } & RadioBoxControlProps &
-          React.ComponentProps<"div">
+        {
+          selected: boolean,
+          value?: string,
+          onChange?: (
+            event: React.ChangeEvent<HTMLInputElement>,
+            selectedValue: string | number,
+          ) => void
+        } & Omit<RadioBoxListControlProps, "onChange">
       >,
       {
-        onChange,
+        onChange: (event, selectedValue) => {
+          radioValue.current = selectedValue;
+          /* @ts-ignore */
+          event.currentValue = selectedValue;
+          onChange(event);
+        },
         value: childValue,
-        selected: value === childValue,
+        selected: radioValue.current === childValue,
         radioIconFillColor,
         radioIconStrokeColor,
         radioIconSize,
@@ -215,26 +224,32 @@ const RadioBox = ({
   );
 };
 
-// <RadioBox as="section" name="gender" value={} onChange={(event, value) => {
-//   console.log('current value: ', value);
-// }} radioIconSize={RadioIcon.IconSizes.BIG}>
-//   <RadioBox.Option value="male">
-//     <span>Male</span>
-//   </RadioBox.Option>
-//   <RadioBox.Option value="female">
-//     <span>Female</span>
-//   </RadioBox.Option>
-// </RadioBox>
+// const [radioValue, setRadioValue] = useState("male");
 
-RadioBox.Option = Option;
-RadioBox.IconSizes = {
-  TINY: 16,
-  MID: 22,
-  BIG: 24
+// <RadioBoxList as="section" name="gender" radioDefaultValue={"male"} onChange={(event) => {
+//   console.log('current value: ', event.currentValue);
+//   setRadioValue(event.currentValue);
+// }} radioIconSize={RadioIcon.IconSizes.BIG}>
+//   <RadioBoxList.Option value="male">
+//     <span>Male</span>
+//   </RadioBoxList.Option>
+//   <RadioBoxList.Option value="female">
+//     <span>Female</span>
+//   </RadioBoxList.Option>
+// </RadioBoxList>
+
+RadioBoxList.Option = Option;
+
+export const RadioIcon = {
+  'IconSizes': {
+    TINY: 16,
+    MID: 22,
+    BIG: 24
+  }
 };
 
-type RadioBoxProps = React.ComponentProps<typeof RadioBox>;
+type RadioBoxListProps = React.ComponentProps<typeof RadioBoxList>;
 
-export type { RadioBoxProps };
+export type { RadioBoxListProps };
 
 export default RadioBox;
