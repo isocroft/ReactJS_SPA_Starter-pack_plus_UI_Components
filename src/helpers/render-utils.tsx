@@ -5,6 +5,9 @@ import type { Location } from "history";
 import { breadcrumbsMap } from "../routes/routes.breadcrumbs.map";
 
 export const hasChildren = (children: React.ReactNode, count: number) => {
+  if (!Boolean(children)) {
+    return false;
+  }
   const childCount = React.Children.count(children);
   return childCount === count;
 };
@@ -13,7 +16,7 @@ export const isSubChild = <C extends React.ReactNode>(
   child: React.ReactNode,
   tag: string
 ): child is C =>
-  React.isValidElement(child) && String(child?.type).includes(tag);
+  React.isValidElement(child) && (typeof(child?.type) === "function" ? child?.type?.name === tag : String(child?.type).includes(tag));
 
 export const renderBreadcrumbs = (
   breadcrumbs: Location[] = [],
