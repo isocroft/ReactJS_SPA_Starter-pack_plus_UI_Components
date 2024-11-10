@@ -12,7 +12,7 @@ type RadioBoxListControlProps = {
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
-} & Omit<React.ComponentProps<"input">, "type" | "value" | "crossOrigin">;
+} & Omit<React.ComponentProps<"input">, "type" | "value" | "placeholder" | "crossOrigin">;
 
 const Option: FC<
   {
@@ -71,13 +71,13 @@ const Option: FC<
           onChange={onChangeHandler}
           checked={selected}
         />
-        <CircleIcon
+        {typeof radioIconSize === "number" ? (<CircleIcon
           size={radioIconSize}
           iconFill={selected ? radioIconFillColor : "transparent"}
           iconStroke={radioIconStrokeColor}
-        />
+        />) : null}
       </span>
-      <label htmlFor={id} className={labelClassName}>
+      {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
         {
           hasChildren(children, 1)
             ? React.cloneElement(
@@ -90,7 +90,7 @@ const Option: FC<
               )
             : null
         }
-      </label>
+      </label>}
     </div>
   );
 };
@@ -192,7 +192,7 @@ const RadioBoxList = ({
           value?: string,
           onChange?: (
             event: React.ChangeEvent<HTMLInputElement>,
-            selectedValue: string | number,
+            selectedValue: string,
           ) => void
         } & Omit<RadioBoxListControlProps, "onChange">
       >,
