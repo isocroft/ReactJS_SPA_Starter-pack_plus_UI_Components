@@ -1,4 +1,6 @@
-import React, { FC } from "react";
+import React, { FC, Ref } from "react";
+
+import { hasChildren } from "../../../helpers/render-utils";
 
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentPropsWithRef<T> & {
@@ -6,7 +8,7 @@ type CustomElementTagProps<T extends React.ElementType> =
     children: undefined;
   };
 
-const BasicTextBox: FC<
+const TextBox: FC<
   CustomElementTagProps<"input" | "textarea"> &
     Omit<
       React.ComponentProps<"input">,
@@ -43,14 +45,12 @@ const BasicTextBox: FC<
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
       ) => void;
       onInput?: () => void;
-      ref?: (instance: HTMLInputElement | HTMLTextAreaElement | null) => void;
       type?: "text" | "password" | "number" | "email" | "search";
     } & {
       wrapperClassName?: string;
-      hidePlaceholder?: boolean;
       labelClassName?: string;
     }
-> = ({
+> = React.forwardRef(({
   as: Component = "input",
   id,
   name,
@@ -70,7 +70,7 @@ const BasicTextBox: FC<
   className,
   tabIndex = 0,
   ...props
-}) => {
+}, ref: Ref<HTMLInputElement>) => {
   React.useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
@@ -92,33 +92,22 @@ const BasicTextBox: FC<
     );
 
     if (styleSheetsOnly.length > 0
-      && styleSheetsOnly.includes("react-busser-headless-ui_basictextbox")) {
+      && styleSheetsOnly.includes("react-busser-headless-ui_text")) {
       return;
     }
 
-    const avatarStyle = window.document.createElement('style');
-    avatarStyle.id = "react-busser-headless-ui_basictextbox";
+    const textStyle = window.document.createElement('style');
+    textStyle.id = "react-busser-headless-ui_text";
 
-    avatarStyle.innerHTML = `  
-      .basictextbox_wrapper-box {
+    textStyle.innerHTML = `  
+      .text_wrapper-box {
         overflow: hidden;
       }
-
-      .basictextbox_placeholder-marker {
-        display: inline-block;
-        vertical-align: middle;
-        position: relative;
-      }
-    
-      .basictextbox_required-marker {
-        display: inline-block;
-        color: red;
-      }
     `;  
-    window.document.head.appendChild(avatarStyle);  
+    window.document.head.appendChild(textStyle);  
  
     return () => {  
-      window.document.head.removeChild(avatarStyle);  
+      window.document.head.removeChild(textStyle);  
     };  
   }, []);
 
@@ -162,28 +151,28 @@ const BasicTextBox: FC<
           className={className}
           {...props}
           ref={ref}
-          placeholder={hidePlaceholder ? "" : undefined}
         />
-        {hidePlaceholder ? (
-          <label htmlFor={name} className={labelClassName}>
-            <span tabIndex={-1} className="placeholder-marker">
-              {props.placeholder}
-            </span>
-            {props.required && (
-              <span tabIndex={-1} className="required-marker">
-                <sup>*</sup>
-              </span>
-            )}
-          </label>
-        ) : null}
+        {hasChildren(children, 0) ? null : <label htmlFor={name} className={labelClassName}>
+          {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
+        </label>}
       </div>
-      {children}
     </>
   );
-};
+});
 
-type BasicTextBoxProps = React.ComponentProps<typeof BasicTextBox>;
+type TextBoxProps = React.ComponentProps<typeof TextBox>;
 
-export type { BasicTextBoxProps };
+export type { TextBoxProps };
 
-export default BasicTextBox;
+export default TextBox;
