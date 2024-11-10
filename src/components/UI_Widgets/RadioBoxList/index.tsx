@@ -28,6 +28,7 @@ const Option: FC<
 > = ({
   value,
   selected = false,
+  tabIndex = 0,
   name,
   id,
   wrapperClassName = "",
@@ -59,14 +60,9 @@ const Option: FC<
           radio_control-icon-box ${className}
         `}
       >
-        <CircleIcon
-          size={radioIconSize}
-          iconFill={selected ? radioIconFillColor : "transparent"}
-          iconStroke={radioIconStrokeColor}
-        />
         <input
           id={id}
-          tabIndex={0}
+          tabIndex={tabIndex}
           name={name}
           type="radio"
           {...props}
@@ -75,8 +71,13 @@ const Option: FC<
           onChange={onChangeHandler}
           checked={selected}
         />
+        <CircleIcon
+          size={radioIconSize}
+          iconFill={selected ? radioIconFillColor : "transparent"}
+          iconStroke={radioIconStrokeColor}
+        />
       </span>
-      <label htmlFor={name} className={labelClassName}>
+      <label htmlFor={id} className={labelClassName}>
         {
           hasChildren(children, 1)
             ? React.cloneElement(
@@ -230,10 +231,10 @@ const RadioBoxList = ({
 //   console.log('current value: ', event.currentValue);
 //   setRadioValue(event.currentValue);
 // }} radioIconSize={RadioIcon.IconSizes.BIG}>
-//   <RadioBoxList.Option value="male">
+//   <RadioBoxList.Option value="male" id="male">
 //     <span>Male</span>
 //   </RadioBoxList.Option>
-//   <RadioBoxList.Option value="female">
+//   <RadioBoxList.Option value="female" id="female">
 //     <span>Female</span>
 //   </RadioBoxList.Option>
 // </RadioBoxList>
