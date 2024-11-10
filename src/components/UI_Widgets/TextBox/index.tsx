@@ -41,11 +41,13 @@ const TextBox: FC<
       pattern?: string;
       src?: string;
       size?: number;
+      textLength?: number;
       onChange?: (
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
       ) => void;
       onInput?: () => void;
-      type?: "text" | "password" | "number" | "email" | "search";
+      onInvalid?: () => void;
+      type?: "text" | "password" | "number" | "email" | "search" | "url" | "date";
     } & {
       wrapperClassName?: string;
       labelClassName?: string;
@@ -61,16 +63,14 @@ const TextBox: FC<
   pattern,
   src,
   size,
-  ref,
   onChange,
   children,
   wrapperClassName,
   labelClassName,
-  hidePlaceholder = false,
   className,
   tabIndex = 0,
   ...props
-}, ref: Ref<HTMLInputElement>) => {
+}, ref: Ref<HTMLInputElement & HTMLTextAreaElement>) => {
   React.useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
@@ -129,6 +129,9 @@ const TextBox: FC<
             typeof wrap === "string" && Component === "textarea"
               ? wrap
               : undefined
+          }
+          textLength={
+            typeof textLength === "number" && Component === "textarea" ? type : undefined
           }
           type={
             typeof type === "string" && Component === "input" ? type : undefined
