@@ -5,12 +5,11 @@ import { CircleIcon } form "./assets/CircleIcon";
 
 const RadioBox: FC<
   {
-    placeholder?: string;
     wrapperClassName?: string;
     labelClassName?: string;
     children?: React.ReactNode;
     radioIconSize?: number,
-    radioIconFillColor?: string;
+    radioIconStrokeColor?: string;
   } &
    Omit<React.ComponentPropsWithRef<"input">, "type" | "placeholder">
 > = ({
@@ -22,7 +21,7 @@ const RadioBox: FC<
   className,
   children,
   raddioIconSize,
-  radioIconFillColor,
+  radioIconStrokeColor,
   ...props
 }) => {
   useEffect(() => {  
