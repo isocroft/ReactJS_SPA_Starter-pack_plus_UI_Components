@@ -1,4 +1,4 @@
-import React, { FC, Ref } from "react";
+import React, { FC, Ref, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
@@ -71,7 +71,7 @@ const TextBox: FC<
   tabIndex = 0,
   ...props
 }, ref: Ref<HTMLInputElement & HTMLTextAreaElement>) => {
-  React.useEffect(() => {  
+  useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
     ).filter(
