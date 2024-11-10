@@ -1,7 +1,7 @@
 import React, { FC, useRef, useCallback, useEffect } from "react";
 
 import { hasChildren, isSubChild } from "../../../helpers/render-utils";
-import { CircleIcon } from "./assets/CircleIcon";
+import { CircleIcon } from "../RadioBox/assets/CircleIcon";
 
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentPropsWithRef<T> & {
