@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import React, { FC, Ref, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 import { CircleIcon } form "./assets/CircleIcon";
@@ -12,7 +12,7 @@ const RadioBox: FC<
     radioIconStrokeColor?: string;
   } &
    Omit<React.ComponentPropsWithRef<"input">, "type" | "placeholder">
-> = ({
+> = React.forwardRef(({
   id,
   name,
   tabIndex = 0,
@@ -20,10 +20,10 @@ const RadioBox: FC<
   labelClassName,
   className,
   children,
-  raddioIconSize,
+  radioIconSize,
   radioIconStrokeColor,
   ...props
-}) => {
+}, ref: Ref<HTMLInputElement>) => {
   useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
@@ -108,6 +108,7 @@ const RadioBox: FC<
           type="radio"
           {...props}
           className={"radio_hidden-input"}
+          ref={ref}
         />
         {typeof radioIconSize === "number" ? (<CircleIcon
           size={radioIconSize}
@@ -130,7 +131,7 @@ const RadioBox: FC<
       </label>}
     </div>
   );
-};
+});
 
 type RadioBoxProps = React.ComponentProps<typeof RadioBox>;
 
