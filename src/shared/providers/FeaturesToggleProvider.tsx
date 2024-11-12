@@ -1,13 +1,14 @@
 import React, { createContext } from "react";
 
 export type FeatureFlagEnvs = "development" | "production" | "test";
+
 type FeatureEnvsTable = {
   "development": string[],
   "test": string[],
   "production": string[]
 };
 
-const FeaturesToggleContext = createContext({
+export const FeaturesToggleContext = createContext({
   enabledFeatures: [] as string[]
 });
 
