@@ -1,5 +1,24 @@
 import { useEffect } from "react";
+import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvider";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+type FeatureToggleHandlers = {
+  isDisabledFor: (feature: string) => boolean,
+  isEnabledFor: (feature: string) => boolean
+};
+
+export const useFeatureToggle = () => {
+  const features = useContext(FeaturesToggleContext);
+
+  return {
+    isDisabledFor: (feature: string) => {
+      return !features.enabledFeatures.includes(feature);
+    },
+    isEnabledFor: (feature: string) => {
+      return features.enabledFeatures.includes(feature);
+    }
+  } as FeatureToggleHandlers;
+};
 
 export const useMutationObserver = (
   ref,
