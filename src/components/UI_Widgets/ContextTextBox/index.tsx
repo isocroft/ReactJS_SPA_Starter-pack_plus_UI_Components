@@ -1,10 +1,10 @@
 import React, { FC, useState, useEffect } from "react";
-import { useFormContext, FieldValues } from "react-hook-form";
-import BasicTextBox from "../BasicTextBox";
+import { useFormContext, FieldValues, Message } from "react-hook-form";
+import TextBox from "../TextBox";
 
-import type { BasicTextBoxProps } from "../BasicTextBox";
+import type { TextBoxProps } from "../TextBox";
 
-const ContextTexBox: BasicTextBoxProps = <F extends FieldValues>({
+const ContextTexBox: TextBoxProps & { ErrorComponent: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
   name,
   type,
   placeholder,
@@ -12,12 +12,11 @@ const ContextTexBox: BasicTextBoxProps = <F extends FieldValues>({
   className,
   wrapperClassName,
   labelClassName,
-  hidePlaceholder,
   ...props
 }) => {
   const { register, unregister, getFieldState, formState, resetField } = useFormContext<F>();
 
-  const { isDirty, errors } = getFieldState(name, formState)
+  const { isDirty, invalid, error } = getFieldState(name, formState)
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
     setTimeout(() => {
       if (!props.value && !props.defaultValue) {
@@ -36,26 +35,19 @@ const ContextTexBox: BasicTextBoxProps = <F extends FieldValues>({
   }, [timerId]);
 
   return (
-    <BasicTextBox
-      {...register(name, props)}
-      type={type}
-      placeholder={placeholder}
-      hidePlaceholder={hidePlaceholder}
-      className={className}
-      wrapperClassName={wrapperClassName}
-      labelClassName={labelClassName}
-    >
-      {React.Children.map(children, (child) => {
-        if (!React.isValidElement(child)) {
-          return null;
-        }
-
-        return React.cloneElement(child, {
-          isDirty,
-          errors
-        });
-      })}
-    </BasicTextBox>
+    <>
+      <TextBox
+        {...register(name, props)}
+        type={type}
+        placeholder={placeholder}
+        className={className}
+        wrapperClassName={wrapperClassName}
+        labelClassName={labelClassName}
+      >
+        {children}
+      </TextBox>
+      <ErrorComponent isDirty={isDirty} invalid={invalid} errorMessage={error?.message || null} />
+    </>
   );
 };
 
