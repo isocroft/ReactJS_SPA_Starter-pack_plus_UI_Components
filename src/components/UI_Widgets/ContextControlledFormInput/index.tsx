@@ -3,16 +3,17 @@ import { useFormContext, Controller, FieldValues, UseFormProps } from "react-hoo
 
 type ContextControlledFormInputProps = React.ComponentProps<typeof Controller> & {
   wrapperClassName?: string;
-  children?: () => 
+  children?: () => JSX.Element;
 }
 
 const ContextControlledFormInput: ContextControlledFormInputProps = <F extends FieldValues>({
   wrapperClassName,
+  children,
   ...props
 }) => {
   const { control, formState, resetField } = useFormContext<F>();
 
-  const { isDirty, touchedFields, errors } = getFieldState(props.name, formState)
+  const { isDirty, invalid, error } = getFieldState(props.name, formState)
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
     setTimeout(() => {
       if (!props.value && !props.defaultValue) {
@@ -31,7 +32,9 @@ const ContextControlledFormInput: ContextControlledFormInputProps = <F extends F
 
   return (
     <div className={wrapperClassName}>
-        <Controller control={control} {...props} />
+        <Controller control={control} {...props}>
+          {children}
+        </Controller>
     </div>
   );
 };
