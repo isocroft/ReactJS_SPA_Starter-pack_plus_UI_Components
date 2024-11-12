@@ -1,10 +1,10 @@
 import React, { FC, useState, useEffect } from "react";
-import { useFormContext, FieldValues, Message } from "react-hook-form";
+import { useFormContext, FieldValues } from "react-hook-form";
 import TextBox from "../TextBox";
 
 import type { TextBoxProps } from "../TextBox";
 
-const ContextTexBox: TextBoxProps & { ErrorComponent: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
+const ContextTexBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
   name,
   type,
   placeholder,
@@ -12,6 +12,7 @@ const ContextTexBox: TextBoxProps & { ErrorComponent: React.FunctionComponent<{ 
   className,
   wrapperClassName,
   labelClassName,
+  ErrorComponent,
   ...props
 }) => {
   const { register, unregister, getFieldState, formState, resetField } = useFormContext<F>();
@@ -46,7 +47,7 @@ const ContextTexBox: TextBoxProps & { ErrorComponent: React.FunctionComponent<{ 
       >
         {children}
       </TextBox>
-      <ErrorComponent isDirty={isDirty} invalid={invalid} errorMessage={error?.message || null} />
+      {ErrorComponent ? <ErrorComponent isDirty={isDirty} invalid={invalid} errorMessage={error?.message || null} /> : null}
     </>
   );
 };
