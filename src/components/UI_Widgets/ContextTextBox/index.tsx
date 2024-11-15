@@ -4,7 +4,7 @@ import TextBox from "../TextBox";
 
 import type { TextBoxProps } from "../TextBox";
 
-const ContextTexBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
+const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
   name,
   type,
   placeholder,
