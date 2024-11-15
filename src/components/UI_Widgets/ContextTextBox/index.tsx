@@ -23,7 +23,7 @@ const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<
       if (!props.value && !props.defaultValue) {
         resetField(name, { keepTouched: true })
       }
-    }, 0);
+    }, 0)
   );
 
   useEffect(() => {
