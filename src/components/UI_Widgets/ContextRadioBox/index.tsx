@@ -6,8 +6,6 @@ import type { RadioBoxProps } from "../RadioBox";
 
 const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
   name,
-  type,
-  placeholder,
   children,
   className,
   wrapperClassName,
