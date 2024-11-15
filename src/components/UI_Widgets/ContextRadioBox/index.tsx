@@ -23,7 +23,7 @@ const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponen
       if (!props.value && !props.defaultValue) {
         resetField(name, { keepTouched: true })
       }
-    }, 0);
+    }, 0)
   );
 
   useEffect(() => {
