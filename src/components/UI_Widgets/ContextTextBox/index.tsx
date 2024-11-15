@@ -1,10 +1,10 @@
 import React, { FC, useState, useEffect } from "react";
-import { useFormContext, FieldValues } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import TextBox from "../TextBox";
 
 import type { TextBoxProps } from "../TextBox";
 
-const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
+const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
   name,
   type,
   placeholder,
@@ -15,7 +15,7 @@ const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<
   ErrorComponent,
   ...props
 }) => {
-  const { register, unregister, getFieldState, formState, resetField } = useFormContext<F>();
+  const { register, unregister, getFieldState, formState, resetField } = useFormContext();
 
   const { isDirty, invalid, error } = getFieldState(name, formState)
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
@@ -38,9 +38,10 @@ const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<
   return (
     <>
       <TextBox
-        {...register(name, props)}
+        {...register(name)}
         type={type}
         placeholder={placeholder}
+        {...props}
         className={className}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
