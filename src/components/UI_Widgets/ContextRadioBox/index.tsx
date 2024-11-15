@@ -1,10 +1,10 @@
 import React, { FC, useState, useEffect } from "react";
-import { useFormContext, FieldValues } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import RadioBox from "../RadioBox";
 
 import type { RadioBoxProps } from "../RadioBox";
 
-const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = <F extends FieldValues>({
+const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
   name,
   children,
   className,
@@ -15,12 +15,12 @@ const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponen
   ErrorComponent,
   ...props
 }) => {
-  const { register, unregister, getFieldState, formState, resetField } = useFormContext<F>();
+  const { register, unregister, getFieldState, formState, resetField } = useFormContext();
 
   const { isDirty, invalid, error } = getFieldState(name, formState)
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
     setTimeout(() => {
-      if (!props.value && !props.defaultValue) {
+      if (!props.value && !props.defaultCheck) {
         resetField(name, { keepTouched: true })
       }
     }, 0)
@@ -38,7 +38,8 @@ const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponen
   return (
     <>
       <RadioBox
-        {...register(name, props)}
+        {...register(name)}
+        {...props}
         className={className}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
