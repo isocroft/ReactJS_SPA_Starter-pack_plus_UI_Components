@@ -43,8 +43,8 @@ const ContextCheckBox: CheckBoxProps & { ErrorComponent?: React.FunctionComponen
         className={className}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
-        radioIconSize={radioIconSize}
-        radioIconStrokeColor={radioIconStrokeColor}
+        checkIconSize={checkIconSize}
+        checkIconFillColor={checkIconFillColor}
       >
         {children}
       </CheckBox>
