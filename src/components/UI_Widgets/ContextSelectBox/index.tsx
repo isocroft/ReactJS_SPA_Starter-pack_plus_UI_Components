@@ -10,8 +10,8 @@ const ContextSelectBox: SelectBoxProps & { ErrorComponent?: React.FunctionCompon
   className,
   wrapperClassName,
   labelClassName,
-  selectIconSize,
-  selectIconStrokeColor,
+  chevronIconSize,
+  chevronIconFillColor,
   ErrorComponent,
   ...props
 }) => {
@@ -32,8 +32,8 @@ const ContextSelectBox: SelectBoxProps & { ErrorComponent?: React.FunctionCompon
         className={className}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
-        selectIconSize={selectIconSize}
-        selectIconStrokeColor={selectIconStrokeColor}
+        chevronIconSize={chevronIconSize}
+        chevronIconFillColor={chevronIconFillColor}
       >
         {children}
       </SelectBox>
