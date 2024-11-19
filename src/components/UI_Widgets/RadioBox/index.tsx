@@ -11,7 +11,7 @@ const RadioBox: FC<
     radioIconSize?: number,
     radioIconStrokeColor?: string;
   } &
-   Omit<React.ComponentPropsWithRef<"input">, "type" | "placeholder">
+   Omit<React.ComponentProps<"input">, "type" | "placeholder">
 > = React.forwardRef(({
   id,
   name,
