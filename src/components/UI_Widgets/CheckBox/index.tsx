@@ -13,7 +13,7 @@ const CheckBox: FC<
     checkIconSize?: number,
     checkIconFillColor?: string;
   } &
-   Omit<React.ComponentPropsWithRef<"input">, "type" | "placeholder">
+   Omit<React.ComponentProps<"input">, "type" | "placeholder">
 > = React.forwardRef(({
   id,
   name,
