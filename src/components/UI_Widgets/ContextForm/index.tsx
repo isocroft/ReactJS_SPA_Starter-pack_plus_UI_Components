@@ -1,19 +1,21 @@
-import React, { FC } from "react";
-import { useForm, FormProvider, Form, FieldValues, SubmitHandler, UseFormReturn } from "react-hook-form";
-import BasicForm from "../BasicForm";
+import React, { useEffect } from "react";
+import { useForm, FormProvider, FieldValues, Form, SubmitHandler, UseFormProps, UseFormReturn } from "react-hook-form";
+import BasicForm from "../Form";
 
-const ContextForm: FC<
-  Omit<
+interface ContextFormPresetProps<V = FieldValues>
+  extends Omit<
     React.ComponentPropsWithRef<"form">,
     "onSubmit" | "method"
-  > & {
-    onSubmit: SubmitHandler<FieldValues>;
-    formOptions?: UseFormProps;
-    onAfterSubmitSuccessful: ({ reset: UseFormReturn["reset"], submitCount: number, defaultValues: FieldValues }) => void;
-    method?: "post" | "put" | "delete";
-    headers?: Record<string, string>;
-  }
-> = <F extends FieldValues>({
+  > {
+  onSubmit: SubmitHandler<V>;
+  formOptions: UseFormProps<V>;
+  onAfterSubmitFailure?: (options: { response?: Response }) => void;
+  onAfterSubmitSuccessful: (options: { response?: Response, reset: UseFormReturn<V>["reset"], submitCount: number, defaultValues: UseFormProps<V>["defaultValues"] }) => void;
+  method?: "post" | "put" | "delete";
+  headers?: Record<string, string>;
+}
+
+const ContextForm = <F extends FieldValues>({
   children,
   onSubmit,
   action,
@@ -21,8 +23,10 @@ const ContextForm: FC<
   method = "post",
   className,
   formOptions,
+  onAfterSubmitFailure,
+  onAfterSubmitSuccessful,
   ...props
-}) => {
+}: ContextFormPresetProps<F>) => {
   const { control, ...methods } = useForm<F>(formOptions);
   const { formState } = methods;
 
@@ -30,9 +34,9 @@ const ContextForm: FC<
     if (formState.isSubmitted && formState.isSubmitSuccessful) {
       if (!formOptions.progressive) {
         onAfterSubmitSuccessful({
-          reset: formState.reset,
+          reset: methods.reset,
           submitCount: formState.submitCount,
-          defaultValues: formState.defaultValues
+          defaultValues: formOptions.defaultValues
         });
       }
     }
@@ -41,28 +45,35 @@ const ContextForm: FC<
   return (
     <>
       {formOptions.progressive ? (
-        <Form
+        <Form<F>
           control={control}
           action={action}
           method={method}
-          onSubmit={onSubmit}
-          onSuccess={() => {
+          onSubmit={({ data, event }) => onSubmit(data, event)}
+          onError={({ response }) => {
+            if (typeof onAfterSubmitFailure === "function") {
+              onAfterSubmitFailure({ response });
+            }
+          }}
+          onSuccess={({ response }) => {
             onAfterSubmitSuccessful({
-              reset: formState.reset,
+              response,
+              reset: methods.reset,
               submitCount: formState.submitCount,
-              defaultValues: formState.defaultValues
+              defaultValues: formOptions.defaultValues
             });
           }}
           headers={headers}
         >
-          <div role="form" className={className}>{children}</div>
+          <div className={className}>{children}</div>
         </Form>
       ) : (
-        <FormProvider control={control} {...methods}>
+        <FormProvider children={null} {...methods} control={control}>
           <BasicForm
             onSubmit={methods.handleSubmit(onSubmit)}
             className={className}
             {...props}
+            method={"post"}
           >
             {children}
           </BasicForm>
