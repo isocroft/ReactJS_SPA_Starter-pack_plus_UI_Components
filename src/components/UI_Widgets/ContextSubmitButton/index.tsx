@@ -1,11 +1,11 @@
-import React, { FC, useEffect } from "react";
+import React from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 
 import Button from "../Button";
 
 import type { ButtonProps } from "../Button";
 
-const ContextSubmitButton: FC<Omit<ButtonProps, "disabled" | "type">> = ({
+const ContextSubmitButton: Omit<ButtonProps, "disabled" | "type"> = ({
   children,
   className
   disabled,
