@@ -1,5 +1,12 @@
-import React, { FC, Ref, ComponentProps } from "react";
+import React, { FC, Ref } from "react";
 
+import { hasChildren } from "../../../helpers/render-utils";
+
+type CustomElementTagProps<T extends React.ElementType> =
+  React.ComponentProps<T> & {
+    as?: T;
+    children: undefined;
+  };
 /*
 type Fn<ARGS extends any[], R> = (...args: ARGS) => R;
 
@@ -39,7 +46,26 @@ function useEventCallback<A extends any[], R>(fn: Fn<A, R>): Fn<A, R> {
 }
 */
 
-const SelectBox: FC<ComponentProps<"select" | "datalist">> = React.forwardRef({ children, ...props }, ref: Ref<HTMLSelectElement>) => {
+const SelectBox: FC<
+  {
+    placeholder?: string;
+    wrapperClassName?: string;
+    labelClassName?: string;
+    children?: React.ReactNode;
+    chevronIconSize?: number;
+    chevronIconFillColor?: string;
+  } &
+   CustomElementTagProps<"select" | "datalist">
+  > = React.forwardRef(({
+  children,
+  wrapperClassName,
+  labelClassName,
+  className,
+  as: Component = "select",
+  chevronIconSize,
+  chevronIconFillColor,
+  ...props
+}, ref: Ref<HTMLSelectElement | HTMLDataListElement>) => {
   /*
   const onClick = useEventCallback<NonNullable<ComponentProps<"select">["onClick"]>>((event) => {
     if (typeof props.onClick === "function") {
@@ -54,7 +80,25 @@ const SelectBox: FC<ComponentProps<"select" | "datalist">> = React.forwardRef({ 
   })
   */
 
-  return <select {...props}>{children}</select>
+  return (
+    <div className={wrapperClassname}>
+      <Component {...props} className={className} ref={ref}>{children}</Component>
+      {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
+          {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
+        </label>}
+    </div>
+  );
 }
 
 const Option: FC<{
