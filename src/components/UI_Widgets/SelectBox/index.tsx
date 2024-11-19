@@ -65,4 +65,8 @@ const Option: FC<{
 
 const SelectBox = Object.assign(SelectBox, { Option });
 
+type SelectBoxProps = React.ComponentProps<typeof SelectBox>;
+
+export type { SelectBoxProps };
+
 export default SelectBox;
