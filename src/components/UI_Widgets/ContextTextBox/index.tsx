@@ -1,10 +1,10 @@
-import React, { FC, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import TextBox from "../TextBox";
 
 import type { TextBoxProps } from "../TextBox";
 
-const ContextTextBox: FC<TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> }> = ({
+const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
   name,
   type,
   placeholder,
