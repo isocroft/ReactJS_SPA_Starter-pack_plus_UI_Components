@@ -3,7 +3,7 @@ import React, { FC, Ref, useEffect } from "react";
 import { hasChildren } from "../../../helpers/render-utils";
 
 type CustomElementTagProps<T extends React.ElementType> =
-  React.ComponentPropsWithRef<T> & {
+  React.ComponentProps<T> & {
     as?: T;
     children: undefined;
   };
