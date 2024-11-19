@@ -1,14 +1,14 @@
 import React, { FC } from "react";
 
-const Button: FC<React.ComponentPropsWithRef<"button">> = ({
+const Button: FC<React.ComponentProps<"button">> = ({
   id,
   name,
-  tabIndex,
+  tabIndex = 0,
   children,
   ...props
 }) => {
   return (
-    <button id={id} name={name} tabIndex={tabIndex || 0} {...props}>
+    <button id={id} name={name} tabIndex={tabIndex} {...props}>
       {children}
     </button>
   );
