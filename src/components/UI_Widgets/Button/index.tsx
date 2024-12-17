@@ -44,6 +44,18 @@ const buttonStyles = cva(
         secondary: 'button-secondary',
       },
     },
+    compoundVariants: [
+      {
+        size: 'small',
+        color: 'primary',
+        className: 'button-small-primary',
+      },
+      {
+        size: 'large',
+        color: 'secondary',
+        className: 'button-large-secondary',
+      },
+    ],
     defaultVariants: {
       size: 'medium',
       color: 'primary',
@@ -51,7 +63,7 @@ const buttonStyles = cva(
   }
 );
 
-const Button = ({ size, color, children }: ButtonProps) => {
+const Button = ({ size, color, children }: ButtonProps & { size: 'small' | 'medium' | 'large', color: 'primary' | 'secondary' }) => {
   return (
     <Button className={clsxn(buttonStyles({ size, color }))}>
       {children}
