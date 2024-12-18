@@ -104,6 +104,8 @@ const RadioBoxList = ({
   radioDefaultValue = "",
   radioIconFillColor,
   radioIconStrokeColor,
+  required,
+  disabled,
   radioIconSize,
   ...props
 }: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor"> &
@@ -208,6 +210,8 @@ const RadioBoxList = ({
         radioIconFillColor,
         radioIconStrokeColor,
         radioIconSize,
+        required,
+        disabled,
         name,
       }
     );
