@@ -23,6 +23,8 @@ const RadioBox: FC<
   children,
   radioIconSize,
   radioIconStrokeColor,
+  onChange,
+  onBlur,
   ...props
 }, ref: Ref<HTMLInputElement>) => {
   useEffect(() => {  
@@ -107,6 +109,8 @@ const RadioBox: FC<
           tabIndex={tabIndex}
           name={name}
           type="radio"
+          onChange={onChange}
+          onBlur={onBlur}
           {...props}
           className={"radio_hidden-input"}
           ref={ref}
