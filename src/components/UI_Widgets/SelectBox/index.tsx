@@ -64,6 +64,9 @@ const SelectBox: FC<
   as: Component = "select",
   chevronIconSize,
   chevronIconFillColor,
+  name,
+  onChange,
+  onBlur,
   ...props
 }, ref: Ref<HTMLSelectElement>) => {
   /*
@@ -134,7 +137,7 @@ const SelectBox: FC<
 
   return (
     <div className={`select_wrapper-box ${wrapperClassname}`}>
-      <Component {...props} className={`select_masked ${className}`} ref={ref}>{children}</Component>
+      <Component {...props} className={`select_masked ${className}`} name={name} onChange={onChange} onBlur={onBlur} ref={ref}>{children}</Component>
       {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
           {
             hasChildren(children, 1)
