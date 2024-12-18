@@ -106,7 +106,7 @@ const RadioBoxList = ({
   radioIconStrokeColor,
   radioIconSize,
   ...props
-}: Pick<RadioBoxListControlProps, "name" | "onChange" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor"> &
+}: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor"> &
   { radioDefaultValue?: string } &
   CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
