@@ -36,8 +36,6 @@ const InputOption: FC<
   radioIconSize,
   onChange,
   onBlur,
-  required,
-  disabled,
   children,
   ...props
 }, ref) => {
@@ -84,16 +82,17 @@ const InputOption: FC<
   );
 });
 
-const ContextRadioBoxList: RadioBoxListProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
+const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
   as: Component = "div",
   className = "",
   name,
-  onChange,
   children,
   radioDefaultValue = "",
   radioIconFillColor,
   radioIconStrokeColor,
   radioIconSize,
+  required,
+  disabled,
   ...props
 }) => {
 
