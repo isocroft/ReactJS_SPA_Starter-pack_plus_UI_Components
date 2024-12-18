@@ -253,4 +253,4 @@ type RadioBoxListProps = React.ComponentProps<typeof RadioBoxList>;
 
 export type { RadioBoxListProps };
 
-export default RadioBox;
+export default RadioBoxList;
