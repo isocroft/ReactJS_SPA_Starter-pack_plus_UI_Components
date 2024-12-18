@@ -36,6 +36,8 @@ const InputOption: FC<
   radioIconSize,
   onChange,
   onBlur,
+  required,
+  disabled,
   children,
   ...props
 }, ref) => {
@@ -193,7 +195,7 @@ const ContextRadioBoxList: RadioBoxListProps & { ErrorComponent?: React.Function
 
     const childValue: string = child.props.value;
     /* @CHECK: https://stackoverflow.com/a/71497701  */
-    const { ref, ...rest } = register(name, { required: props.required, disabled: props.disabled });
+    const { ref, ...rest } = register(name, { required, disabled });
 
     return React.cloneElement(
       child as React.ReactElement<
