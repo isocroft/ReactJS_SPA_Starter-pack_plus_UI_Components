@@ -2,6 +2,7 @@ import React, { FC, Ref, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 import { CircleIcon } form "./assets/CircleIcon";
+import { RadioIcon } from "../RadioBoxList";
 
 const RadioBox: FC<
   {
@@ -134,6 +135,8 @@ const RadioBox: FC<
 });
 
 type RadioBoxProps = React.ComponentProps<typeof RadioBox>;
+
+export { RadioIcon };
 
 export type { RadioBoxProps };
 
