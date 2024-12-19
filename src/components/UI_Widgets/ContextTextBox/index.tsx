@@ -14,6 +14,7 @@ const ContextTextBox: TextBoxProps & { valueAsType: boolean, ErrorComponent?: Re
   required,
   min,
   max,
+  value,
   valueAsType = false,
   wrapperClassName,
   labelClassName,
