@@ -4,12 +4,17 @@ import TextBox from "../TextBox";
 
 import type { TextBoxProps } from "../TextBox";
 
-const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
+const ContextTextBox: TextBoxProps & { valueAsType: boolean, ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
   name,
   type,
   placeholder,
   children,
   className,
+  disabled,
+  required,
+  min,
+  max,
+  valueAsType = false,
   wrapperClassName,
   labelClassName,
   ErrorComponent,
@@ -35,10 +40,35 @@ const ContextTextBox: TextBoxProps & { ErrorComponent?: React.FunctionComponent<
     }
   }, [timerId]);
 
+  const extraRegisterOptions = {};
+
+  switch (type) {
+    case "number":
+    case "range":
+      if (typeof min !== "undefined") {
+        extraRegisterOptions.min = min;
+      }
+      if (typeof max !== "undefined") {
+        extraRegisterOptions.max = max;
+      }
+      if (valueAsType === true) {
+        extraRegisterOptions.valueAsNumber = true;
+      }
+      break;
+    case "date":
+      if (valueAsType === true) {
+        extraRegisterOptions.valueAsDate = true;
+      }
+      break;
+    default:
+      extraRegisterOptions.value = value;
+      break;
+  }
+
   return (
     <>
       <TextBox
-        {...register(name)}
+        {...register(name, { ...extraRegisterOptions, required, disabled })}
         type={type}
         placeholder={placeholder}
         {...props}
