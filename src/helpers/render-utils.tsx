@@ -17,10 +17,10 @@ export const isSubChild = <C extends React.ReactNode>(
   React.isValidElement(child) && (typeof(child?.type) === "function" ? child?.type?.name === tag : String(child?.type).includes(tag));
 
 export const renderBreadcrumbs = (
-  breadcrumbs: Location[] = [],
+  breadcrumbs: Location[],
+  breadcrumbsMap = {},
   className = "breadcrumbList",
-  breadcrumbArrowNode = <span>{">"}</span>,
-  breadcrumbsMap = {}
+  breadcrumbArrowNode = <span>{">"}</span>
 ) => {
   const count = breadcrumbs.length;
   return (
