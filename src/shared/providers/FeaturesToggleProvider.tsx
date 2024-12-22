@@ -19,10 +19,11 @@ function FeaturesToggleProvider ({
 }: {
   children: React.ReactNode,
   environment: FeatureFlagEnvs,
-  enabledFeaturesTable: FeatureEnvsTable
+  enabledFeaturesTable: FeatureEnvsTable,
+  authUserOptions: { "[identifier]": string, "[access_control]": string }
 }) {
   return (
-    <FeaturesToggleContext.Provider value={{ enabledFeatures: enabledFeaturesTable[environment] }}>
+    <FeaturesToggleContext.Provider value={{ enabledFeatures: enabledFeaturesTable[environment], authUserOptions }}>
       {children}
     </FeaturesToggleContext.Provider>
   );
