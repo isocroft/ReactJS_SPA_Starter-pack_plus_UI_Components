@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, PropsWithChildren } from "react";
+import React, { useEffect, useMemo, useTransition, PropsWithChildren } from "react";
+import { useIsFirstRender, useBus } from "react-busser";
 import {
   Route,
 } from "react-router-dom";
@@ -17,19 +18,37 @@ const AppLayout = ({
   children,
   onAppNavigation
 }: PropsWithChildren<{
-  breadcrumbsMap?: Record<string, string>; 
+  breadcrumbsMap?: Record<string, string>;
   className?: string;
   onAppNavigation?: GlobalRoutingContextProps["onGlobalNavigation"];
 }>) => {
+  const isFirstRender = useIsFirstRender();
+  const [bus] = useBus({ fires:["app:previouspath"], subscribes:[] }, "AppLayout.Component");
+  const [isPending, startTransition] = useTransition({ timeoutMS: 3500 });
+
   useEffect(() => {
-    () => {
-      document.documentElement.classList.toggle("app-layout");
+    return () => {
+      document.documentElement.classList.remove("app-layout");
     };
   }, []);
 
+  if (isPending) {
+    document.documentElement.classList.add("app-busy");
+  } else {
+    document.documentElement.classList.remove("app-busy");
+  }
+
+  if (isFirstRender) {
+    document.documentElement.classList.add("app-layout");
+  }
+  
   return (
     <main className={className}>
-      <GlobalRoutingProvider onGlobalNavigation={onAppNavigation} breadcrumbsMap={breadcrumbsMap}>
+      <GlobalRoutingProvider onGlobalNavigation={({ previousPathname })=> {
+        startTransition(() => {
+          bus.emit("app:previouspath", previousPathname);
+        });
+      }} breadcrumbsMap={breadcrumbsMap}>
         {children}
       </GlobalRoutingProvider>
     </main>
