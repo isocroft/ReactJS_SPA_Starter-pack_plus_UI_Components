@@ -8,6 +8,8 @@ import { useRoutingMonitor, useUnsavedChangesLock } from "react-busser";
 import type { StaticContext, RouteComponentProps } from "react-router";
 import type { Location } from "history";
 
+import { renderBreadcrumbs } from "../helpers/render-utils";
+
 export type GlobalRoutingContextProps = {
   breadcrumbsMap: Record<string, string>,
   lockUnsavedChanges?: boolean,
@@ -29,7 +31,9 @@ export const useRoutingBreadCrumbsData = () => {
     throw new Error("This hook requires the <GlobalRoutingProvider/> to be installed");
   }
 
-  return context;
+  return ({ className }) => {
+    return renderBreadcrumbs(context.breadcrumbs, context.breadcrumbsMap, className)
+  };
 };
 
 export default function GlobalRoutingProvider ({
