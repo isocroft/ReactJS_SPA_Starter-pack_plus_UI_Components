@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type FeatureToggleHandlers = {
   isDisabledFor: (feature: string) => boolean,
-  isEnabledFor: (feature: string) => boolean
+  isEnabledFor: (feature: string, segments?: string[]) => boolean
 };
 
 const murmurhash = () => {
