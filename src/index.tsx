@@ -22,7 +22,7 @@ root.render(
       [envDevelopment]: config.DEV_FEATURES_LIST,
       [envTest]: config.DEV_FEATURES_LIST,
       [envProduction]: config.PROD_FEATURES_LIST
-    }} environment={config.ENV} authOwnerOptions={{ "[identifier]": "id", "[access_control]": "permission" }}>
+    }} environment={config.ENV} authUserOptions={{ "[identifier]": "id", "[access_control]": "permission" }}>
       <App />
     </FeaturesToggleProvider>
   </React.StrictMode>
