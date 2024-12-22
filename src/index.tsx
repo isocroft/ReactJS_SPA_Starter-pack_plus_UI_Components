@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { EventBusProvider /*, SharedGlobalStateProvider */ } from "react-busser";
+
 import App from "./App";
 
 import FeaturesToggleProvider from "./shared/providers/FeaturesToggleProvider";
@@ -23,7 +25,9 @@ root.render(
       [envTest]: config.DEV_FEATURES_LIST,
       [envProduction]: config.PROD_FEATURES_LIST
     }} environment={config.ENV} authUserOptions={{ "[identifier]": "id", "[access_control]": "permission" }}>
-      <App />
+      <EventBusProvider>
+        <App />
+      </EventBusProvider>
     </FeaturesToggleProvider>
   </React.StrictMode>
 );
