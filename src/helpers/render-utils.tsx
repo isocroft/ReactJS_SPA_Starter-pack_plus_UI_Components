@@ -2,8 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import type { Location } from "history";
 
-import { breadcrumbsMap } from "../routes/routes.breadcrumbs.map";
-
 export const hasChildren = (children: React.ReactNode, count: number) => {
   if (!Boolean(children)) {
     return false;
@@ -21,7 +19,8 @@ export const isSubChild = <C extends React.ReactNode>(
 export const renderBreadcrumbs = (
   breadcrumbs: Location[] = [],
   className = "breadcrumbList",
-  breadcrumbArrowNode = <span>{">"}</span>
+  breadcrumbArrowNode = <span>{">"}</span>,
+  breadcrumbsMap = {}
 ) => {
   const count = breadcrumbs.length;
   return (
