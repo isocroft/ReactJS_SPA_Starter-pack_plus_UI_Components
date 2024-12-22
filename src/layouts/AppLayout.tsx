@@ -15,8 +15,7 @@ import type { RoutesInterface } from "./routes/routes.config";
 const AppLayout = ({
   breadcrumbsMap = {}
   className = "",
-  children,
-  onAppNavigation
+  children
 }: PropsWithChildren<{
   breadcrumbsMap?: Record<string, string>;
   className?: string;
