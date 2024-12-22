@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 
 import AppLayout from "./layouts/AppLayout";
+import { breadcrumbsMap } from "./routes/routes.breadcrumbs.map";
 import { ProtectedRoutes, UnProtectedRoutes } from "./routes/routes.config";
 
 export type ExcludeFromProps<P, X extends { [key: string]: unknown }> = Pick<
@@ -43,7 +44,7 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
 
 function App({ isAuthenticated }) {
   return (
-    <AppLayout className="App" breadcrumbsMap={{}}>
+    <AppLayout className="App" breadcrumbsMap={breadcrumbsMap}>
       <AppLayout.RouteNavigation>
         {isAuthenticated ? null : (<nav className="">
           <ul>
