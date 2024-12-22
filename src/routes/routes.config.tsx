@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { StaticContext, RouteComponentProps } from "react-router";
 import { useHistory } from "react-router-dom";
@@ -100,15 +100,17 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
           breadcrumbs={breadcrumbs}
         />
       }
-      {renderProp(
-        history.location,
-        query,
-        PageElement,
-        getFromStorage("user", {
-          permission: "owner",
-          bio: {},
-        })
-      )}
+      <Suspense fallback={<span>Loading....</span>}>
+        {renderProp(
+          history.location,
+          query,
+          PageElement,
+          getFromStorage("user", {
+            permission: "owner",
+            bio: {},
+          })
+        )}
+      </Suspense>
     </section>
   );
 };
