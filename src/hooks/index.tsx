@@ -7,15 +7,88 @@ type FeatureToggleHandlers = {
   isEnabledFor: (feature: string) => boolean
 };
 
-export const useFeatureToggle = () => {
+const murmurhash = () => {
+  /* @TODO: To be implemented soon */
+};
+
+const MAX_UNSIGNED_INT_32 = 4_294_967_295;
+
+export const useFeatureToggle = (user: Record<string, unknown>) => {
   const features = useContext(FeaturesToggleContext);
+  const userIdentifierTag = features.authOwnerOptions["[identifier]"];
+  const userAccessControlTag = features.authOwnerOptions["[access_control]"];
+
+  const flagId = user[userIdentifierTag] as string;
+  const flagAccessType = user[userAccessControlTag] as string;
 
   return {
     isDisabledFor: (feature: string) => {
-      return !features.enabledFeatures.includes(feature);
+      if (typeof feature !== "string") {
+        return true;
+      }
+  
+      const featureDetails = features.enabledFeatures.find((enabledFeature) => {
+        return enabledFeature.startsWith(feature.toLowerCase())
+      }) || "_";
+
+      return featureDetails === "_";
     },
-    isEnabledFor: (feature: string) => {
-      return features.enabledFeatures.includes(feature);
+    isEnabledFor: (feature: string, segments?: string[] = []) => {
+      if (typeof feature !== "string") {
+        return false
+      }
+
+      const featureDetails = features.enabledFeatures.find((enabledFeature) => {
+        return enabledFeature.startsWith(feature.toLowerCase())
+      }) || "_";
+
+      if (featureDetails === "_") {
+        return false
+      }
+
+      const [, optionsString] = featureDetails.split("|");
+
+      if (typeof optionsString === "undefined") {
+        return true;
+      }
+
+      const optionsList = optionsString.split(";");
+
+      return optionsList.some((option) => {
+        const [optionName, optionValue] = option.split("=");
+
+        switch (optionName) {
+          case "role":
+            const optionValueNormalized = optionValue.substring(1,optionValue.length-1).trim();
+            if (optionValueNormalized.length === 0) {
+              return false
+            }
+            return (optionValueNormalized.split(',')).includes(flagAccessType);
+            break;
+          case "segments":
+            const optionValueNormalized = optionValue.substring(1,optionValue.length-1).trim();
+            if (optionValueNormalized.length === 0) {
+              return false
+            }
+            return segments.length === 0 ? optionValueNormalized === '*' : segments.every((segment) => {
+              const allowedSegements = optionValueNormalized.split(',');
+              return allowedSegments.includes(segment);
+            });
+            break;
+          case "qualifier":
+            const allowedPercentage = Number(optionValue);
+            
+            if (Number.isNaN(percentage)) {
+              return false
+            }
+
+            return murmurhash(`${feature.toUpperCase()}-${flagId}`) / MAX_UNSIGNED_INT_32 < allowedPercentage
+            break;
+          default:
+            return false
+            break;
+        }
+      })
     }
   } as FeatureToggleHandlers;
 };
