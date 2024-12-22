@@ -43,7 +43,7 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
 
 function App({ isAuthenticated }) {
   return (
-    <AppLayout className="App" onAppNavigation={({ previousPathname }) => console.log('Navigating from: ', previousPathname) }>
+    <AppLayout className="App" breadcrumbsMap={{}}>
       <AppLayout.RouteNavigation>
         {isAuthenticated ? null : (<nav className="">
           <ul>
