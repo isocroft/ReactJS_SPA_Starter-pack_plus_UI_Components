@@ -59,7 +59,7 @@ export const useComboBoxCore = <I extends ComboBoxItem>(
     const dropdownListNode = dropdownRef.get(key);
 
     if (dropdownListNode) {
-      dropdownListNode.classList.toggle("show-list");
+      dropdownListNode.classList.toggle("combo_show-list");
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [key]);
@@ -69,7 +69,7 @@ export const useComboBoxCore = <I extends ComboBoxItem>(
       const dropdownListNode = dropdownRef.get(key);
 
       if (dropdownListNode) {
-        dropdownListNode.classList.remove("show-list");
+        dropdownListNode.classList.remove("combo_show-list");
       }
 
       onSelectedItemChange({
