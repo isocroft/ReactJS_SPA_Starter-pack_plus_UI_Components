@@ -346,7 +346,7 @@ const ComboBox = <I extends ComboBoxItem>({
   isMultiSelect?: boolean;
   dropdownToggleClassName?: string;
   onStateChanged?: (state: "open" | "closed" | "disabled") => void;
-  onChange: (valueItem: ComboBoxComposite["selectedItem"]) => void;
+  onChange: (valueItem: I) => void;
 } & Pick<React.ComponentProps<"select">, "placeholder" | "name"> &
   CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
@@ -355,7 +355,7 @@ const ComboBox = <I extends ComboBoxItem>({
     extraChildProps: {
       items: Array<I>;
       placeholder: string;
-      composite: ComboBoxComposite;
+      composite: ComboBoxComposite<I>;
       onListItemClick: (indexPosition?: number) => void;
       onTriggerClick: () => void;
       dropdownRef: Map<string, HTMLElement>;
@@ -396,7 +396,7 @@ const ComboBox = <I extends ComboBoxItem>({
               );
 
             case isSubChild(child, "List"):
-            case isSubChild(child, "SearchableList"):
+            case isSubChild(child, "SearchableList") && item.length > 0:
               return React.cloneElement(
                 child,
                 Object.assign(
@@ -414,7 +414,10 @@ const ComboBox = <I extends ComboBoxItem>({
               );
 
             default:
-              return React.isValidElement(child) ? child : null;
+              if (items.length === 0) {
+                return null;
+              }
+              return React.isValidElement(child) ? React.cloneElement(child, { items }); : null;
           }
         });
       }
@@ -434,12 +437,13 @@ const ComboBox = <I extends ComboBoxItem>({
     dropdownRef,
     handleKeys,
     setSelectedItem,
-  } = useComboBoxCore(
+  } = useComboBoxCore<I>(
     items,
     comboBoxId,
-    "$__dropdown:change:broadcast",
-    dropdownToggleClassName
+    "$__dropdown:change:broadcast"
   );
+
+  
 
   useEffect(() => {
     if (composite.selectedIndex === -1) {
@@ -529,6 +533,84 @@ const ComboBox = <I extends ComboBoxItem>({
     </Component>
   );
 };
+
+/*
+  const fruits_1 = [{ text: "Apple" }, { text: "Orange" }];
+  <ComboBox
+    className="dropdown"
+    onChange={() => {
+      console.log("hello");
+    }}
+    id="fruits_1"
+    items={fruits_1}
+    placeholder="Select a fruit >"
+  >
+    <ComboBox.Trigger className="dropdown-trigger" />
+    <ComboBox.List
+      className="dropdown-list"
+      render={(item, selected) => {
+        return (
+          <span style={selected ? { color: "red" } : undefined}>
+            {item.text}
+          </span>
+        );
+      }}
+    />
+  </ComboBox>
+
+  const fruits_2 = [{ text: "Apple" }, { text: "Orange" }, { text: "Mango" }];
+  const CustomComboList = React.forwardRef(
+    ({ items, composite, onClick, ...props }, ref: React.Ref<HTMLOListElement>) => {
+      return items.length > 0 ? (
+        <ol ref={ref} {...props}>
+          {items.map((item, index) => {
+            return (
+              <li
+                key={String(index)}
+                onClick={() => (typeof onClick === "function" ? onClick(index) : undefined)}
+              >
+                {item.text}
+              </li>
+            );
+          })}
+        </ol>
+      ) : null;
+    }
+  );
+  <ComboBox
+    className="dropdown"
+    id="fruits_2"
+    items={fruits_2}
+    placeholder="HelloWorld"
+  >
+    <ComboBox.Trigger className="dropdown-trigger-ns">
+      {"Select any sweet fruit:"}
+    </ComboBox.Trigger>
+    <ComboBox.List
+      className="dropdown-list"
+      as={CustomComboList}
+    />
+  </ComboBox>
+
+  const fruits_3 = [{ text: "Banana", value: "bn" }, { text: "Lemon", value: "lm" }, { text: "Guava", value: "gv" }, { text: "Pineapple", value: "pa" }];
+  const ListItem = ({ listitem, ...props }) => {
+    return (
+      <li id={listitem.id} {...props}>{listitem.text}</li>
+    )
+  };
+  <ComboxBox
+    className="dropdown"
+    id="fruits_3"
+    items={fruits_3}
+    onChange={({ text, value }) => {
+      console.log(`${value} = ${text}`)
+    }}>
+    <ComboBox.Trigger type="panel" className="">
+      <span>Select Options:</span>
+    </ComboBox.Trigger>
+    <ComboBoxList className="" ListItem={ListItem} />
+  </ComboxBox>
+*/
 
 ComboBox.Trigger = Trigger;
 ComboBox.List = List;
