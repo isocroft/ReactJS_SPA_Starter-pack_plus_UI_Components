@@ -91,6 +91,7 @@ const ContextForm = <F extends FieldValues>({
     <ContextTextBox
       as="textarea"
       labelPosition="afterInput"
+      className=""
     />
     <ContextCheckBox
       className=""
@@ -110,7 +111,10 @@ const ContextForm = <F extends FieldValues>({
         <li>Female</li>
       </ComboBox.List>
     </ContextComboBox>
-    <ContextFileBox accept="*/jpeg"/>
+    <ContextFileBox
+      accept="*/jpeg"
+      className=""
+    />
  </ContextForm>
 
 */
