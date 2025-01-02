@@ -679,13 +679,16 @@ ComboBox.List = List;
 ComboBox.SearchableList = SearchableList;
 ComboBox.ListItem = C_$$ListItem;
 
+type ComboBoxProps = React.ComponentProps<typeof ComboBox>;
 type ComboBoxListProps = React.ComponentProps<typeof List>;
 type ComboBoxTriggerProps = React.ComponentProps<typeof Trigger>;
 
-export type { ComboBoxListProps, ComboBoxListItemProps, ComboBoxTriggerProps, ComboBoxItem }
+export type { ComboBoxProps, ComboBoxListProps, ComboBoxListItemProps, ComboBoxTriggerProps, ComboBoxItem }
 
 const ComboBoxEvent = {
   DROPDOWN_CHANGE_BROADCAST: "$__dropdown:change:braodcast",
 };
 
-export { ComboBox, ComboBoxEvent };
+export { ComboBoxEvent };
+
+export default ComboBox;
