@@ -1,14 +1,15 @@
 import React, { Ref } from "react";
 
-type CustomElementTagNoChildrenProps<T extends React.ElementType> = Omit<
+import { hasChildren } from "../../../helpers/render-utils";
+
+type CustomElementTagNoChildrenProps<T extends React.ElementType> =
   React.ComponentProps<T> & {
     as?: T;
-  },
-  "children"
->;
+  }
 
-const List = <D extends string | Record<string, string | number | object>>(
+const $List = <D extends string | Record<string, string | number | object>>(
   {
+    children,
     data = [],
     listItemClassName = "",
     keyPropName = "id",
@@ -28,7 +29,7 @@ const List = <D extends string | Record<string, string | number | object>>(
 ) => {
   return (
     <Component {...props} role="list" ref={ref}>
-      {data.map((todo, index) => {
+      {hasChildren(children, 0) ? data.map((todo, index) => {
         const keyValue =
           typeof todo !== "object"
             ? String(index)
@@ -45,15 +46,15 @@ const List = <D extends string | Record<string, string | number | object>>(
             {typeof todo !== "object" ? todo : todo.text}
           </DataListItem>
         );
-      })}
+      }) : children}
     </Component>
   );
 };
 
-const DataList = React.forwardRef(List);
+const List = React.forwardRef($List);
 
-type DataListProps = React.ComponentProps<typeof DataList>;
+type ListProps = React.ComponentProps<typeof List>;
 
-export type { DataListProps }
+export type { ListProps }
 
-export default DataList;
+export default List;
