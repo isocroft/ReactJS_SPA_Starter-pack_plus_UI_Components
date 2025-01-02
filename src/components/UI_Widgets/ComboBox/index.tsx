@@ -119,23 +119,7 @@ const C_$$ListItem: FC<
 
 type ComboBoxListItemProps = React.ComponentProps<typeof C_$$ListItem>;
 
-const List: FC<
-    innerRef?: (node: HTMLOListElement | null) => void;
-    listItemClassName?: string;
-    items?: ComboBoxItem[];
-    isMultiSelect?: boolean;
-    composite?: ComboBoxComposite;
-    onListItemClick?: (indexPosition?: number) => void;
-    render?: (
-      item: ComboBoxItem,
-      selected: boolean,
-      injectedChildNode?: React.ReactNode
-    ) => React.ReactElement;
-    ListItem: | React.ElementType
-        | React.ComponentType<ComboBoxListItemProps | (React.ComponentProps<"li"> & { selected: boolean, listitem: ComboBoxItem })>;
-  } & CustomElementTagProps<"ul" | "ol"> &
-    Omit<React.ComponentProps<"ol">, "start" | "reversed">
-> = ({
+const List = <I extends ComboBoxItem>({
   as: Component = "ul",
   children,
   className,
@@ -149,6 +133,22 @@ const List: FC<
   composite = { selectedIndex: -1, selectedItem: null },
   innerRef = null,
   ...props
+}: {
+  innerRef?: (node: HTMLOListElement | null) => void;
+  listItemClassName?: string;
+  items?: Array<I>;
+  isMultiSelect?: boolean;
+  composite?: ComboBoxComposite<I>;
+  onListItemClick?: (indexPosition?: number) => void;
+  render?: (
+    item: I,
+    selected: boolean,
+    injectedChildNode?: React.ReactNode
+  ) => React.ReactElement;
+  ListItem: | React.ElementType
+      | React.ComponentType<ComboBoxListItemProps | (React.ComponentProps<"li"> & { selected: boolean, listitem: I })>;
+} & CustomElementTagProps<"ul" | "ol"> &
+  Omit<React.ComponentProps<"ol">, "start" | "reversed">
 }) => {
   const setSize = items.length;
   const noChild = hasChildren(children, 0);
@@ -169,7 +169,7 @@ const List: FC<
   return setSize > 0 ? (
     <>
       <Component
-        className={className}
+        className={`combo_list ${className}`}
         style={style}
         {...props}
         role="listbox"
@@ -188,7 +188,6 @@ const List: FC<
 
               if (ListItem.name === 'C_$$ListItem') {
                 return (
-                  /* @ts-ignore */
                   <ListItem
                     id={item.id}
                     key={keyValue}
@@ -333,7 +332,6 @@ const ComboBox = <I extends ComboBoxItem>({
   placeholder = "",
   onChange = () => undefined,
   onStateChanged = () => undefined,
-  dropdownToggleClassName,
   tabIndex,
   name,
   id,
@@ -344,7 +342,6 @@ const ComboBox = <I extends ComboBoxItem>({
 }: {
   items: Array<I>;
   isMultiSelect?: boolean;
-  dropdownToggleClassName?: string;
   onStateChanged?: (state: "open" | "closed" | "disabled") => void;
   onChange: (valueItem: I) => void;
 } & Pick<React.ComponentProps<"select">, "placeholder" | "name"> &
@@ -396,7 +393,7 @@ const ComboBox = <I extends ComboBoxItem>({
               );
 
             case isSubChild(child, "List"):
-            case isSubChild(child, "SearchableList") && item.length > 0:
+            case isSubChild(child, "SearchableList") && items.length > 0:
               return React.cloneElement(
                 child,
                 Object.assign(
@@ -443,7 +440,56 @@ const ComboBox = <I extends ComboBoxItem>({
     "$__dropdown:change:broadcast"
   );
 
+  useEffect(() => {  
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE";
+        }
+        return false;
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id;
+        }
+        return "";
+    }).filter(
+      (id) => id !== ""
+    );
+
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_combo")) {
+      return;
+    }
+
+    const comboStyle = window.document.createElement('style');
+    comboStyle.id = "react-busser-headless-ui_combo";
+
+    comboStyle.innerHTML = `
+      .combo_list {
+        display: none;
+        opacity: 0;
+        transition-property: display, opacity;
+        transition-delay: 0s;
+        transition-duration: 200ms;
+        transition-timing-function: ease-in;
+        transition-behavior: allow-discrete;
+      }
+    
+      .combo_list.combo_show-list {
+        display: block;
+        opacity: 1;
+      }
+    `;  
+    window.document.head.appendChild(comboStyle);  
   
+    return () => {  
+      window.document.head.removeChild(comboStyle);  
+    };  
+  }, []);
 
   useEffect(() => {
     if (composite.selectedIndex === -1) {
@@ -620,7 +666,7 @@ ComboBox.ListItem = C_$$ListItem;
 type ComboBoxListProps = React.ComponentProps<typeof List>;
 type ComboBoxTriggerProps = React.ComponentProps<typeof Trigger>;
 
-export type { ComboBoxListProps, ComboBoxListItemProps, ComboBoxTriggerProps }
+export type { ComboBoxListProps, ComboBoxListItemProps, ComboBoxTriggerProps, ComboBoxItem }
 
 const ComboBoxEvent = {
   DROPDOWN_CHANGE_BROADCAST: "$__dropdown:change:braodcast",
