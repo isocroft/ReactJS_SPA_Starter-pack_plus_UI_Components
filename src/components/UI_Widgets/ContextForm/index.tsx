@@ -73,7 +73,7 @@ const ContextForm = <F extends FieldValues>({
             onSubmit={methods.handleSubmit(onSubmit)}
             className={className}
             {...props}
-            method={"post"}
+            method={formOptions.mode === "all" ? undefined : "post"}
           >
             {children}
           </BasicForm>
@@ -83,12 +83,35 @@ const ContextForm = <F extends FieldValues>({
   );
 };
 
-// <ContextForm
-//   formOptions={{ defaultValues: {} }}
-//   onSubmit={() => undefined}
-//   onAfterSubmitSuccessful={() => undefined}>
-//    <ContextTextBox as="textarea" />
-// </ContextForm>
+/*
+  <ContextForm
+   formOptions={{ defaultValues: {}, mode: "all" }}
+   onSubmit={(data, event) => console.log(data, " >>> ", event)}
+   onAfterSubmitSuccessful={() => undefined}>
+    <ContextTextBox
+      as="textarea"
+      labelPosition="afterInput"
+    />
+    <ContextCheckBox
+      className=""
+      labelPosition="afterInput">
+      <span>Rate</span>
+    </ContextCheckBox>
+    <ContextComboBox
+      id="gender"
+      className="">
+      <ComboBox.Trigger className="">
+        <p>Select Gender:</p>
+      </ComboBox.Trigger>
+      <ComboBox.List className="">
+        <li>Male</li>
+        <li>Female</li>
+      </ComboBox.List>
+    </ContextComboBox>
+    <ContextFileBox accept="*/jpeg"/>
+ </ContextForm>
+
+*/
 
 type ContextFormProps = React.ComponentProps<typeof ContextForm>;
 
