@@ -22,7 +22,7 @@ const List = <D extends string | Record<string, string | number | object>>(
       listItemClassName?: string;
       DataListItem?:
         | React.ElementType
-        | React.FunctionComponent<{ listitem: D }>;
+        | React.ComponentType<React.ComponentProps<"li"> & { listitem: D }>;
     },
   ref: Ref<HTMLUListElement & HTMLOListElement>
 ) => {
@@ -34,7 +34,7 @@ const List = <D extends string | Record<string, string | number | object>>(
             ? String(index)
             : ((todo[keyPropName] || String(index)) as React.Key);
         if (typeof DataListItem === "function") {
-          return <DataListItem key={keyValue} listitem={todo} />;
+          return <DataListItem key={keyValue} listitem={todo} data-key-index={String(index)} />;
         }
         return (
           <DataListItem
