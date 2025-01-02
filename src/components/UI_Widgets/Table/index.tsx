@@ -52,9 +52,24 @@ const TableFooter: FC<React.ComponentPropsWithRef<"tfoot">> = ({ children, ...pr
   </tfoot>
 };
 
+/*
+  <Table data={...} columns={} usingTanstackTable>
+    <Table.Caption>Services</Table.Caption>
+    <Table.Heading>
+      <Table.TitleRow RowItem={"th"} />
+    </Table.Heading>
+    <Table.Content>
+      <Table.ContentRow RowItem={MyRowItem} />
+    </Table.Content>
+    <Table.Footing>
+      <Table.TitleRow RowItem={"th"} />
+    </Table.Footing>
+  </Table>
+*/
+
 Table.Caption = TableCaption;
-Table.Header = TableHeader;
-Table.Grid = TableBody;
-Table.Footer = TableFooter;
+Table.Heading = TableHeader;
+Table.Content = TableBody;
+Table.Footing = TableFooter;
 
 export default Table;
