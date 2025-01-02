@@ -112,7 +112,7 @@ const ContextForm = <F extends FieldValues>({
       </ComboBox.List>
     </ContextComboBox>
     <ContextFileBox
-      accept="*/jpeg"
+      accept="image/png, image/jpeg"
       className=""
     />
  </ContextForm>
