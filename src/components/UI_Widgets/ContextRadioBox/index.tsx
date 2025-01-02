@@ -4,7 +4,7 @@ import RadioBox from "../RadioBox";
 
 import type { RadioBoxProps } from "../RadioBox";
 
-const ContextRadioBox: RadioBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
+const ContextRadioBox: FC<RadioBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> }> = ({
   name,
   children,
   className,
