@@ -656,6 +656,22 @@ const ComboBox = <I extends ComboBoxItem>({
     </ComboBox.Trigger>
     <ComboBoxList className="" ListItem={ListItem} />
   </ComboxBox>
+
+  <ComboBox
+    className=""
+    id={"fruits_3x"}
+    items={fruits_3}
+  >
+    <ComboBox.Trigger className="">
+      <span>Select Fruits</span>
+    </ComboBox.Trigger>
+    <ComboBox.SearchableList
+      searchWrapperClassName=""
+      searchInputClassName=""
+      searchAlgorithmOption="fuzzy"
+      className=""
+    />
+  </ComboBox>
 */
 
 ComboBox.Trigger = Trigger;
