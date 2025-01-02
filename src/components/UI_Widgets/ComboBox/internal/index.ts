@@ -1,22 +1,21 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useBus, useComposite } from "react-busser";
 
-export type ComboBoxItem = {
-  text?: string;
-  id: string;
-  value: unknown;
+export interface ComboBoxItem<V = unknown> {
+  text?: string,
+  id: string,
+  value: V
 };
 
-export type ComboBoxComposite = {
+export type ComboBoxComposite<I = ComboBoxItem> = {
   selectedIndex: number;
-  selectedItem: ComboBoxItem | null;
+  selectedItem: I | null;
 };
 
-export const useComboBoxCore = (
-  items: ComboBoxItem[] = [],
+export const useComboBoxCore = <I extends ComboBoxItem>(
+  items: Array<I> = [],
   key: string,
-  dropDownEventName = "combobox:change",
-  toggleClassName = "show-list"
+  dropDownEventName = "combobox:change"
 ) => {
   const itemsCopy = items.slice(0);
   const [bus] = useBus(
@@ -60,17 +59,17 @@ export const useComboBoxCore = (
     const dropdownListNode = dropdownRef.get(key);
 
     if (dropdownListNode) {
-      dropdownListNode.classList.toggle(toggleClassName);
+      dropdownListNode.classList.toggle("show-list");
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [key, toggleClassName]);
+  }, [key]);
 
   const setSelectedItem = useCallback(
     (index) => {
       const dropdownListNode = dropdownRef.get(key);
 
       if (dropdownListNode) {
-        dropdownListNode.classList.remove(toggleClassName);
+        dropdownListNode.classList.remove("show-list");
       }
 
       onSelectedItemChange({
@@ -81,7 +80,6 @@ export const useComboBoxCore = (
     },
     [
       key,
-      toggleClassName,
       itemsCopy.map((item) => item.id || item.value || item.text).join("|"),
     ]
   );
