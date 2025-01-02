@@ -17,15 +17,7 @@ type CustomElementTagProps<T extends React.ElementType> =
     as?: T;
   };
 
-const Trigger: FC<
-  CustomElementTagProps<"button"> &
-    Omit<React.ComponentProps<"button">, "labels" | "type"> & {
-      type?: "button";
-      composite?: ComboBoxComposite;
-      onTriggerClick?: () => void;
-    }
-> = ({
-  as: Component = "button",
+const Trigger = <I extends ComboBoxItem>({
   children,
   className,
   style,
@@ -34,51 +26,70 @@ const Trigger: FC<
   onTriggerClick = () => undefined,
   composite = { selectedIndex: -1, selectedItem: null },
   ...props
-}) => {
-  const getLabelText = (
-    selectedItem: ComboBoxComposite["selectedItem"],
+}: Omit<React.ComponentProps<"div">, "onClick"> & {
+     type?: "button" | "panel";
+     placeholder?: string;
+     composite?: ComboBoxComposite<I>;
+     onTriggerClick?: () => void;
+   }) => {
+  const getTriggerDisplay = (
+    selectedItem: I,
     children: React.ReactNode,
     defaultText?: string
   ) => {
     const noChild = hasChildren(children, 0);
+    const oneChild = hasChildren(children, 1);
 
     if (!noChild) {
-      if (selectedItem) {
-        return selectedItem?.text || "<unknown>";
+      if (!selectedItem) {
+        return "Select an item...";
       }
-      return children || defaultText || "Select an item...";
+
+      return oneChild && React.isValidElement(children)
+        ? React.cloneElement(children, {
+          selectedItem: selectedItem
+        })
+        : null;
     }
 
     return selectedItem
-      ? selectedItem?.text || "<unknown>"
+      ? selectedItem?.text || "Select an item..."
       : defaultText || "Select an item...";
   };
 
   return (
     <>
-      <Component
-        tabIndex={0}
-        key={placeholder}
-        onClick={() => {
-          if (typeof onTriggerClick === "function") {
-            onTriggerClick();
-          }
-        }}
-        className={className}
-        role={"button"}
-        style={style}
-        {...props}
-        type={type}
-      >
-        {Component === "button"
-          ? getLabelText(composite.selectedItem, children, placeholder)
-          : null}
-      </Component>
+      {type === "button"
+        ? <button
+            tabIndex={0}
+            key={placeholder}
+            onClick={() => {
+              if (typeof onTriggerClick === "function") {
+                onTriggerClick();
+              }
+            }}
+            className={className}
+            title={title}
+            role={type}
+            style={style}
+            type={type}
+          >
+        {
+          getTriggerDisplay(composite.selectedItem, children, placeholder)
+        }
+        </button>
+      : <div className={className} style={style} title={title} {...props} onClick={() => {
+        if (typeof onTriggerClick === "function") {
+          onTriggerClick();
+        }
+      }}>
+        {getTriggerDisplay(composite.selectedItem, children, placeholder)}
+      </div>}
     </>
   );
 };
 
-const ListItem: FC<
+const C_$$ListItem: FC<
   {
     disabled?: boolean;
     selected: boolean;
@@ -106,9 +117,11 @@ const ListItem: FC<
   );
 };
 
+type ComboBoxListItemProps = React.ComponentProps<typeof C_$$ListItem>;
+
 const List: FC<
-  {
     innerRef?: (node: HTMLOListElement | null) => void;
+    listItemClassName?: string;
     items?: ComboBoxItem[];
     isMultiSelect?: boolean;
     composite?: ComboBoxComposite;
@@ -118,6 +131,8 @@ const List: FC<
       selected: boolean,
       injectedChildNode?: React.ReactNode
     ) => React.ReactElement;
+    ListItem: | React.ElementType
+        | React.ComponentType<ComboBoxListItemProps | (React.ComponentProps<"li"> & { selected: boolean, listitem: ComboBoxItem })>;
   } & CustomElementTagProps<"ul" | "ol"> &
     Omit<React.ComponentProps<"ol">, "start" | "reversed">
 > = ({
@@ -127,7 +142,9 @@ const List: FC<
   style,
   render,
   items = [],
+  ListItem = C_$$ListItem,
   isMultiSelect = false,
+  listItemClassName = "",
   onListItemClick = () => undefined,
   composite = { selectedIndex: -1, selectedItem: null },
   innerRef = null,
@@ -135,6 +152,20 @@ const List: FC<
 }) => {
   const setSize = items.length;
   const noChild = hasChildren(children, 0);
+  const renderSubChild = (isDefaultChild, $child, $index) => {
+    if (isDefaultChild) {
+      return typeof render === "function"
+        ? render(
+            items[$index],
+            $index === composite.selectedIndex,
+            $child.props.children
+          )
+        : items[$index].text
+    }
+
+    return null;
+  };
+
   return setSize > 0 ? (
     <>
       <Component
@@ -152,43 +183,59 @@ const List: FC<
       >
         {noChild
           ? items.map((item, index) => {
+              const keyValue = String((item.id || item.text) + "_" + index) as React.Key;
               const selected = index === composite.selectedIndex;
+
+              if (ListItem.name === 'C_$$ListItem') {
+                return (
+                  /* @ts-ignore */
+                  <ListItem
+                    id={item.id}
+                    key={keyValue}
+                    selected={selected}
+                    onClick={() => onListItemClick(index)}
+                    className={listItemClassName}
+                    aria-setsize={setSize}
+                    aria-posinset={index + 1}
+                    aria-selected={
+                      selected || isMultiSelect ? selected : undefined
+                    }
+                  >
+                    {typeof render === "function"
+                      ? render(item, index === composite.selectedIndex)
+                      : item.text}
+                  </ListItem>
+                );
+              }
+
               return (
+                /* @ts-ignore */
                 <ListItem
-                  id={item.id}
-                  key={String((item.id || item.text) + "_" + index)}
+                  key={keyValue}
+                  listitem={item}
                   selected={selected}
                   onClick={() => onListItemClick(index)}
-                  className={""}
+                  data-key-index={String(index)}
                   aria-setsize={setSize}
                   aria-posinset={index + 1}
                   aria-selected={
                     selected || isMultiSelect ? selected : undefined
                   }
-                >
-                  {typeof render === "function"
-                    ? render(item, index === composite.selectedIndex)
-                    : item.text}
-                </ListItem>
+                />
               );
             })
           : (React.isValidElement(children) &&
-              React.Children.map(children, (child, index) => {
-                if (!isSubChild(child, "ListItem")) {
-                  return null;
-                }
+              React.Children.map(children, (child, _index) => {
+                const isDefaultSubChild = isSubChild(child, "C_$$ListItem");
+                const newChild = renderSubChild(isDefaultSubChild, child, _index);
 
-                return React.cloneElement(child, {
-                  children:
-                    typeof render === "function"
-                      ? render(
-                          items[index],
-                          index === composite.selectedIndex,
-                          child.props.children
-                        )
-                      : items[index].text,
+                return React.cloneElement(child, newChild !== null ? {
+                  children: newChild,
+                  selected: _index === composite.selectedIndex,
+                  onClick: () => onListItemClick(_index),
+                } : {
                   selected: index === composite.selectedIndex,
-                  onClick: () => onListItemClick(index),
+                  onClick: () => onListItemClick(_index)
                 });
               })) ||
             null}
@@ -197,56 +244,55 @@ const List: FC<
   ) : null;
 };
 
-const SearchableList: FC<
-  {
-    searchWrapperClassName?: string;
-    innerRef?: (node: HTMLOListElement | null) => void;
-    isMultiSelect?: boolean;
-    items?: ComboBoxItem[];
-    composite?: ComboBoxComposite;
-    onListItemClick?: (indexPosition?: number) => void;
-    render?: (
-      item: ComboBoxItem,
-      selected: boolean,
-      injectedChildNode?: React.ReactNode
-    ) => React.ReactElement;
-  } & CustomElementTagProps<"section">
-> = ({
+const SearchableList = <I extends ComboBoxItem>({
   as: Component = "section",
   children,
   className,
   style,
   render,
+  searchInputClassName,
   searchWrapperClassName,
   items = [],
+  searchAlgorithmOption = "specific",
   isMultiSelect = false,
   onListItemClick = () => undefined,
   composite = { selectedIndex: -1, selectedItem: null },
   innerRef = null,
   ...props
-}) => {
+}: {
+    searchWrapperClassName?: string;
+    searchInputClassName?: string;
+    searchAlgorithmOption?: "specific" | "fuzzy" | "complete";
+    innerRef?: (node: HTMLOListElement | null) => void;
+    isMultiSelect?: boolean;
+    items?: Array<I>;
+    composite?: ComboBoxComposite<I>;
+    onListItemClick?: (indexPosition?: number) => void;
+    render?: (
+      item: I,
+      selected: boolean,
+      injectedChildNode?: React.ReactNode
+    ) => React.ReactElement;
+  } & CustomElementTagProps<"section">) => {
   const oneChild = hasChildren(children, 1);
   const [searchInputId] = useState<string>(() => generateSeededRandomId());
   const searchInputName = `search-box__${searchInputId}__${Date.now()}`;
-  const [controller, handleChange] = useTextFilteredList(
+  const [controller, handleChange] = useTextFilteredList<I>(
     {
       text: "",
       list: items,
     },
     {
-      filterTaskName: "specific",
+      filterTaskName: searchAlgorithmOption,
     }
   );
-  const onSearchChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      return handleChange(event, ["text"]);
-    },
-    []
-  );
+  const onSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    return handleChange(event, ["text"]);
+  };
 
   return (
     <section style={style} className={className} {...props} role="group">
-      <div className={searchWrapperClassName} key={searchInputId}>
+      <div className={searchWrapperClassName} key={searchInputId} role="search">
         <input
           type="text"
           tabIndex={0}
@@ -254,6 +300,7 @@ const SearchableList: FC<
           onChange={onSearchChange}
           id={searchInputId}
           name={searchInputName}
+          className={searchInputClassName}
           role="searchbox"
           aria-label="reactbusser-combobox_search:rc"
           aria-autocomplete="list"
@@ -280,7 +327,7 @@ const SearchableList: FC<
   );
 };
 
-const ComboBox = ({
+const ComboBox = <I extends ComboBoxItem>({
   as: Component = "div",
   items = [],
   placeholder = "",
@@ -295,7 +342,7 @@ const ComboBox = ({
   children,
   ...props
 }: {
-  items: ComboBoxItem[];
+  items: Array<I>;
   isMultiSelect?: boolean;
   dropdownToggleClassName?: string;
   onStateChanged?: (state: "open" | "closed" | "disabled") => void;
@@ -306,7 +353,7 @@ const ComboBox = ({
   const renderChildren = (
     $children: React.ReactNode,
     extraChildProps: {
-      items: ComboBoxItem[];
+      items: Array<I>;
       placeholder: string;
       composite: ComboBoxComposite;
       onListItemClick: (indexPosition?: number) => void;
@@ -486,7 +533,12 @@ const ComboBox = ({
 ComboBox.Trigger = Trigger;
 ComboBox.List = List;
 ComboBox.SearchableList = SearchableList;
-ComboBox.ListItem = ListItem;
+ComboBox.ListItem = C_$$ListItem;
+
+type ComboBoxListProps = React.ComponentProps<typeof List>;
+type ComboBoxTriggerProps = React.ComponentProps<typeof Trigger>;
+
+export type { ComboBoxListProps, ComboBoxListItemProps, ComboBoxTriggerProps }
 
 const ComboBoxEvent = {
   DROPDOWN_CHANGE_BROADCAST: "$__dropdown:change:braodcast",
