@@ -74,6 +74,22 @@ const Avatar: FC<AvatarProps> = ({
         display: inline-block;
         height: auto;
       }
+
+      .avatar_letter-box[data-letter-size="tn"],
+      .avatar_image-box[data-letter-size="tn"] {
+        width: 24px;
+        height: 24px;
+      }
+
+      .avatar_letter-box[data-letter-size="sm"] {
+        width: 40px;
+        height: 40px;
+      }
+
+      .avatar_letter-box[data-letter-size="md"] {
+        width: 60px;
+        height: 60px;
+      }
     `;  
     window.document.head.appendChild(avatarStyle);  
  
