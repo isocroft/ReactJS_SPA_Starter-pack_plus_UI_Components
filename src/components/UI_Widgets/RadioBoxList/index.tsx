@@ -95,10 +95,11 @@ const Option: FC<
   );
 };
 
-const RadioBoxList = ({
+const RadioBoxList = <L = { text: string, value: string }>({
   as: Component = "div",
   className = "",
   name,
+  list = [],
   onChange,
   children,
   radioDefaultValue = "",
@@ -109,7 +110,7 @@ const RadioBoxList = ({
   radioIconSize,
   ...props
 }: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor"> &
-  { radioDefaultValue?: string } &
+  { radioDefaultValue?: string, list: Array<L> } &
   CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
 
@@ -224,7 +225,31 @@ const RadioBoxList = ({
       }`}
       {...props}
     >
-      {childrenProps}
+      {hasChildren(children, 0)
+      ? list.map((listitem) => {
+        return (
+          <Option
+            value={listitem.value}
+            selected: radioValue.current === listitem.value
+            id={listitem.value}
+            onChange: (event, selectedValue) => {
+              radioValue.current = selectedValue;
+              /* @ts-ignore */
+              event.currentValue = selectedValue;
+              onChange(event);
+            },
+          radioIconFillColor={radioIconFillColor}
+          radioIconStrokeColor={radioIconStrokeColor}
+          radioIconSize={radioIconSize}
+          required={required}
+          disabled={disabled}
+          name={name}
+          >
+            <span>{listitem.text}</span>
+          </Option>
+        );
+      })
+      : childrenProps}
     </Component>
   );
 };
