@@ -8,6 +8,7 @@ import {
 import AppLayout from "./layouts/AppLayout";
 import { breadcrumbsMap } from "./routes/routes.breadcrumbs.map";
 import { ProtectedRoutes, UnProtectedRoutes } from "./routes/routes.config";
+import { AnimatePresence } from "framer-motion";
 
 export type ExcludeFromProps<P, X extends { [key: string]: unknown }> = Pick<
   P,
@@ -42,6 +43,9 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
   }
 };
 
+useRoutingBreadCrumbsData();
+import { useRoutingBreadCrumbsData } from "../layouts/GlobalRoutingProvider";
+
 function App({ isAuthenticated }) {
   return (
     <AppLayout className="App" breadcrumbsMap={breadcrumbsMap}>
@@ -54,7 +58,11 @@ function App({ isAuthenticated }) {
           </ul>
         </nav>)}
       </AppLayout.RouteNavigation>
-      <AppLayout.RoutePages routes={isAuthenticated ? ProtectedRoutes : UnProtectedRoutes} />
+      <AnimatePresence mode="wait">
+        <AppLayout.RoutePages
+          routes={isAuthenticated ? ProtectedRoutes : UnProtectedRoutes}
+        />
+      </AnimatePresence>
     </AppLayout>
   );
 };
