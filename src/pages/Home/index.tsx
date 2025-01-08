@@ -3,7 +3,9 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { StaticContext, RouteComponentProps } from "react-router";
 import type { Location } from "history";
 
-import { renderBreadcrumbs } from "../../helpers/render-utils";
+//import { renderBreadcrumbs } from "../../helpers/render-utils";
+
+import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
 export const usePageDataLoader = () => {
@@ -13,18 +15,20 @@ export const usePageDataLoader = () => {
 export const RoutePath = RoutePaths.HOME;
 
 export const PageHeader = ({
-  breadcrumbs,
+  history
 }: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
   user: {
     permission: string;
     bio?: Record<string, string | number>;
   };
-  breadcrumbs: Location[];
 }) => {
+  const BreadCrumbsList = useRoutingBreadCrumbsData();
   return (
     <>
       <h2>{"Home"}</h2>
-      <div id="breadcrumbs">{renderBreadcrumbs(breadcrumbs)}</div>
+      <div id="breadcrumbs">
+       <BreadCrumbsList className="" />
+      </div>
     </>
   );
 };
