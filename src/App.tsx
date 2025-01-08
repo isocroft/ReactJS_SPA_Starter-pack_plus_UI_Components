@@ -43,9 +43,6 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
   }
 };
 
-useRoutingBreadCrumbsData();
-import { useRoutingBreadCrumbsData } from "../layouts/GlobalRoutingProvider";
-
 function App({ isAuthenticated }) {
   return (
     <AppLayout className="App" breadcrumbsMap={breadcrumbsMap}>
