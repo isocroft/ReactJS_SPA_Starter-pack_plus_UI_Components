@@ -8,7 +8,6 @@ import {
   useIsFirstRender,
   usePreviousRoutePathname,
 } from "react-busser";
-import { useRoutingBreadCrumbsData } from "../layouts/GlobalRoutingProvider";
 
 import { HomeRoute } from "./pages.groupings/home.pages";
 import { VehicleRoute } from "./pages.groupings/vehicles.pages";
@@ -32,7 +31,6 @@ interface DecoratedComponentProps<T = object> {
         permission: string;
         bio?: Record<string, string | number>;
       };
-      breadcrumbs: Location[];
     }
   >;
   PageElement: React.LazyExoticComponent<
@@ -71,7 +69,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   const { getFromStorage } = useBrowserStorage({
     storageType: "local",
   });
-  const { breadcrumbs } = useRoutingBreadCrumbsData();
+
   const previousPathname = usePreviousRoutePathname();
   const history = useHistory<object>();
 
@@ -97,7 +95,6 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
             permission: "owner",
             bio: {},
           })}
-          breadcrumbs={breadcrumbs}
         />
       }
       <Suspense fallback={<span>Loading....</span>}>
