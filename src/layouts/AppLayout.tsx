@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useTransition, PropsWithChildren } from "react";
-import { useIsFirstRender, useBus } from "react-busser";
+import { useIsFirstRender } from "react-busser";
 import {
   Route,
 } from "react-router-dom";
@@ -10,6 +10,8 @@ import { RoutePaths } from "../routes/routes.paths";
 
 import type { Location } from "history";
 import type { RoutesInterface } from "./routes/routes.config";
+
+import { hasChildren } from "../helpers/render-utils";
 //import type { HashRouterProps } from "react-router-dom";
 
 const AppLayout = ({
@@ -22,7 +24,6 @@ const AppLayout = ({
   onAppNavigation?: GlobalRoutingContextProps["onGlobalNavigation"];
 }>) => {
   const isFirstRender = useIsFirstRender();
-  const [bus] = useBus({ fires:["app:previouspath"], subscribes:[] }, "AppLayout.Component");
   const [isPending, startTransition] = useTransition({ timeoutMS: 3500 });
 
   useEffect(() => {
@@ -35,6 +36,7 @@ const AppLayout = ({
     document.documentElement.classList.add("app-busy");
   } else {
     document.documentElement.classList.remove("app-busy");
+    document.documentElement.classList.remove("browser-navigation-animate");
   }
 
   if (isFirstRender) {
@@ -45,7 +47,7 @@ const AppLayout = ({
     <main className={className}>
       <GlobalRoutingProvider onGlobalNavigation={({ previousPathname })=> {
         startTransition(() => {
-          bus.emit("app:previouspath", previousPathname);
+          document.documentElement.classList.add("browser-navigation-animate");
         });
       }} breadcrumbsMap={breadcrumbsMap}>
         {children}
@@ -54,7 +56,10 @@ const AppLayout = ({
   );
 };
 
-const RouteNavigation = () => {
+const RouteNavigation = ({ children?: React.ReactNode }) => {
+  if (hasChildren(children, 0)) {
+    return null;
+  }
   return (
     <>{children}</>
   );
