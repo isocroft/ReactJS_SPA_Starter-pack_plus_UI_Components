@@ -4,11 +4,14 @@ import SelectBox from "../SelectBox";
 
 import type { SelectBoxProps } from "../SelectBox";
 
-const ContextSelectBox: SelectBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
+const ContextSelectBox: Omit<SelectBoxProps, "ref" | "onBlur" | "onChange"> & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
   name,
   children,
   className,
   wrapperClassName,
+  labelPosition,
+  valueSync,
+  renderOptions,
   labelClassName,
   chevronIconSize,
   chevronIconFillColor,
@@ -16,7 +19,8 @@ const ContextSelectBox: SelectBoxProps & { ErrorComponent?: React.FunctionCompon
   ...props
 }) => {
   const { register, unregister, getFieldState, formState } = useFormContext();
-  const { isDirty, invalid, error } = getFieldState(name, formState)
+  const { isDirty, invalid, error } = getFieldState(name, formState);
+  const { ref, onBlur, onChange, name } = register(name, { required: props.required, disabled: props.disabled })
 
   useEffect(() => {
     return () => {
@@ -27,10 +31,16 @@ const ContextSelectBox: SelectBoxProps & { ErrorComponent?: React.FunctionCompon
   return (
     <>
       <SelectBox
-        {...register(name)}
+        ref={ref}
+        onBlur={onBlur}
+        onChange={onChange}
+        name={name}
         {...props}
         className={className}
         wrapperClassName={wrapperClassName}
+        labelPosition={labelPosition}
+        valueSync={valueSync}
+        renderOptions={renderOptions}
         labelClassName={labelClassName}
         chevronIconSize={chevronIconSize}
         chevronIconFillColor={chevronIconFillColor}
