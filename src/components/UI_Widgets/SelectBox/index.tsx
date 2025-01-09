@@ -1,4 +1,4 @@
-import React, { FC, Ref, useEffect } from "react";
+import React, { FC, Ref, useEffect, useRef } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
@@ -51,7 +51,10 @@ const SelectBox: FC<
     placeholder?: string;
     wrapperClassName?: string;
     labelClassName?: string;
+    labelPosition?: "beforeInput" | "afterInput";
+    valueSync?: boolean;
     children?: React.ReactNode;
+    renderOptions: () => React.ReactNode;
     chevronIconSize?: number;
     chevronIconFillColor?: string;
   } &
@@ -60,6 +63,7 @@ const SelectBox: FC<
   children,
   wrapperClassName,
   labelClassName,
+  labelPosition = "afterInput",
   className,
   as: Component = "select",
   chevronIconSize,
@@ -67,8 +71,15 @@ const SelectBox: FC<
   name,
   onChange,
   onBlur,
+  renderOptions,
+  defaultValue = "",
+  valueSync = "" 
   ...props
 }, ref: Ref<HTMLSelectElement>) => {
+  const anyValue = (
+    defaultValue !== "" ? defaultValue : props.value
+  ) as string;
+  const selectRef = useRef<HTMLSelectElement | null>(null);
   /*
   const onClick = useEventCallback<NonNullable<ComponentProps<"select">["onClick"]>>((event) => {
     if (typeof props.onClick === "function") {
@@ -135,10 +146,40 @@ const SelectBox: FC<
     };  
   }, []);
 
+  useEffect(() => {
+    if (!valueSync || selectRef.current === null || anyValue === "") {
+      return;
+    }
+    /* @NOTE: Programmatically trigger a `change` event on a <select> tag */
+    /* @CHECK: https://github.com/facebook/react/issues/19678#issuecomment-679044981 */
+    const selectOptions = Array.from(selectRef.current.options);
+    const selectTagIndexMap = selectOptions.reduce(
+      (indexMap, currentOption, index) => {
+        indexMap[currentOption.value.toLowerCase()] = index;
+        return indexMap;
+      },
+      {} as Record<string, number>
+    );
+
+    const programmaticChangeEvent = new Event("change", { bubbles: true });
+    const setSelectTagIndex = Object.getOwnPropertyDescriptor(
+      HTMLSelectElement.prototype,
+      "selectedIndex"
+    )!.set;
+
+    if (typeof setSelectTagIndex !== "undefined") {
+      setSelectTagIndex.call(
+        selectRef.current,
+        selectTagIndexMap[anyValue.toLowerCase()]
+      );
+      selectRef.current.dispatchEvent(programmaticChangeEvent);
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [valueSync, anyValue]);
+
   return (
     <div className={`select_wrapper-box ${wrapperClassname}`}>
-      <Component {...props} className={`select_masked ${className}`} name={name} onChange={onChange} onBlur={onBlur} ref={ref}>{children}</Component>
-      {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
+      {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
           {
             hasChildren(children, 1)
               ? React.cloneElement(
@@ -151,7 +192,38 @@ const SelectBox: FC<
               )
               : null
           }
-        </label>}
+        </label>) || null)}
+      <Component
+        className={`select_masked ${className}`}
+        name={name}
+        onChange={onChange}
+        onBlur={onBlur}
+        {...props}
+        defaultValue={
+          !props.value && defaultValue !== "" ? defaultValue : undefined
+        }
+        ref={(node) => {
+            if (node) {
+              selectRef.current = node;
+            }
+            return typeof ref === "function" ? ref(node) : ref;
+          }>
+        {typeof renderOptions === "function" ? renderOptions().props.children : null}
+      </Component>
+      {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
+          {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
+        </label>) || null)}
     </div>
   );
 }
