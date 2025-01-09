@@ -1,4 +1,4 @@
-import React, { FC, Ref, useEffect } from "react";
+import React, { FC, Ref, useEffect, useRef } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
@@ -50,7 +50,9 @@ const TextBox: FC<
       type?: "text" | "password" | "number" | "email" | "search" | "url" | "date";
     } & {
       wrapperClassName?: string;
+      labelPosition: "beforeInput" | "afterInput";
       labelClassName?: string;
+      valueSync?: boolean;
     }
 > = React.forwardRef(({
   as: Component = "input",
@@ -66,11 +68,18 @@ const TextBox: FC<
   onChange,
   children,
   wrapperClassName,
+  labelPosition = "afterInput",
   labelClassName,
   className,
+  defaultValue = "",
+  valueSync = false,
   tabIndex = 0,
   ...props
 }, ref: Ref<HTMLInputElement & HTMLTextAreaElement>) => {
+  const anyValue = (
+    defaultValue !== "" ? defaultValue : props.value
+  ) as string;
+  const textBoxRef = useRef<(HTMLInputElement & HTMLTextAreaElement) | null>(null);
   useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
@@ -111,9 +120,50 @@ const TextBox: FC<
     };  
   }, []);
 
+  useEffect(() => {
+    if (!valueSync || textBoxRef.current === null || anyValue === "") {
+      return;
+    }
+    /* @NOTE: Programmatically trigger a `change` event on a <input> tag */
+    /* @CHECK: https://github.com/facebook/react/issues/19678#issuecomment-679044981 */
+    const programmaticChangeEvent = new Event("input", { bubbles: true });
+    const setInputValue = Component === "textarea"
+      ? Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        "value"
+      )!.set
+      : Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value"
+    )!.set;
+
+    if (typeof setInputValue !== "undefined") {
+      setInputValue.call(
+        textBoxRef.current,
+        anyValue
+      );
+      textBoxRef.current.dispatchEvent(programmaticChangeEvent);
+    }
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [valueSync, anyValue]);
+
   return (
     <>
       <div className={wrapperClassName}>
+        {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={name} className={labelClassName}>
+          {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
+        </label>) || null)}
         <Component
           rows={
             typeof rows === "number" && Component === "textarea"
@@ -153,9 +203,17 @@ const TextBox: FC<
           tabIndex={tabIndex}
           className={className}
           {...props}
-          ref={ref}
+          defaultValue={
+            !props.value && defaultValue !== "" ? defaultValue : undefined
+          }
+          ref={(node) => {
+            if (node) {
+              textBoxRef.current = node;
+            }
+            return typeof ref === "function" ? ref(node) : ref;
+          }}
         />
-        {hasChildren(children, 0) ? null : <label htmlFor={name} className={labelClassName}>
+        {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={name} className={labelClassName}>
           {
             hasChildren(children, 1)
               ? React.cloneElement(
@@ -168,7 +226,7 @@ const TextBox: FC<
               )
               : null
           }
-        </label>}
+        </label>) || null)}
       </div>
     </>
   );
