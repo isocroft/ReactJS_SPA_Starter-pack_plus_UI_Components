@@ -50,6 +50,37 @@ export const isRemoteHost = (): boolean => {
  */
 
 /**
+ * validateWebPageURL:
+ *
+ * @param {String} urlString
+ *
+ * @returns {Boolean}
+ *
+ */
+export const validateWebPageURL = (urlString: string): boolean => {
+  let result = null;
+
+  try {
+    result = urlString.match(
+      /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z0-9]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g
+    )
+  } catch (e) {
+    result = null
+  }
+	
+  return result !== null;
+}
+
+/*!
+ * @EXAMPLE:
+ *
+ * const isWebPageURL = validateWebPageURL('https://www.example.com?id=98747904');
+ *
+ * console.log(isWebPageURL)); // true
+ *
+ */
+
+/**
  * bloToataURL: 
  * 
  * @param {Blob} blob
