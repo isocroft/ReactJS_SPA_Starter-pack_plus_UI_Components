@@ -1,4 +1,55 @@
 /**
+ * isLocalHost:
+ *
+ * @returns {Boolean}
+ *
+ */
+
+export const isLocalHost = (): boolean => {
+  return window.location.port === ""
+  ? ["http://localhost", "http://127.0.0.1"].includes(
+    window.location.origin.replace(/\:[\d$]{4,5}/, "")
+  )
+  : Boolean(
+    window.location.hostname === 'localhost' ||
+    // [::1] is the IPv6 localhost address.
+    window.location.hostname === '[::1]' ||
+    // 127.0.0.1/8 is considered localhost for IPv4.
+    window.location.hostname.match(
+      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+    )
+  )
+};
+
+/*!
+ * @EXAMPLE:
+ *
+ * const currentlyLocalHost = isLocalHost();
+ *
+ * console.log(currentlyLocalHost) // false
+ *
+ */
+
+/**
+ * isRemotsHost:
+ *
+ * @returns {Boolean}
+ *
+ */
+export const isRemoteHost = (): boolean => {
+  return window.location.origin.includes(process.env.REACT_APP_REMOTE_HOST);
+};
+
+/*!
+ * @EXAMPLE:
+ *
+ * const currentlyRemoteHost = isRemoteHost();
+ *
+ * console.log(currentlyRemoteHost) // true
+ *
+ */
+
+/**
  * bloToataURL: 
  * 
  * @param {Blob} blob
@@ -128,7 +179,7 @@ export const dataURLtoObjectURL = (dataURL?: string): string => {
    *
    * const file = blobToFile(new Blob(['hello!'], { type: 'text/plain' }), "text.txt");
    *
-   * console.log(file) // File: {}
+   * console.log(file) // File: { name: 'text.txt', size: 48 }
    *
    */
   
@@ -314,3 +365,58 @@ export const getEmbedUrl = (url: string | null, autoPlay = false): string => {
   }
   return '';
 };
+
+/* @EXAMPLE: getEmbedUrl("https://youtube.com/watch?v=9JLpWR_yHZQ", true); */
+
+/**
+ * fileExtension:
+ * 
+ * @param {String} urlOrFileType
+ * 
+ * @returns {String}
+ */
+ export const fileExtension = (urlOrFileType?: string | null): string => {
+   let extension = "blob";
+   if (
+     urlOrFileType === "image/png" ||
+     urlOrFileType === "image/jpeg" ||
+     urlOrFileType === "image/jpg" ||
+     urlOrFileType === "image/svg+xml" ||
+     urlOrFileType === "application/pdf" ||
+     urlOrFileType === "text/plain" ||
+     urlOrFileType === "application/json" ||
+     urlOrFileType === "text/javascript" ||
+     urlOrFileType === "text/css" ||
+     urlOrFileType === "text/csv" ||
+     urlOrFileType === "text/x-csv" ||
+     urlOrFileType === "application/vnd.ms-excel" ||
+     urlOrFileType === "application/csv" ||
+     urlOrFileType === "application/x-csv" ||
+     urlOrFileType === "text/comma-separated-values" ||
+     urlOrFileType === "text/x-comma-separated-values" ||
+     urlOrFileType === "text/tab-separated-values" ||
+     urlOrFileType === "application/octet-stream"
+   ) {
+     [ extension ] = (urlOrFileType || "/").split("/").reverse();
+     if (extension === "octet-stream") {
+	extension = "blob";
+     }
+  
+     if ([
+	"x-csv",
+	"vnd.ms-excel",
+	"tab-separated-values",
+	"comma-separated-values",
+	"x-comma-separated-values"].includes(extension)) {
+	  extension = "csv";
+     }
+   } else if (typeof urlOrFileType === "string") {
+     const [ urlBaseName ] = urlOrFileType.split(/[#?]/);
+     [ extension ] = urlBaseName.split(".").reverse();
+   }
+	
+   return extension === "javascript" ? "js" : extension;
+};
+
+/* @EXAMPLE: fileExtension("image/png") */
+
