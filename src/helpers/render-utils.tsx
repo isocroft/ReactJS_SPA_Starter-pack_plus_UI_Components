@@ -4,15 +4,109 @@ import type { Location } from "history";
 
 import { twMerge } from "tailwind-merge";
 
+/**
+ * composeClassesModule:
+ *
+ * @param {Array.<*>} styles
+ *
+ * @returns {String}
+ */
 export const composeClassesModule = (...styles: unknown[]): string => {
   return Array.from(new Set(styles.filter((item) => item).join(' ')));
-}
+};
 
+/* @EXAMPLE: composeClassesModule("form-date-picker", "sr-inert-only", "panel-wrapper") */
+
+/**
+ * composeClassTailwind:
+ *
+ * @param {Array.<*>} styles
+ *
+ * @returns {String}
+ */
 export const composeClassTailwind = (...styles: unknown[]): string => {
   return twMerge(...styles);
-}
+};
 
-export const hasChildren = (children: React.ReactNode, count: number) => {
+/* @EXAMPLE: composeClassTailwind("cursor-pointer absolute m-[23px]", "inset-0") */
+
+/**
+ * htmlEncode:
+ *
+ *
+ * @param {String} rawText
+ *
+ * @returns {String}
+ *
+ */
+export const htmlEncode = (rawText: string): string => {
+  return (rawText || "").replace(/[\u00A0-\u9999<>&]/gim, function (mark: string) {
+    return '&#' + mark.charCodeAt(0) + ';'
+  })
+};
+
+/*!
+ * @EXAMPLE: 
+ *
+ * const encodedHTML = htmlEncode('<h1><img onerror="javascript:return null" /></h1>');
+ *
+ * console.log(encodedHTML); // ""
+ *
+ */
+
+/**
+ * htmlDecode:
+ *
+ *
+ * @param {String} encodedText
+ *
+ * @returns {String | Null}
+ *
+ */
+export const htmlDecode = (encodedText: string): string | null => {
+  const doc = new window.DOMParser().parseFromString(encodedText || "&nbsp;", 'text/html')
+  const docElem = doc.documentElement as Node
+ 
+  return docElem.textContent
+};
+
+/**
+ * formatHTMLEntity:
+ *
+ *
+ * @param {String} textValue
+ * @param {String} entityHexValue
+ * @param {String} prefix
+ *
+ * @returns {String}
+ *
+ */
+export const formatHTMLEntity = (
+  textValue: string,
+  entityHexVal: string,
+  prefix: string = ''
+): string => {
+  const isNumeric = /^\d{2,5}$/.test(entityHexValue)
+  const number = parseInt(isNumeric ? "8" : entityHexValue, 16)
+ 
+  return (
+    (textValue ? textValue + ' ' : '') +
+    prefix + String.fromCharCode(number)
+  )
+};
+
+/* @EXAMPLE: <p className="wrapper">{formatHTMLEntity('View Full Project', '279D')}</p> */
+
+/**
+ * hasChildren:
+ *
+ * @param {React.ReactNode} children
+ * @param {Number} count
+ *
+ *
+ * @returns {Boolean}
+ */
+export const hasChildren = (children: React.ReactNode | React.ReactNode[], count: number): boolean => {
   if (!Boolean(children)) {
     return false;
   }
@@ -20,6 +114,24 @@ export const hasChildren = (children: React.ReactNode, count: number) => {
   return childCount === count;
 };
 
+/*!
+ * @EXAMPLE:
+ *
+ * const zeroChildren = hasChildren(children, 0);
+ *
+ * console.log(zeroChildren); // false
+ *
+ */
+
+/**
+ * removeFromChildren:
+ *
+ * @param {React.ReactNode} children
+ * @param {Array.<*>} types
+ *
+ *
+ * @returns {Array.<React.ReactNode>}
+ */
 export const removeFromChildren = (
   children: React.ReactNode | React.ReactNode[],
   types: any[]
@@ -28,6 +140,15 @@ export const removeFromChildren = (
     (child) => React.isValidElement(child) && !types.includes(child.type)
   );
 };
+
+/*!
+ * @EXAMPLE:
+ *
+ * const modifiedChildren = removeFromChildren(children, Button);
+ *
+ * console.log(modifiedChildren); // {}
+ *
+ */
 
 function retrieveChildComponent<A = any, T extends (...args: A[]) => React.JSX.Element>(
   children: React.ReactNode | React.ReactNode[],
@@ -86,10 +207,10 @@ export function retrieveChildComponents<A = any, T extends (...args: A[]) => Rea
 }
 
 export const isSubChild = <C extends React.ReactNode>(
-  child: React.ReactNode,
+  child: C,
   tag: string
 ): child is C =>
-  React.isValidElement(child) && (typeof(child?.type) === "function" ? child?.type?.name === tag : String(child?.type).includes(tag));
+  React.isValidElement<C>(child) && (typeof(child?.type) === "function" ? child?.type?.name === tag : String(child?.type).includes(tag));
 
 export const renderBreadcrumbs = (
   breadcrumbs: Location[],
