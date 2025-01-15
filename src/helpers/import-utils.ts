@@ -14,7 +14,7 @@ import type { JSX } from "react";
  */
 export const lazyWithRetry = <
   Props extends {
-    query: UseQueryResult | null;
+    queries: Record<string, UseQueryResult | null>;
   }
 >(
   componentImport: () => Promise<{
@@ -35,18 +35,20 @@ export const lazyWithRetry = <
       return component;
     } catch (error) {
       if (!pageHasAlreadyBeenForceRefreshed) {
-        function onBeforeUnload (e) {
+        function onBeforeUnload (e: BeforeUnloadEvent) {
           e.preventDefault();
-          if (e.returnValue) {
+
+          if ('returnValue' in e) {
             e.returnValue = undefined;
           }
+
           window.removeEventListener("beforeunload", onBeforeUnload);
           window.sessionStorage.removeItem(retryStorageKey);
         };
         /* @HINT: Assuming that the user is not on the latest version of the application. */
         /* @HINT: Let's refresh the page immediately. */
         window.sessionStorage.setItem(retryStorageKey, "true");
-        window.addddEventListener("beforeunload", onBeforeUnload);
+        window.addEventListener("beforeunload", onBeforeUnload);
         window.location.reload();
       } else {
         /* @HINT: If we get here, it means the page has already been reloaded */
@@ -72,7 +74,7 @@ export const lazyWithRetry = <
 export function componentLoader<
   M extends {
     default: (injected?: {
-      query: UseQueryResult | null;
+      queries: Record<string, UseQueryResult | null>;
     }) => JSX.Element | null;
   }
 >(lazyComponent: () => Promise<M>, attemptsLeft = 3) {
