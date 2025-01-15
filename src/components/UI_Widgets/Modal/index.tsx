@@ -170,7 +170,14 @@ const Modal = Object.assign(
     } = props;
 
     return ReactDOM.createPortal(
-      <div
+      typeof window.HTMLDialogElement === 'function'
+      ? (<dialog className={className || ""} id={id} ref={ref}>
+          {renderChildren(allChildren, {
+            close: close,
+            parent: "Modal",
+          })}
+      </dialog>)
+      : (<div
         className={className || ""}
         id={id}
         ref={ref}
@@ -183,7 +190,7 @@ const Modal = Object.assign(
             parent: "Modal",
           })}
         </div>
-      </div>,
+      </div>),
       document.body
     );
   }),
