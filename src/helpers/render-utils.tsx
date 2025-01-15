@@ -70,6 +70,15 @@ export const htmlDecode = (encodedText: string): string | null => {
   return docElem.textContent
 };
 
+/*!
+ * @EXAMPLE: 
+ *
+ * const decodedHTML = htmlDecode("&lt;h1&gt;Hi there!&lt;/h1&gt;");
+ *
+ * console.log(decodedHTML); // "<h1>Hi there!</h1>"
+ *
+ */
+
 /**
  * formatHTMLEntity:
  *
