@@ -7,15 +7,12 @@ import type { Location } from "history";
 import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
-export const usePageDataLoader = () => {
-  return null;
-};
-
 export const RoutePath = RoutePaths.VEHICLES;
 
 export const PageHeader = ({
   history,
 }: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
+  queries: Record<string, UseQueryResult | null>,
   user: {
     permission: string;
     bio?: Record<string, string | number>;
@@ -34,11 +31,15 @@ export const PageHeader = ({
 
 export const PageTitle = "Vehicle *";
 
+export const usePageDataLoader = () => {
+  return { vehicles: null };
+};
+
 export const renderPage = (
   location: Location,
-  query: UseQueryResult | null,
+  queries: Record<string, UseQueryResult | null>,
   PageElement: React.LazyExoticComponent<
-    React.ComponentType<{ query: UseQueryResult | null } | undefined>
+    React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
   >,
   user: { permission: string; bio?: Record<string, string | number> }
 ) => {
@@ -50,7 +51,7 @@ export const renderPage = (
     switch (user.permission) {
       case "admin":
       case "owner":
-        return <PageElement key={location.key} query={query} />;
+        return <PageElement key={location.key} queries={queries} />;
       default:
         return <TriggerErrorBoundary />;
     }
@@ -58,8 +59,8 @@ export const renderPage = (
   return null;
 };
 
-const Vehicles = (injected: { query: UseQueryResult | null } | undefined) => {
-  if (!injected || !injected.query || !injected.query.data) {
+const Vehicles = (injected: { queries: Record<string, UseQueryResult | null> } | undefined) => {
+  if (!injected || !injected.queries) {
     return null;
   }
   return <h1>{"Vehicles"}</h1>;
