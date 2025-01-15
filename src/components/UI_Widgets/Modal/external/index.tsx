@@ -28,7 +28,7 @@ function useModalCore(styles: {
   const markModalsPosition = useRef<
     Record<
       string,
-      { position: number; ref: React.MutableRefObject<HTMLDivElement | null> }
+      { position: number; ref: React.MutableRefObject<(HTMLDivElement & HTMLDialogElement) | null> }
     >
   >({});
   const [modals, setModals] = useState<React.ReactElement[]>([]);
@@ -48,6 +48,11 @@ function useModalCore(styles: {
         clonedPrevModals.splice(position, 1);
         delete markModalsPosition.current[id];
 
+        if (ref.current
+          && ref.current.tagName === 'DIALOG') {
+          ref.current.close();
+        }
+      
         ref.current = null;
 
         return clonedPrevModals;
@@ -61,7 +66,7 @@ function useModalCore(styles: {
     return {
       show(
         node: React.ReactNode,
-        reference: React.MutableRefObject<HTMLDivElement | null>,
+        reference: React.MutableRefObject<(HTMLDivElement & HTMLDialogElement) | null>,
         callback: () => void
       ) {
         if (reference.current !== null) {
@@ -88,6 +93,14 @@ function useModalCore(styles: {
             position: prevModals.length,
             ref: reference,
           };
+
+          window.setTimeout(() => {
+            if (reference.current
+              && reference.current.tagName === 'DIALOG') {
+              reference.current.showModal();
+            }
+          }, 0);
+
           return [...prevModals, modal];
         });
 
