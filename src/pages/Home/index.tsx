@@ -9,7 +9,7 @@ import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
 export const usePageDataLoader = () => {
-  return null;
+  return { home: null };
 };
 
 export const RoutePath = RoutePaths.HOME;
@@ -17,6 +17,7 @@ export const RoutePath = RoutePaths.HOME;
 export const PageHeader = ({
   history
 }: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
+  queries: Record<string, UseQueryResult | null>,
   user: {
     permission: string;
     bio?: Record<string, string | number>;
@@ -37,18 +38,19 @@ export const PageTitle = "Home *";
 
 export const renderPage = (
   location: Location,
-  query: UseQueryResult | null,
+  queries: Record<string, UseQueryResult | null>,
   PageElement: React.LazyExoticComponent<
-    React.ComponentType<{ query: UseQueryResult | null } | undefined>
+    React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
   >
 ) => {
-  return <PageElement key={location.key} query={query} />;
+  return <PageElement key={location.key} queries={queries} />;
 };
 
-const Home = (injected: { query: UseQueryResult | null } | undefined) => {
-  if (!injected || !injected.query) {
+const Home = (injected: { queries: Record<string, UseQueryResult | null> } | undefined) => {
+  if (!injected || !injected.queries) {
     return null;
   }
+
   return <h1>Home</h1>;
 };
 
