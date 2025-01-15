@@ -116,8 +116,8 @@ export const formatHTMLEntity = (
  * @returns {Boolean}
  */
 export const hasChildren = (children: React.ReactNode | React.ReactNode[], count: number): boolean => {
-  if (!Boolean(children)) {
-    return false;
+  if (!Boolean(children) && count === 0) {
+    return true;
   }
   const childCount = React.Children.count(children);
   return childCount === count;
