@@ -154,8 +154,8 @@ const Footer: FC<
 
 const Modal = Object.assign(
   React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement> & {
+    (HTMLDivElement & HTMLDialogElement),
+    React.HTMLAttributes<(HTMLDivElement & HTMLDialogElement)> & {
       wrapperClassName?: string;
       close: () => void;
     }
