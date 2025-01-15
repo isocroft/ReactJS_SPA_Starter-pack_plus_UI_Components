@@ -5,8 +5,7 @@ import { useHistory } from "react-router-dom";
 import type { Location } from "history";
 import {
   useBrowserStorage,
-  useIsFirstRender,
-  usePreviousRoutePathname,
+  //usePreviousRoutePathname,
 } from "react-busser";
 
 import { HomeRoute } from "./pages.groupings/home.pages";
@@ -27,6 +26,7 @@ interface DecoratedComponentProps<T = object> {
   Title: string;
   Header: React.FC<
     Pick<RouteComponentProps<{}, StaticContext, T>, "history"> & {
+      queries: Record<string, UseQueryResult | null>,
       user: {
         permission: string;
         bio?: Record<string, string | number>;
@@ -34,14 +34,14 @@ interface DecoratedComponentProps<T = object> {
     }
   >;
   PageElement: React.LazyExoticComponent<
-    React.ComponentType<{ query: UseQueryResult | null } | undefined>
+    React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
   >;
-  useDataLoader: () => UseQueryResult | null;
+  useDataLoader: () => Record<string, UseQueryResult | null>;
   renderProp: (
     location: Location,
-    query: UseQueryResult | null,
+    queries: Record<string, UseQueryResult | null>,
     PageElement: React.LazyExoticComponent<
-      React.ComponentType<{ query: UseQueryResult | null } | undefined>
+      React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
     >,
     user: {
       permission: string;
@@ -64,33 +64,20 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   titleTag.textContent = Title + " | React App";
   document.title = Title + " | React App";
 
-  const query = useDataLoader();
-  const isFirstRender = useIsFirstRender();
+  const queries = useDataLoader();
   const { getFromStorage } = useBrowserStorage({
     storageType: "local",
   });
 
-  const previousPathname = usePreviousRoutePathname();
+  //const previousPathname = usePreviousRoutePathname();
   const history = useHistory<object>();
-
-  useEffect(() => {
-    if (!isFirstRender || previousPathname === history.location.pathname) {
-      if (query !== null) {
-        query.refetch();
-      }
-    }
-  }, [
-    query,
-    isFirstRender,
-    previousPathname,
-    history.location.pathname,
-  ]);
 
   return (
     <section id="page">
       {
         <Header
           history={history}
+          queries={queries}
           user={getFromStorage("user", {
             permission: "owner",
             bio: {},
@@ -100,7 +87,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
       <Suspense fallback={<span>Loading....</span>}>
         {renderProp(
           history.location,
-          query,
+          queries,
           PageElement,
           getFromStorage("user", {
             permission: "owner",
