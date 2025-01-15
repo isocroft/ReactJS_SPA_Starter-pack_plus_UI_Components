@@ -13,6 +13,7 @@ const $List = <D extends string | Record<string, string | number | object>>(
     data = [],
     listItemClassName = "",
     keyPropName = "id",
+    textPropName = "text",
     as: Component = "ul",
     DataListItem = "li",
     ...props
@@ -20,6 +21,7 @@ const $List = <D extends string | Record<string, string | number | object>>(
     Omit<CustomElementTagNoChildrenProps<"ul" | "ol">, "ref"> & {
       data?: Array<D>;
       keyPropName?: string;
+      textPropName?: string;
       listItemClassName?: string;
       DataListItem?:
         | React.ElementType
@@ -43,7 +45,7 @@ const $List = <D extends string | Record<string, string | number | object>>(
             key={keyValue}
             role="listitem"
           >
-            {typeof todo !== "object" ? todo : todo.text}
+            {typeof todo !== "object" ? String(todo) : todo[textPropName]}
           </DataListItem>
         );
       }) : children}
