@@ -50,7 +50,9 @@ const RouteNavigation = ({ children?: React.ReactNode }) => {
     return null;
   }
   return (
-    <>{children}</>
+    <aside>
+      {children}
+    </aside>
   );
 };
 
