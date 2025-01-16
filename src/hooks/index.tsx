@@ -22,7 +22,10 @@ export const useFeatureToggle = (user: Record<string, unknown>) => {
   const flagAccessType = user[userAccessControlTag] as string;
 
   return {
-    isDisabledFor: (feature: string) => {
+    getAllEnabledFeatures () {
+      return features.enabledFeatures.slice(0);
+    },
+    isDisabledFor (feature: string) {
       if (typeof feature !== "string") {
         return true;
       }
@@ -33,7 +36,7 @@ export const useFeatureToggle = (user: Record<string, unknown>) => {
 
       return featureDetails === "_";
     },
-    isEnabledFor: (feature: string, segments?: string[] = []) => {
+    isEnabledFor (feature: string, segments?: string[] = []) {
       if (typeof feature !== "string") {
         return false
       }
