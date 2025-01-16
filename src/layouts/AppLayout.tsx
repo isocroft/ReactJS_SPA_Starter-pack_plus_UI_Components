@@ -56,12 +56,22 @@ const RouteNavigation = ({ children?: React.ReactNode }) => {
   );
 };
 
+const ErrorFallbackUI = ({ location: Location, error: Error }) => {
+  return (
+    <div className="">
+      Error Messsage: {error.message}
+      Error Name: {error.name}
+      Page Location Pathname: {location.pathname}
+    </div>
+  );
+};
+
 const RoutePages = (routes: RoutesInterface[]) => { 
 /* {
   getUserConfirmation,
 }: Pick<HashRouterProps, "getUserConfirmation"> */
   return (
-    <ErrorBoundary>
+    <ErrorBoundary FallbackUI={ErrorFallbackUI}>
       <Switch>
         {routes.map((route) => {
           return (
