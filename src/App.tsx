@@ -15,7 +15,7 @@ export type ExcludeFromProps<P, X extends { [key: string]: unknown }> = Pick<
   Exclude<keyof P, keyof X>
 >;
 
-//export type PickValueType<R> = R[keyof R];
+export type PickValueType<R> = R[keyof R];
 
 const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: boolean }>) => {
   const WithAuth = (props: ExcludeFromProps<{ isAuthenticated: boolean }, { isAuthenticated: boolean }>) => {
@@ -41,6 +41,7 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
 
     return <WrappedComponent isAuthenticated={user !== null} {...props} />
   }
+  return WithAuth;
 };
 
 function App({ isAuthenticated }) {
