@@ -30,6 +30,7 @@ export const roleFeed = "feed";
 /* @NOTE: Feature flag toggle items  (START) */
 
 export const homePage = "page:home";
+export const vehiclesPage_MenuItem = "page.menuitem:vehicle";
 export const vehiclesPage = "page:vehicle";
 
 /* @NOTE: Feature flag toggle items  (END) */
