@@ -70,10 +70,15 @@ export default function GlobalRoutingProvider ({
   });
 
   const location: Location = useLocation();
-  const breadcrumbs = useMemo(() => getBreadCrumbList(location.pathname), [location.pathname]);
+  const value = useMemo(() => {
+    return {
+      breadcrumbs: getBreadCrumbList(location.pathname), 
+      breadcrumbsMap
+    };
+  }, [location.key]);
 
   return (
-    <GlobalRoutingContext.Provider value={{ breadrumbs, breadcrumbsMap }}>
+    <GlobalRoutingContext.Provider value={value}>
       <Router
         getUserConfirmation={
           lockUnsavedChanges ? getUserConfirmation : undefined
