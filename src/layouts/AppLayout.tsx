@@ -45,12 +45,12 @@ const AppLayout = ({
   );
 };
 
-const RouteNavigation = ({ children?: React.ReactNode }) => {
+const RouteNavigation = ({ children?: React.ReactNode, className?: string, id?: string }) => {
   if (hasChildren(children, 0)) {
     return null;
   }
   return (
-    <aside>
+    <aside className={className} id={id}>
       {children}
     </aside>
   );
