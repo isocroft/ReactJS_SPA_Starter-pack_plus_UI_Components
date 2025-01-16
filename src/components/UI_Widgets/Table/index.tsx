@@ -19,13 +19,92 @@ function Table<D extends object, R>({
   columns,
   data,
   children,
+  className,
   ...props
 }: React.ComponentPropsWithRef<"table"> & { columns: ColumnOptions<D, R>, data: Array<D> }) => {
   const renderChildren = () => {
     /* More code later... */
   };
 
-  return <table {...props}>
+  useEffect(() => {  
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE"
+        }
+        return false
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id
+        }
+        return "";
+    }).filter(
+      (id) => id !== ""
+    );
+
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_table")) {
+      return;
+    }
+
+    const tableStyle = window.document.createElement('style');
+    tableStyle.id = "react-busser-headless-ui_table";
+
+    tableStyle.innerHTML = `  
+      @media screen and (min-width: 400px) {
+        .data-box-table .table-sticky-col {
+          position: sticky;
+          left: 0;
+        }
+      
+        .data-box-table .table-sticky-col-right {
+          right: 0;
+        }
+      }
+      
+      @media screen and (max-width: 560px) {
+        .data-box-table td::before {
+          content: attr(data-label);
+          display: table-cell; 
+        }
+        
+        .data-box-table td {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: none;
+        }
+      
+        .data-box-table td:first-child {
+          display: none;
+        }
+        
+        /*.data-box-table td:nth-child(2) {
+          background: #f9fafb;
+        }*/
+
+        .data-box-table thead tr > th {
+          display: none;
+        }
+        
+        .data-box-table > :not(thead:first-child) tr:first-child > th + :not(td),
+        .data-box-table > :not(thead:first-child) tr:first-child > th[scope='col'] {
+          display: none;
+        }
+      }
+    `;  
+    window.document.head.appendChild(tableStyle);  
+ 
+    return () => {  
+      window.document.head.removeChild(tableStyle);  
+    };  
+  }, []);
+
+  return <table {...props} className={`data-box-table ${className}`} role="table">
     {children}
   </table>
 };
@@ -35,13 +114,13 @@ const TableCaption: FC<Omit<React.ComponentPropsWithRef<"caption">, "children"> 
 };
 
 const TableHeader: FC<React.ComponentPropsWithRef<"thead">> = ({ children, ...props }) => {
-  return <thead {...props}>
+  return <thead {...props} role="rowgroup">
     {children}
   </thead>
 };
 
 const TableBody: FC<React.ComponentPropsWithRef<"tbody">> = ({ children, ...props }) => {
-  return <tbody {...props}>
+  return <tbody {...props} role="rowgroup">
     {children}
   </tbody>
 };
