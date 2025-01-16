@@ -2,8 +2,8 @@ import React, { Component } from "react";
 
 import { withRouter } from "react-router";
 
-// import Bugsnag from "@bugsnag/js";
-// import BugsnagPluginReact, { BugsnagErrorBoundary } from "@bugsnag/plugin-react";
+// import Bugsnag from "@bugsnag/js"; // v7.13.2
+// import BugsnagPluginReact, { BugsnagErrorBoundary } from "@bugsnag/plugin-react"; // v7.13.2
 // import config from "../config";
 // import { envProduction } from "../constants";
 
