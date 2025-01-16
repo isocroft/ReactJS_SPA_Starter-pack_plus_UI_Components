@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useTransition, PropsWithChildren } from "react";
-import { useIsFirstRender } from "react-busser";
+import React, { useTransition, PropsWithChildren } from "react";
 import {
   Route,
 } from "react-router-dom";
 import { Redirect, Switch } from "react-router";
 
-import GlobalRoutingProvider, { GlobalRoutingContextProps, useRoutingBreadCrumbsData } from "./GlobalRoutingProvider";
+import { ErrorBoundary } from "../shared/providers/ErrorBoundary";
+import GlobalRoutingProvider, { GlobalRoutingContextProps } from "./GlobalRoutingProvider";
 import { RoutePaths } from "../routes/routes.paths";
 
 import type { Location } from "history";
@@ -23,24 +23,13 @@ const AppLayout = ({
   className?: string;
   onAppNavigation?: GlobalRoutingContextProps["onGlobalNavigation"];
 }>) => {
-  const isFirstRender = useIsFirstRender();
   const [isPending, startTransition] = useTransition({ timeoutMS: 3500 });
-
-  useEffect(() => {
-    return () => {
-      document.documentElement.classList.remove("app-layout");
-    };
-  }, []);
 
   if (isPending) {
     document.documentElement.classList.add("app-busy");
   } else {
     document.documentElement.classList.remove("app-busy");
     document.documentElement.classList.remove("browser-navigation-animate");
-  }
-
-  if (isFirstRender) {
-    document.documentElement.classList.add("app-layout");
   }
   
   return (
@@ -70,23 +59,25 @@ const RoutePages = (routes: RoutesInterface[]) => {
   getUserConfirmation,
 }: Pick<HashRouterProps, "getUserConfirmation"> */
   return (
-    <Switch>
-      {routes.map((route) => {
-        return (
-          <Route
-            key={route.path}
-            exact={route.exact}
-            path={route.path}
-            component={() => {
-              return (
-                <route.component />
-              );
-            }}
-          />
-        );
-      })}
-      <Redirect to={RoutePaths.ERROR} />
-    </Switch>
+    <ErrorBoundary>
+      <Switch>
+        {routes.map((route) => {
+          return (
+            <Route
+              key={route.path}
+              exact={route.exact}
+              path={route.path}
+              component={() => {
+                return (
+                  <route.component />
+                );
+              }}
+            />
+          );
+        })}
+        <Redirect to={RoutePaths.ERROR} />
+      </Switch>
+    </ErrorBoundary>
   );
 };
 
