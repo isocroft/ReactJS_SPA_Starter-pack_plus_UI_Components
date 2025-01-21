@@ -1,3 +1,4 @@
+import React from "react";
 import Button from "../Button";
 import type { ButtonProps } from "../Button";
 
@@ -20,9 +21,16 @@ export function ClipboardButton({
     <Button
       type="button"
       data-clipboard-trigger="active"
-      onClick={() => {
+      onClick={(event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement, currentTarget: HTMLButtonElement }) => {
         if (canCopy) {
-          commands.hub.copy(COPY_COMMAND, textToCopy);
+          const button = event.currentTarget!;
+          commands.hub.copy(COPY_COMMAND, textToCopy).then(() => {
+            const event = new Event("copy", {
+              bubbles: true,
+              cancelable: true,
+            });
+            button.dispatchEvent(event);
+          });
         }
       }}
       {...props}
