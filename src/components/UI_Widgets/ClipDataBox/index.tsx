@@ -17,7 +17,7 @@ const useCurrentValue = (defaultValue: string) => {
   }
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
-    const currentValue = e.target.value;
+    const currentValue = event.target.value;
     setValue((prevValue) => {
       prevDefaultValue.current = prevValue;
       if (prevValue === currentValue) {
