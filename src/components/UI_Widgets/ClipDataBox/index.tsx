@@ -4,7 +4,9 @@ import InputBox from "../InputBox";
 import ClipBoardButton from "../ClipboardButton";
 
 import type { InputBoxProps } from "../InputBox";
-import type { ClipboardButtonnProps } from "../ClipboardButton";
+import type { ClipboardButtonProps } from "../ClipboardButton";
+
+import { hasChildren, isSubChild } from "../../../helpers/render-utils";
 
 const useCurrentValue = (defaultValue: string) => {
   const [value, setValue] = useState<string>(defaultValue);
@@ -38,9 +40,37 @@ const ClipBoardInput = ({ ...props }: Omit<InputBoxProps, "onChange">) => {
 
 const ClipDataBox = ({ defaultValue, children, ...props }: React.ComponentProps<"div"> & { defaultValue: string }) => {
   const [value] = useCurrentValue(defaultValue);
+  const childrenProps = React.Children.map(children, (child) => {
+    switch (true) {
+      case React.isValidElement(child) && isSubChild(child, "ClipInput"):
+        return React.cloneElement(
+          child as React.ReactElement<
+            Omit<InputBoxProps, "onChange">
+          >,
+          {
+            defaultValue: value
+          }
+        );
+        break;
+      case React.isValidElement(child) && isSubChild(child, "Option"):
+        return React.cloneElement(
+          child as React.ReactElement<
+            ClipboardButtonProps
+          >,
+          {
+            textToCopy: value
+          }
+        );
+        break;
+      default:
+        return null
+        break;
+    }
+  });
+
   return (
     <div {...props}>
-      {children}
+      {childrenProps}
     </div>
   );
 };
