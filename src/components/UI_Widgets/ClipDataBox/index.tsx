@@ -16,7 +16,7 @@ const useCurrentValue = (defaultValue: string) => {
     prevDefaultValue.current = value;
   }
 
-  const handleInputChange = (event: React.ChnageEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
     const currentValue = e.target.value;
     setValue((prevValue) => {
       prevDefaultValue.current = prevValue;
@@ -30,10 +30,13 @@ const useCurrentValue = (defaultValue: string) => {
   return [value, handleInputChange] as const;
 };
 
-const ClipBoardInput = ({ ...props }: Omit<InputBoxProps, "onChange" | "children">) => {
+const ClipBoardInput = ({ defaultValue = "", ...props }: Omit<InputBoxProps, "onChange" | "type" | "children">) => {
   return (
     <InputBox
       {...props}
+      type={"text"}
+      defaultValue={defaultValue}
+      readonly={defaultValue.length > 0}
     />
   );
 };
