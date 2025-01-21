@@ -1,7 +1,7 @@
-import React, { FC, useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 
 import InputBox from "../InputBox";
-import ClipBoardButton from "../ClipboardButton";
+import ClipboardButton from "../ClipboardButton";
 
 import type { InputBoxProps } from "../InputBox";
 import type { ClipboardButtonProps } from "../ClipboardButton";
@@ -16,7 +16,7 @@ const useCurrentValue = (defaultValue: string) => {
     prevDefaultValue.current = value;
   }
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (event: React.ChnageEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
     const currentValue = e.target.value;
     setValue((prevValue) => {
       prevDefaultValue.current = prevValue;
@@ -27,10 +27,10 @@ const useCurrentValue = (defaultValue: string) => {
     });
   };
 
-  return [value, handleInputChange];
+  return [value, handleInputChange] as const;
 };
 
-const ClipBoardInput = ({ ...props }: Omit<InputBoxProps, "onChange">) => {
+const ClipBoardInput = ({ ...props }: Omit<InputBoxProps, "onChange" | "children">) => {
   return (
     <InputBox
       {...props}
@@ -40,43 +40,58 @@ const ClipBoardInput = ({ ...props }: Omit<InputBoxProps, "onChange">) => {
 
 const ClipDataBox = ({ defaultValue, children, ...props }: React.ComponentProps<"div"> & { defaultValue: string }) => {
   const [value] = useCurrentValue(defaultValue);
-  const childrenProps = React.Children.map(children, (child) => {
-    switch (true) {
-      case React.isValidElement(child) && isSubChild(child, "ClipInput"):
-        return React.cloneElement(
-          child as React.ReactElement<
-            Omit<InputBoxProps, "onChange">
-          >,
-          {
-            defaultValue: value
-          }
-        );
-        break;
-      case React.isValidElement(child) && isSubChild(child, "Option"):
-        return React.cloneElement(
-          child as React.ReactElement<
-            ClipboardButtonProps
-          >,
-          {
-            textToCopy: value
-          }
-        );
-        break;
-      default:
-        return null
-        break;
-    }
-  });
+  const renderChildren = ($children: React.ReactNode) {
+    const childrenProps = React.Children.map($children, (child) => {
+      switch (true) {
+        case React.isValidElement(child) && isSubChild(child, "ClipInput"):
+          return React.cloneElement(
+            child as React.ReactElement<
+              Omit<InputBoxProps, "onChange">
+            >,
+            {
+              defaultValue: value
+            }
+          );
+          break;
+        case React.isValidElement(child) && isSubChild(child, "ClipButton"):
+          return React.cloneElement(
+            child as React.ReactElement<
+              ClipboardButtonProps
+            >,
+            {
+              textToCopy: value
+            }
+          );
+          break;
+        default:
+          return null
+          break;
+      }
+    });
+    return childrenProps;
+  };
 
   return (
     <div {...props}>
-      {childrenProps}
+      {hasChildren(children, 0) ? null : renderChildren(children)}
     </div>
   );
 };
 
+/*
+  import { Copy } from "lucide-react";
+
+  <ClipDataBox defaultValue={"Hallo!"}>
+    <ClipDataBox.ClipInput />
+    <ClipDataBox.ClipButton>
+      <Copy size={14} />
+    </ClipDataBox.ClipButton>
+  </ClipDataBox>
+
+*/
+
 ClipDataBox.ClipInput = ClipBoardInput;
-ClipDataBox.ClipButton = ClipBoardButton;
+ClipDataBox.ClipButton = ClipboardButton;
 
 type ClipDataBoxProps = React.ComponentProps<typeof ClipDataBox>;
 
