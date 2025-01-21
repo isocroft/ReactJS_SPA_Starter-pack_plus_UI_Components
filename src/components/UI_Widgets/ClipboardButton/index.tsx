@@ -33,3 +33,9 @@ export function ClipboardButton({
     </Button>
   );
 }
+
+type ClipboardButtonProps = React.ComponentProps<typeof ClipboardButton>;
+
+export type { ClipboardButtonProps };
+
+export default ClipboardButton;
