@@ -9,7 +9,7 @@ const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
   const anyValue = (
     defaultValue !== "" ? defaultValue : props.value
   ) as string;
-  const inputBoxRef = useRef<(HTMLInputElement & HTMLTextAreaElement) | null>(null);
+  const inputBoxRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (!valueSync || inputBoxRef.current === null || anyValue === "") {
       return;
@@ -17,12 +17,7 @@ const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
     /* @NOTE: Programmatically trigger a `change` event on a <input> tag */
     /* @CHECK: https://github.com/facebook/react/issues/19678#issuecomment-679044981 */
     const programmaticChangeEvent = new Event("input", { bubbles: true });
-    const setInputValue = Component === "textarea"
-      ? Object.getOwnPropertyDescriptor(
-        HTMLTextAreaElement.prototype,
-        "value"
-      )!.set
-      : Object.getOwnPropertyDescriptor(
+    const setInputValue = Object.getOwnPropertyDescriptor(
       HTMLInputElement.prototype,
       "value"
     )!.set;
@@ -39,7 +34,17 @@ const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
 
   return (
     <input
+      type={type}
       {...props}
+      defaultValue={
+        !props.value && defaultValue !== "" ? defaultValue : undefined
+      }
+      ref={(node) => {
+        if (node) {
+          inputBoxRef.current = node;
+        }
+        return typeof ref === "function" ? ref(node) : ref;
+      }}
     />
   );
 });
