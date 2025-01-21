@@ -3,6 +3,7 @@ import React, { FC, Ref, useEffect, useRef } from "react";
 const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
   type = "text",
   defaultValue = "",
+  tabIndex = 0,
   valueSync = false,
   ...props
 }, ref: Ref<HTMLInputElement>) => {
@@ -35,6 +36,7 @@ const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
   return (
     <input
       type={type}
+      tabIndex={tabIndex}
       {...props}
       defaultValue={
         !props.value && defaultValue !== "" ? defaultValue : undefined
@@ -48,3 +50,9 @@ const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
     />
   );
 });
+
+type InputBoxProps = React.ComponentProps<typeof InputBox>;
+
+export type { InputBoxProps };
+
+export default InputBox;
