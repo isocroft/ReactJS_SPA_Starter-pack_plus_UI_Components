@@ -1,3 +1,7 @@
-import React from "react";
+import React, { FC, Ref, useEffect, useRef } from "react";
 
-React.ComponentProps<T>
+const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
+  
+}) => {
+
+});
