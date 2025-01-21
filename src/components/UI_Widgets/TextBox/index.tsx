@@ -5,7 +5,6 @@ import { hasChildren } from "../../../helpers/render-utils";
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentProps<T> & {
     as?: T;
-    children: undefined;
   };
 
 const TextBox: FC<
@@ -47,7 +46,7 @@ const TextBox: FC<
       ) => void;
       onInput?: () => void;
       onInvalid?: () => void;
-      type?: "text" | "password" | "number" | "email" | "search" | "url" | "date";
+      type?: "text" | "password" | "email" | "search" | "url";
     } & {
       wrapperClassName?: string;
       labelPosition: "beforeInput" | "afterInput";
