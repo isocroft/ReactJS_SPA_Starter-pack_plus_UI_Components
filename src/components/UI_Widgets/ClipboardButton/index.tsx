@@ -20,7 +20,7 @@ export function ClipboardButton({
   return (
     <Button
       type="button"
-      data-clipboard-trigger="active"
+      data-clipboard-object="trigger"
       onClick={(event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement, currentTarget: HTMLButtonElement }) => {
         if (canCopy) {
           const button = event.currentTarget!;
