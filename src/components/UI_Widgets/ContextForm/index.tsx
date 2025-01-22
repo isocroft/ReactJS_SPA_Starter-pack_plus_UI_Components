@@ -104,7 +104,7 @@ const ContextForm = <F extends FieldValues>({
     <CustomContextComboBox
       id="gender"
       className="">
-{/*   <ComboBox.Trigger
+{/ *   <ComboBox.Trigger
         className=""
         type="panel">
         <p>Select Gender:</p>
@@ -112,7 +112,7 @@ const ContextForm = <F extends FieldValues>({
       <ComboBox.List className="">
         <li>Male</li>
         <li>Female</li>
-      </ComboBox.List> */}
+      </ComboBox.List> * /}
       <span>Okay Go:</span>
     </CustomContextComboBox>
     <ContextFileBox
