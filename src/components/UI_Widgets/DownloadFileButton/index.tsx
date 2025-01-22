@@ -49,7 +49,7 @@ import { Download } from "lucide-react";
   fileurl="https://x9Asjf40doUy6Trm8Lm30.object"
   className={"p-2 border-[#eef2ab] bg-gray-50 text-[#ffffff]"}
 >
-  <span>Download <Download size={14} /></span>
+  <span><Download size={14} /> <strong data-light>Download</strong></span>
 </DownloadFileButton>
 
 */
