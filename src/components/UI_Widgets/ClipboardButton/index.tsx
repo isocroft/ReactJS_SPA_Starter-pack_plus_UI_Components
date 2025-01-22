@@ -24,7 +24,7 @@ export function ClipboardButton({
       onClick={(event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement, currentTarget: HTMLButtonElement }) => {
         if (canCopy) {
           const button = event.currentTarget!;
-          commands.hub.copy(COPY_COMMAND, textToCopy).then((isTriggered) => {
+          commands.hub.execute(COPY_COMMAND, textToCopy).then((isTriggered) => {
             if (isTriggered) {
               return;
             }
