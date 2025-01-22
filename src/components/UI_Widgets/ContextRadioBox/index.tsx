@@ -9,6 +9,8 @@ const ContextRadioBox: FC<RadioBoxProps & { ErrorComponent?: React.FunctionCompo
   children,
   className,
   wrapperClassName,
+  tabIndex = 0,
+  displayStyle,
   labelClassName,
   radioIconSize,
   radioIconStrokeColor,
@@ -41,6 +43,8 @@ const ContextRadioBox: FC<RadioBoxProps & { ErrorComponent?: React.FunctionCompo
         {...register(name)}
         {...props}
         className={className}
+        displayStyle={displayStyle}
+        tabIndex={tabIndex}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
         radioIconSize={radioIconSize}
