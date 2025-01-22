@@ -7,14 +7,14 @@ import {
   COPY_COMMAND
 } from "react-busser";
 
-export function ClipboardButton({
+const ClipboardButton = ({
   className,
   children,
   textToCopy,
   ...props
 }: Omit<ButtonProps, "onClick" | "type" | "disabled"> & {
   textToCopy: string;
-}) {
+}) => {
   const commands = useUICommands();
   const canCopy = typeof textToCopy === "string" && textToCopy.length > 0;
   return (
@@ -44,7 +44,20 @@ export function ClipboardButton({
       {children}
     </Button>
   );
-}
+};
+
+/*
+
+import { Copy } from "lucide-react";
+
+<ClipboardButton
+  textToCopy={"<<API KEY>>"}
+  className={"p-2 border-[#eef2ab] bg-gray-50 text-[#ffffff]"}
+>
+  <Copy size={14} />
+</ClipboardButton>
+
+*/
 
 type ClipboardButtonProps = React.ComponentProps<typeof ClipboardButton>;
 
