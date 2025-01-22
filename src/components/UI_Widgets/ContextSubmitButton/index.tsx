@@ -5,9 +5,10 @@ import Button from "../Button";
 
 import type { ButtonProps } from "../Button";
 
-const ContextSubmitButton: Omit<ButtonProps, "disabled" | "type"> = ({
+const ContextSubmitButton: Omit<ButtonProps, "disabled" | "type"> & { isLoading: boolean } = ({
   children,
-  className
+  className,
+  isLoading = false,
   disabled,
   ...props
 }) => {
@@ -18,7 +19,7 @@ const ContextSubmitButton: Omit<ButtonProps, "disabled" | "type"> = ({
       <Button
         {...props}
         type={"submit"}
-        disabled={!isValid || isSubmitting}
+        disabled={!isValid || isSubmitting || isLoading}
         className={className}
       >
         {children}
