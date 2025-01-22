@@ -1,12 +1,11 @@
-import Button from "@/react-busser-components/Button";
-import type { ButtonProps } from "@/react-busser-components/Button";
+import React from "react";
 
-import { hasChildren } from "...";
+import Button from "../Button";
+import type { ButtonProps } from "../Button";
 
 const DownloadFileButton = ({
   fileurl,
   filename,
-  children,
   className,
   children,
   ...props
@@ -30,7 +29,7 @@ const DownloadFileButton = ({
         a.download = name;
         a.target = "_blank";
         document.body.appendChild(a);
-        a.click();
+        await a.click();
         document.body.removeChild(a);
       }}
       {...props}
@@ -54,3 +53,10 @@ import { Download } from "lucide-react";
 </DownloadFileButton>
 
 */
+
+type DownloadFileButtonProps = React.ComponentProps<typeof DownloadFileButton>;
+
+export type { DownloadFileButtonProps };
+
+export default DownloadFileButton;
+
