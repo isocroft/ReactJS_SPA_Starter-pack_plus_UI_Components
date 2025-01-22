@@ -1,4 +1,5 @@
 import React from "react";
+
 import Button from "../Button";
 import type { ButtonProps } from "../Button";
 
@@ -7,11 +8,11 @@ import {
   PRINT_COMMAND
 } from "react-busser";
 
-export function PrintPageButton({
+const PrintPageButton = ({
   className,
   children,
   ...props
-}: Omit<ButtonProps, "onClick" | "type">) {
+}: Omit<ButtonProps, "onClick" | "type">) => {
   const commands = useUICommands({
     print: {
       documentTitle: document.title,
@@ -60,6 +61,18 @@ export function PrintPageButton({
     </Button>
   );
 }
+
+/*
+
+import { BookCheck } from 'lucide-react';
+
+<PrintPageButton
+  className={"p-2 border-[#eef2ab] bg-gray-50 text-[#ffffff]"}
+>
+  <span><BookCheck size={14} /> <strong data-light>Print</strong></span>
+</PrintPageButton>
+
+*/
 
 type PrintPageButtonProps = React.ComponentProps<typeof PrintPageButton>;
 
