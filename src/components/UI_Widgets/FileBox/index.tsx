@@ -5,7 +5,7 @@ import { hasChildren } from "../../../helpers/render-utils";
 const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirectory" | "multiple"> & {
   wrapperClassname?: string;
   labelPosition?: "beforeInput" | "afterInput"
-}> = ({
+}> = React.forwardRef(({
   id,
   name,
   tabIndex = 0,
@@ -48,7 +48,7 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
       </label>) || null)}
     </div>
   );
-};
+});
 
 type FileBoxProps = React.ComponentProps<typeof FileBox>;
 
