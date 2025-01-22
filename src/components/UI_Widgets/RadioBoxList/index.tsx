@@ -9,21 +9,22 @@ type CustomElementTagProps<T extends React.ElementType> =
   };
 
 type RadioBoxListControlProps = {
+  displayStyle?: "transparent" | "adjusted";
+  labelClassName?: string;
+  wrapperClassName?: string;
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
-} & Omit<React.ComponentProps<"input">, "type" | "value" | "placeholder" | "crossOrigin">;
+} & Omit<React.ComponentProps<"input">, "type" | "value" | "placeholder" | "crossOrigin" | "id" | "name">;
 
 const Option: FC<
   {
     selected?: boolean;
     value?: string;
-    labelClassName?: string;
     onChange?: (
       event: React.ChangeEvent<HTMLInputElement>,
       selectedValue: string | number,
     ) => void;
-    wrapperClassName?: string;
   } & Omit<RadioBoxListControlProps, "onChange">
 > = ({
   value,
@@ -34,10 +35,12 @@ const Option: FC<
   wrapperClassName = "",
   labelClassName = "",
   className = "",
+  displayStyle = "transparent",
   radioIconFillColor,
   radioIconStrokeColor,
   radioIconSize,
   onChange,
+  onBlur,
   children,
   ...props
 }) => {
@@ -67,8 +70,10 @@ const Option: FC<
           type="radio"
           {...props}
           value={value}
+          data-display-style={displayStyle}
           className={"radio_hidden-input"}
           onChange={onChangeHandler}
+          onBlur={onBlur}
           checked={selected}
         />
         {typeof radioIconSize === "number" ? (<CircleIcon
@@ -101,15 +106,20 @@ const RadioBoxList = <L = { text: string, value: string }>({
   name,
   list = [],
   onChange,
+  onBlur,
   children,
+  wrapperClassName = "",
+  labelClassName = "",
+  displayStyle = "transparent",
   radioDefaultValue = "",
   radioIconFillColor,
   radioIconStrokeColor,
   required,
   disabled,
   radioIconSize,
+  id,
   ...props
-}: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor"> &
+}: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor" | "wrapperClassName" | "labelClassName" | "displayStyle"> &
   { radioDefaultValue?: string, list: Array<L> } &
   CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
@@ -151,8 +161,18 @@ const RadioBoxList = <L = { text: string, value: string }>({
         min-width: fit-content;
       }
 
-      .radio_hidden-input {
+      .radio_hidden-input[data-display-style="transparent"] {
         opacity: 0;
+      }
+
+      .radio_hidden-input[data-display-style="adjusted"] {
+        -moz-appearance: -moz-none;
+        -moz-apperance: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      .radio_hidden-input {
         position: absolute;
         display: inline-block;
         width: 100%;
@@ -206,8 +226,15 @@ const RadioBoxList = <L = { text: string, value: string }>({
           event.currentValue = selectedValue;
           onChange(event);
         },
+        onBlur: (event) => {
+          onBlur(event);
+        },
+        id,
         value: childValue,
         selected: radioValue.current === childValue,
+        wrapperClassName,
+        labelClassName,
+        displayStyle,
         radioIconFillColor,
         radioIconStrokeColor,
         radioIconSize,
@@ -220,10 +247,10 @@ const RadioBoxList = <L = { text: string, value: string }>({
 
   return (
     <Component
+      {...props}
       className={`radio_wrapper-box${
         className ? ` ${className}` : ""
       }`}
-      {...props}
     >
       {hasChildren(children, 0)
       ? list.map((listitem) => {
@@ -236,14 +263,21 @@ const RadioBoxList = <L = { text: string, value: string }>({
               radioValue.current = selectedValue;
               /* @ts-ignore */
               event.currentValue = selectedValue;
-              onChange(event);
+              return onChange(event);
             },
-          radioIconFillColor={radioIconFillColor}
-          radioIconStrokeColor={radioIconStrokeColor}
-          radioIconSize={radioIconSize}
-          required={required}
-          disabled={disabled}
-          name={name}
+            onBlur: (event) => {
+              return onBlur(event);
+            },
+            labelClassName={labelClassName}
+            wrapperClassName={wrapperClassName}
+            displayStyle={displayStyle}
+            radioIconFillColor={radioIconFillColor}
+            radioIconStrokeColor={radioIconStrokeColor}
+            radioIconSize={radioIconSize}
+            required={required}
+            disabled={disabled}
+            name={name}
+            id={id}
           >
             <span>{listitem.text}</span>
           </Option>
@@ -256,7 +290,7 @@ const RadioBoxList = <L = { text: string, value: string }>({
 
 // const [radioValue, setRadioValue] = useState("male");
 
-// <RadioBoxList as="section" name="gender" radioDefaultValue={"male"} onChange={(event) => {
+// <RadioBoxList as="section" name="gender" id="gender" displayStyle="adjusted" radioDefaultValue={"male"} onChange={(event) => {
 //   console.log('current value: ', event.currentValue);
 //   setRadioValue(event.currentValue);
 // }} radioIconSize={RadioIcon.IconSizes.BIG}>
