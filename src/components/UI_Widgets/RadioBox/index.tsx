@@ -113,12 +113,7 @@ const RadioBox: FC<
 
   return (
     <div {...props} className={wrapperClassName} tabIndex={tabIndex}>
-      <span
-        className={`
-          radio_control-icon-box ${className}
-        `}
-      >
-        {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
+      {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
         {
           hasChildren(children, 1)
             ? React.cloneElement(
@@ -132,6 +127,11 @@ const RadioBox: FC<
             : null
         }
       </label>) || null)}
+      <span
+        className={`
+          radio_control-icon-box ${className}
+        `}
+      >
         <input
           id={id}
           name={name}
