@@ -92,16 +92,19 @@ const ContextForm = <F extends FieldValues>({
       as="textarea"
       labelPosition="afterInput"
       className=""
-    />
+    >
+      <span>Text Input:</span>
+    </ContextTextBox>
     <ContextCheckBox
       className=""
-      labelPosition="afterInput">
-      <span>Rate</span>
+      labelPosition="afterInput"
+    >
+      <span>Rate:</span>
     </ContextCheckBox>
     <CustomContextComboBox
       id="gender"
       className="">
-      <ComboBox.Trigger
+{/*   <ComboBox.Trigger
         className=""
         type="panel">
         <p>Select Gender:</p>
@@ -109,15 +112,19 @@ const ContextForm = <F extends FieldValues>({
       <ComboBox.List className="">
         <li>Male</li>
         <li>Female</li>
-      </ComboBox.List>
+      </ComboBox.List> */}
+      <span>Okay Go:</span>
     </CustomContextComboBox>
     <ContextFileBox
       accept="image/png, image/jpeg"
+      labelPosition="afterInput"
       className=""
-    />
-    <ContextRadioBoxList>
+    >
+      <span>Text Input:</span>
+    </ContextFileBox>
+    <CustomContextRadioBoxList>
       
-    </ContextRadioBoxList>
+    </CustomContextRadioBoxList>
  </ContextForm>
 
 */
