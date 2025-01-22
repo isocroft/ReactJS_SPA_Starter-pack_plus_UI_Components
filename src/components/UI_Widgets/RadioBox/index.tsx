@@ -8,8 +8,10 @@ const RadioBox: FC<
   {
     wrapperClassName?: string;
     labelClassName?: string;
+    labelPosition?: "beforeInput" | "afterInput";
     children?: React.ReactNode;
-    radioIconSize?: number,
+    displayStyle?: "transparent" | "adjusted";
+    radioIconSize?: number;
     radioIconStrokeColor?: string;
   } &
    Omit<React.ComponentProps<"input">, "type" | "placeholder">
@@ -19,10 +21,12 @@ const RadioBox: FC<
   tabIndex = 0,
   wrapperClassName,
   labelClassName,
+  labelPosition = "beforeInput",
   className,
   children,
   radioIconSize,
   radioIconStrokeColor,
+  displayStyle = "transparent",
   onChange,
   onBlur,
   ...props
@@ -63,8 +67,18 @@ const RadioBox: FC<
         min-width: fit-content;
       }
 
-      .radio_hidden-input {
+      .radio_hidden-input[data-display-style="transparent"] {
         opacity: 0;
+      }
+
+      .radio_hidden-input[data-display-style="adjusted"] {
+        -moz-appearance: -moz-none;
+        -moz-apperance: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      .radio_hidden-input {
         position: absolute;
         display: inline-block;
         width: 100%;
@@ -98,29 +112,13 @@ const RadioBox: FC<
   }, []);
 
   return (
-    <div className={wrapperClassName}>
+    <div {...props} className={wrapperClassName} tabIndex={tabIndex}>
       <span
         className={`
           radio_control-icon-box ${className}
         `}
       >
-        <input
-          id={id}
-          tabIndex={tabIndex}
-          name={name}
-          type="radio"
-          onChange={onChange}
-          onBlur={onBlur}
-          {...props}
-          className={"radio_hidden-input"}
-          ref={ref}
-        />
-        {typeof radioIconSize === "number" ? (<CircleIcon
-          size={radioIconSize}
-          iconStroke={radioIconStrokeColor}
-        />) : null}
-      </span>
-      {hasChildren(children, 0) ? null :<label htmlFor={id} className={labelClassName}>
+        {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
         {
           hasChildren(children, 1)
             ? React.cloneElement(
@@ -133,7 +131,37 @@ const RadioBox: FC<
               )
             : null
         }
-      </label>}
+      </label>) || null)}
+        <input
+          id={id}
+          name={name}
+          type="radio"
+          data-display-style={displayStyle}
+          onChange={onChange}
+          onBlur={onBlur}
+          {...props}
+          className={"radio_hidden-input"}
+          ref={ref}
+        />
+        {typeof radioIconSize === "number" ? (<CircleIcon
+          size={radioIconSize}
+          iconStroke={radioIconStrokeColor}
+        />) : null}
+      </span>
+      {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
+        {
+          hasChildren(children, 1)
+            ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+            : null
+        }
+      </label>) || null)}
     </div>
   );
 });
