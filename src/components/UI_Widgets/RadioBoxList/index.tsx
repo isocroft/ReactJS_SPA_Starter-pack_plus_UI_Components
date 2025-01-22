@@ -29,7 +29,6 @@ const Option: FC<
 > = ({
   value,
   selected = false,
-  tabIndex = 0,
   name,
   id,
   wrapperClassName = "",
@@ -65,7 +64,6 @@ const Option: FC<
       >
         <input
           id={id}
-          tabIndex={tabIndex}
           name={name}
           type="radio"
           {...props}
@@ -105,6 +103,7 @@ const RadioBoxList = <L = { text: string, value: string }>({
   className = "",
   name,
   list = [],
+  tabIndex = 0,
   onChange,
   onBlur,
   children,
@@ -120,7 +119,7 @@ const RadioBoxList = <L = { text: string, value: string }>({
   id,
   ...props
 }: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor" | "wrapperClassName" | "labelClassName" | "displayStyle"> &
-  { radioDefaultValue?: string, list: Array<L> } &
+  { radioDefaultValue?: string, list: Array<L>, tabIndex?: number } &
   CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
 
@@ -251,6 +250,7 @@ const RadioBoxList = <L = { text: string, value: string }>({
       className={`radio_wrapper-box${
         className ? ` ${className}` : ""
       }`}
+      tabIndex={tabIndex}
     >
       {hasChildren(children, 0)
       ? list.map((listitem) => {
