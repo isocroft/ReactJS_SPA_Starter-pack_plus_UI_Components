@@ -13,6 +13,7 @@ type CustomElementTagProps<T extends React.ElementType> =
   };
 
 type ContextRadioBoxListControlProps = {
+  displayStyle?: "transparent" | "adjusted";
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
@@ -28,6 +29,7 @@ const InputOption: FC<
   tabIndex = 0,
   name,
   id,
+  displayStyle = "transparent",
   wrapperClassName = "",
   labelClassName = "",
   className = "",
@@ -47,11 +49,11 @@ const InputOption: FC<
         `}
       >
         <input
-          id={id}
-          tabIndex={tabIndex}
+          id={id || value}
           name={name}
           type="radio"
           onChange={onChange}
+          data-display-style={displayStyle}
           onBlur={onBlur}
           ref={ref}
           {...props}
@@ -64,7 +66,7 @@ const InputOption: FC<
           iconStroke={radioIconStrokeColor}
         />) : null}
       </span>
-      {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
+      {hasChildren(children, 0) ? null : <label htmlFor={id || value} className={labelClassName}>
         {
           hasChildren(children, 1)
             ? React.cloneElement(
@@ -87,6 +89,10 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
   className = "",
   name,
   children,
+  tabIndex = 0,
+  displayStyle = "transparent",
+  wrapperClassName = "",
+  labelClassName = "",
   radioDefaultValue = "",
   radioIconFillColor,
   radioIconStrokeColor,
@@ -153,8 +159,18 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
         min-width: fit-content;
       }
 
-      .radio_hidden-input {
+      .radio_hidden-input[data-display-style="transparent"] {
         opacity: 0;
+      }
+
+      .radio_hidden-input[data-display-style="adjusted"] {
+        -moz-appearance: -moz-none;
+        -moz-apperance: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      .radio_hidden-input {
         position: absolute;
         display: inline-block;
         width: 100%;
@@ -199,13 +215,17 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
     return React.cloneElement(
       child as React.ReactElement<
         {
-          value?: string
+          labelClassName?: string;
+          wrapperClassName?: string;
         } & ContextRadioBoxListControlProps
       >,
       {
         ...rest,
         value: childValue,
         radioIconFillColor,
+        wrapperClassName,
+        labelClassName,
+        displayStyle,
         radioIconStrokeColor,
         radioIconSize,
         ref: (input?: HTMLInputElement) => {
@@ -222,10 +242,11 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
 
   return (
     <Component
+      {...props}
       className={`radio_wrapper-box${
         className ? ` ${className}` : ""
       }`}
-      {...props}
+      tabIndex={tabIndex}
     >
       <>
         {childrenProps}
@@ -236,7 +257,7 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
 };
 
 
-// <ContextRadioBoxList as="section" name="gender" radioDefaultValue={"male"} radioIconSize={RadioIcon.IconSizes.BIG}>
+// <ContextRadioBoxList as="section" name="gender" id="gender" displayStyle="adjusted" radioDefaultValue={"male"} radioIconSize={RadioIcon.IconSizes.BIG}>
 //   <ContextRadioBoxList.Option value="male" id="male">
 //     <span>Male</span>
 //   </ContextRadioBoxList.Option>
