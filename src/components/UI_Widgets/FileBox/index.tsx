@@ -19,9 +19,10 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
   children,
   onChange,
   onBlur,
-  className,
+  className = "",
   ...props
 }, ref: Ref<HTMLInputElement>) => {
+  const wrapperDivRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -61,6 +62,10 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
     fileStyle.id = "react-busser-headless-ui_file";
 
     fileStyle.innerHTML = `
+      :root {
+        --file-input-content-font-size: 1rem;
+      }
+      
       .file_wrapper-box {
         position: static;
         display: inline-block; /* shrink-to-fit trigger */
@@ -69,8 +74,39 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
       }
 
       .file-updated-input {
-      
+        display: block;
+        font-size: 0;
+        position: relative;
+        z-index: 0;
+        clear: both;
       }
+
+      @supports (not selector(::file-selector-button)) and
+        (not selector(::-ms-browse)) and (not selector(::-webkit-file-upload-button)) {
+        input[type="file"][class*="file-updated-input"]::after {
+          margin-left: -20px;
+        }
+      }
+      
+      input[type="file"][class*="file-updated-input"]::-ms-browse {
+        display: none;
+      }
+      
+      input[type="file"][class*="file-updated-input"]::-webkit-file-upload-button {
+        display: none;
+      }
+      
+      input[type="file"][class*="file-updated-input"]::file-selector-button {
+        display: none;
+      }
+
+      .file-updated-input::after {
+        font-size: var(--file-input-content-font-size);
+        position: relative;
+        z-index: 10;
+        display:inline-block;
+      }
+      
     `;  
     window.document.head.appendChild(fileStyle);  
   
@@ -79,8 +115,21 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
     };  
   }, []);
 
+  useEffect(() => {
+    if (wrapperDivRef.current !== null && fileInputRef.current !== null) {
+      const $style = window.getComputedStyle(wrapperDivRef.current);
+      const style = window.getComputedStyle(fileInputRef.current, '::after');
+      if (style['font-size'] !== $style['font-size']) {
+        document.documentElement.style.setProperty(
+          '--file-input-content-font-size',
+          (parseInt(style['font-size']) / 16) + 'rem'
+        );
+      }
+    }
+  }, []);
+
   return (
-    <div id={id} name={name} tabIndex={tabIndex} {...props} className={`file_wrapper-box ${wrapperClassName}`}>
+    <div id={id} name={name} tabIndex={tabIndex} {...props} className={`file_wrapper-box ${wrapperClassName}`} ref={wrapperDivRef}>
       {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
         {children}
       </label>) || null)}
@@ -97,6 +146,8 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
         ref={(node?: HTMLInputElement) => {
           if (node) {
             fileInputRef.current = node;
+          } else {
+            fileInputRef.current = null;
           }
           return typeof ref === "function" ? ref(node) : ref;
         }}
