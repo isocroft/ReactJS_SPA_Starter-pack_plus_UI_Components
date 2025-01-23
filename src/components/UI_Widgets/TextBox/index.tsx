@@ -205,9 +205,11 @@ const TextBox: FC<
           defaultValue={
             !props.value && defaultValue !== "" ? defaultValue : undefined
           }
-          ref={(node) => {
+          ref={(node?: HTMLInputElement) => {
             if (node) {
               textBoxRef.current = node;
+            } else {
+              textBoxRef.current = null;
             }
             return typeof ref === "function" ? ref(node) : ref;
           }}
