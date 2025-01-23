@@ -63,7 +63,7 @@ const Option: FC<
         `}
       >
         <input
-          id={id}
+          id={id || value}
           name={name}
           type="radio"
           {...props}
@@ -80,7 +80,7 @@ const Option: FC<
           iconStroke={radioIconStrokeColor}
         />) : null}
       </span>
-      {hasChildren(children, 0) ? null : <label htmlFor={id} className={labelClassName}>
+      {hasChildren(children, 0) ? null : <label htmlFor={id || value} className={labelClassName}>
         {
           hasChildren(children, 1)
             ? React.cloneElement(
@@ -116,7 +116,6 @@ const RadioBoxList = <L = { text: string, value: string }>({
   required,
   disabled,
   radioIconSize,
-  id,
   ...props
 }: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor" | "wrapperClassName" | "labelClassName" | "displayStyle"> &
   { radioDefaultValue?: string, list: Array<L>, tabIndex?: number } &
@@ -228,7 +227,6 @@ const RadioBoxList = <L = { text: string, value: string }>({
         onBlur: (event) => {
           onBlur(event);
         },
-        id,
         value: childValue,
         selected: radioValue.current === childValue,
         wrapperClassName,
@@ -277,7 +275,6 @@ const RadioBoxList = <L = { text: string, value: string }>({
             required={required}
             disabled={disabled}
             name={name}
-            id={id}
           >
             <span>{listitem.text}</span>
           </Option>
