@@ -1,7 +1,7 @@
 import React from "react"
 
 /*
-  import { React, useEffect, useMemo, useState } from 'react';
+import { React, useEffect, useMemo, useState } from 'react';
 import styles from './Switch.module.scss';
 import { Color } from '../../../components/interfaces';
 import { Switch as Toggle } from '@headlessui/react';
@@ -57,3 +57,15 @@ export const Switch = ({
   );
 };
 */
+
+const Switch = ({ ...props }: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "onChange" | "onBlur">) => {
+  return (
+    <p class="switch">
+       <svg  width="58" height="29" viewBox="0 0 26 26" fill="none">
+          <rect x="0.5" y="0.5" width="30" height="30" rx="15" fill="transparent" stroke="transparent" />
+        </svg>
+       <input {...props} type="checkbox" />
+      <span data-switch-on-text="Yes"></span>
+    </p>
+  );
+};
