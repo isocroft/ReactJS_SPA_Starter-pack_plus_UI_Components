@@ -228,13 +228,14 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
         displayStyle,
         radioIconStrokeColor,
         radioIconSize,
-        ref: (input?: HTMLInputElement) => {
-          ref(input);
-          if (input) {
-            radioValue.current = input.value;
+        ref: (node?: HTMLInputElement) => {
+          //ref(node);
+          if (node) {
+            radioValue.current = node.value;
           } else {
             radioValue.current = radioDefaultValue;
           }
+          return typeof ref === "function" ? ref(node) : ref;
         }
       }
     );
