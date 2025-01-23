@@ -41,9 +41,11 @@ const InputBox: FC<React.ComponentProps<"input">> = React.forwardRef(({
       defaultValue={
         !props.value && defaultValue !== "" ? defaultValue : undefined
       }
-      ref={(node) => {
+      ref={(node?: HTMLInputElement) => {
         if (node) {
           inputBoxRef.current = node;
+        } else {
+          inputBoxRef.current = null;
         }
         return typeof ref === "function" ? ref(node) : ref;
       }}
