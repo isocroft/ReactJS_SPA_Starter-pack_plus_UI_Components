@@ -1,4 +1,6 @@
-import React from "react"
+import React, { useEffect } from "react";
+
+import { EllipseIcon } form "./assets/EllipseIcon";
 
 /*
 import { React, useEffect, useMemo, useState } from 'react';
@@ -58,13 +60,58 @@ export const Switch = ({
 };
 */
 
-const Switch = ({ ...props }: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "onChange" | "onBlur">) => {
+const Switch = ({ swicthIconSize, ...props }: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "onChange" | "onBlur"> & {
+  swicthIconSize?: number
+}) => {
+  useEffect(() => {
+    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
+      window.document.styleSheets
+    ).filter(
+      (sheet) => {
+        if (sheet.ownerNode) {
+          return sheet.ownerNode.nodeName === "STYLE";
+        }
+        return false;
+    }).map(
+      (sheet) => {
+        if (sheet.ownerNode
+          && sheet.ownerNode instanceof Element) {
+          return sheet.ownerNode.id;
+        }
+        return "";
+    }).filter(
+      (id) => id !== ""
+    );
+
+    if (styleSheetsOnly.length > 0
+      && styleSheetsOnly.includes("react-busser-headless-ui_switch")) {
+      return;
+    }
+
+    const switchStyle = window.document.createElement('style');
+    switchStyle.id = "react-busser-headless-ui_switch";
+
+    switchStyle.innerHTML = `
+  
+      .switch_wrapper-box {
+        position: static;
+        display: inline-block; /* shrink-to-fit trigger */
+        min-height: 0;
+        min-width: fit-content;
+      }
+      
+    `;  
+    window.document.head.appendChild(switchStyle);  
+  
+    return () => {  
+      window.document.head.removeChild(switchStyle);  
+    };  
+  }, []);
+
   return (
-    <p class="switch">
-       <svg  width="58" height="29" viewBox="0 0 26 26" fill="none">
-          <rect x="0.5" y="0.5" width="30" height="30" rx="15" fill="transparent" stroke="transparent" />
-        </svg>
-       <input {...props} type="checkbox" />
+    <p className="switch_wrapper-box">
+       <EllipseIcon size={swicthIconSize} />
+       <input {...props} type="checkbox" classname />
       <span data-switch-on-text="Yes"></span>
     </p>
   );
