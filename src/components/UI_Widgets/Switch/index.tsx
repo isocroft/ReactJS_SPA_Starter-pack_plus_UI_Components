@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Ref, useEffect } from "react";
 
 import { EllipseIcon } form "./assets/EllipseIcon";
 
@@ -62,18 +62,25 @@ export const Switch = ({
 };
 */
 
-const Switch = ({
+const SwitchBox = React.forwardRef(({
+  id,
   switchIconSize = 16,
+  tabIndex = 0,
   switchActiveText = '',
   switchInactiveText = '',
   wrapperClassName = '',
+  labelClassName = '',
+  labelPosition = "beforeInput"
   ...props
 }: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "readonly" | "onChange" | "onBlur" | "name" | "id"> & {
+  tabIndex? number;
   switchIconSize?: number;
   switchActiveText?: string;
   switchInactiveText?: string;
   wrapperClassName?: string;
-}) => {
+  labelClassName?: string;
+  labelPosition?: "beforeInput" | "afterInput";
+}, ref: Ref<HTMLInputElement>) => {
   useEffect(() => {
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
       window.document.styleSheets
@@ -244,12 +251,40 @@ const Switch = ({
   }, [switchIconSize]);
 
   return (
-    <div className={wrapperClassName}>
+    <div className={wrapperClassName} tabIndex={tabIndex}>
+      {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
+        {
+          hasChildren(children, 1)
+            ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+            : null
+        }
+      </label>) || null)}
       <p className={"switch_wrapper-box"}>
         <EllipseIcon size={switchIconSize} />
-        <input {...props} type="checkbox" className={className} />
+        <input {...props} id={id} ref={ref} type="checkbox" className={className} />
         <span data-switch-on-text={switchActiveText} data-switch-off-text={switchInactiveText}></span>
       </p>
+      {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
+        {
+          hasChildren(children, 1)
+            ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+            : null
+        }
+      </label>) || null)}
     </div>
   );
-};
+});
