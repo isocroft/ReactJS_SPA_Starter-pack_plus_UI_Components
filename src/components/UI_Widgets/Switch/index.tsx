@@ -60,8 +60,17 @@ export const Switch = ({
 };
 */
 
-const Switch = ({ swicthIconSize, ...props }: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "onChange" | "onBlur"> & {
-  swicthIconSize?: number
+const Switch = ({
+  switchIconSize = 16,
+  switchActiveText = '',
+  switchInactiveText = '',
+  wrapperClassName = '',
+  ...props
+}: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "readonly" | "onChange" | "onBlur" | "name" | "id"> & {
+  switchIconSize?: number;
+  switchActiveText?: string;
+  switchInactiveText?: string;
+  wrapperClassName?: string;
 }) => {
   useEffect(() => {
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
@@ -92,12 +101,123 @@ const Switch = ({ swicthIconSize, ...props }: Pick<React.ComponentProps<"input">
     switchStyle.id = "react-busser-headless-ui_switch";
 
     switchStyle.innerHTML = `
-  
-      .switch_wrapper-box {
-        position: static;
+      :root {
+        --switch-wrapper-box-font-size: 0.8em;
+      }
+
+      .switch_wrapper-box  {
         display: inline-block; /* shrink-to-fit trigger */
+        position: relative;
+        padding: 0;
+        margin: 0;
         min-height: 0;
         min-width: fit-content;
+        border-radius: 2rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px #0003 inset;
+        font-size: var(--switch-wrapper-box-font-size);
+      }
+      
+      .switch_wrapper-box svg {
+        margin: 0;
+        padding: 0;
+        position: relative;
+        z-index: 0;
+        display: inline-block;
+      }
+      
+      .switch_wrapper-box input {
+        display: inline-block;
+        margin: 0;
+        padding: 0;
+        vertical-align: middle;
+        -moz-appearance: -moz-none;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        appearance: none;
+        position: absolute;
+        /* transition: 0.25s linear background-color; */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        cursor: pointer;
+      }
+      
+      .switch_wrapper-box input::before {
+        content: '';
+        display: inline-block;
+        width: 45%;
+        height: 75%;
+        border-radius: 1.2rem;
+        position: absolute;
+        top: 12.5%;
+        left: 7%;
+        right: auto;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        transition: 0.25s linear left;
+      }
+      
+      /*
+      .switch_wrapper-box input:checked {
+        background-color: green;
+      }
+      */
+      
+      .switch_wrapper-box input:checked::before {
+        left: 49%;
+      }
+      
+      .switch_wrapper-box input:focus-visible {
+        outline: 2px solid dodgerblue;
+        outline-offset: 2px;
+      }
+      
+      .switch_wrapper-box span {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+      }
+      
+      .switch_wrapper-box span::before {
+        content: attr(data-switch-on-text);
+        position: relative;
+        pointer-events: none;
+        z-index: 20;
+        font-size: 0.8em;
+        left: 0;
+        opacity: 0;
+        transition: left 0.5s ease-in-out, opacity 0s ease-in;
+      }
+      
+      .switch_wrapper-box input ~ span::after {
+        content: attr(data-switch-off-text);
+        position: relative;
+        z-index: 20;
+        pointer-events: none;
+        font-size: 0.8em;
+        right: 10%;
+        opacity: 1;
+        transition: right 0.5s ease-in-out, opacity 0s ease-in;
+      }
+      
+      .switch_wrapper-box input:checked ~ span::before {
+        left: 10%;
+        opacity: 1;
+      }
+      
+      .switch_wrapper-box input:checked ~ span::after {
+        right: 0;
+        opacity: 0;
+      }
+      
+      .switch_wrapper-box input:focus {
+        outline-color: transparent;
       }
       
     `;  
@@ -108,11 +228,26 @@ const Switch = ({ swicthIconSize, ...props }: Pick<React.ComponentProps<"input">
     };  
   }, []);
 
+  useEffect(() => {
+    const topRange = switchIconSize * 2;
+    const downRange = switchIconSize + 4;
+
+    const dimension = (topRange/downRange);
+    const factor = dimension <= 1.6 ? 3 : 2;
+
+    document.documentElement.style.setProperty(
+      '--switch-wrapper-box-font-size',
+      (dimension/factor).toFixed(4) + 'em'
+    );
+  }, [switchIconSize]);
+
   return (
-    <p className="switch_wrapper-box">
-       <EllipseIcon size={swicthIconSize} />
-       <input {...props} type="checkbox" classname />
-      <span data-switch-on-text="Yes"></span>
-    </p>
+    <div className={wrapperClassName}>
+      <p className={"switch_wrapper-box"}>
+        <EllipseIcon size={switchIconSize} />
+        <input {...props} type="checkbox" className={className} />
+        <span data-switch-on-text={switchActiveText} data-switch-off-text={switchInactiveText}></span>
+      </p>
+    </div>
   );
 };
