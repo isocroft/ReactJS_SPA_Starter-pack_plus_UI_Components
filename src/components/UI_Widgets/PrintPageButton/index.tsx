@@ -4,8 +4,7 @@ import Button from "../Button";
 import type { ButtonProps } from "../Button";
 
 import {
-  useUICommands,
-  PRINT_COMMAND
+  useUICommands
 } from "react-busser";
 
 const PrintPageButton = ({
@@ -16,28 +15,28 @@ const PrintPageButton = ({
   const commands = useUICommands({
     print: {
       documentTitle: document.title,
-			onBeforePrint: () => {
+      onBeforePrint: () => {
         const event = new Event(
           "beforeprintstart",
           { bubbles: true }
         );
         window.disptachEvent(event);
       },
-			onAfterPrint: () => {
+      onAfterPrint: () => {
         const event = new Event(
           "afterprintend",
           { bubbles: true }
         );
         window.disptachEvent(event);
       },
-			onPrintError: () => {
+      onPrintError: () => {
         const event = new Event(
           "printingerrored",
           { bubbles: true }
         );
         window.disptachEvent(event);
       },
-			nowPrinting: () => {
+      nowPrinting: () => {
         const event = new Event(
           "printingstarted",
           { bubbles: true }
@@ -51,8 +50,8 @@ const PrintPageButton = ({
     <Button
       type="button"
       data-printer-object="trigger"
-      onClick={() => {
-        commands.hub.execute(PRINT_COMMAND)
+      onClick={async () => {
+        await commands.hub.print()
       }}
       {...props}
       className={className}
