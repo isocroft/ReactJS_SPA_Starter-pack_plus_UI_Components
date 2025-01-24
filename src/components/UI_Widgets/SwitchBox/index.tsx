@@ -4,77 +4,23 @@ import { EllipseIcon } form "./assets/EllipseIcon";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
-/*
-import { React, useEffect, useMemo, useState } from 'react';
-import styles from './Switch.module.scss';
-import { Color } from '../../../components/interfaces';
-import { Switch as Toggle } from '@headlessui/react';
-
-import classNames from 'classnames';
-
-export type SwitchType = {
-  color?: Color;
-  checked: boolean;
-  disabled?: boolean;
-  screenReaderText: string;
-  onChange: (checked: boolean) => void;
-  className?: string;
-  uncheckedStyle?: string;
-};
-export const Switch = ({
-  color = 'secondary',
-  checked,
-  screenReaderText,
-  disabled,
-  onChange,
-  className,
-  uncheckedStyle
-}: SwitchType) => {
-  const [enabled, setEnabled] = useState(checked);
-
-  const onToggle = (newValue: boolean) => {
-    setEnabled(newValue);
-    onChange(newValue);
-  };
-
-  useEffect(() => {
-    setEnabled(checked);
-  }, [checked]);
-
-  return (
-    <Toggle
-      checked={enabled}
-      onChange={onToggle}
-      className={classNames(
-        styles.switch,
-        styles[color],
-        disabled ? styles.disabled : '',
-        enabled ? styles.enabled : '',
-        !enabled ? uncheckedStyle : '',
-        className
-      )}
-      disabled={disabled}
-    >
-      <span className="sr-only">{screenReaderText}</span>
-      <span className={classNames(styles.dot, enabled ? styles.enabled : '')} />
-    </Toggle>
-  );
-};
-*/
 
 const SwitchBox = React.forwardRef(({
   id,
-  switchIconSize = 16,
+  children,
+  switchWidgetSize = 16,
   tabIndex = 0,
   switchActiveText = '',
   switchInactiveText = '',
   wrapperClassName = '',
   labelClassName = '',
-  labelPosition = "beforeInput"
+  labelPosition = "beforeInput",
+  onChange,
   ...props
 }: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "readonly" | "onChange" | "onBlur" | "name" | "id"> & {
   tabIndex? number;
-  switchIconSize?: number;
+  children?: React.ReactNode;
+  switchWidgetSize?: number;
   switchActiveText?: string;
   switchInactiveText?: string;
   wrapperClassName?: string;
@@ -238,8 +184,8 @@ const SwitchBox = React.forwardRef(({
   }, []);
 
   useEffect(() => {
-    const topRange = switchIconSize * 2;
-    const downRange = switchIconSize + 4;
+    const topRange = switchWidgetSize * 2;
+    const downRange = switchWidgetSize + 4;
 
     const dimension = (topRange/downRange);
     const factor = dimension <= 1.6 ? 3 : 2;
@@ -248,7 +194,7 @@ const SwitchBox = React.forwardRef(({
       '--switch-wrapper-box-font-size',
       (dimension/factor).toFixed(4) + 'em'
     );
-  }, [switchIconSize]);
+  }, [switchWidgetSize]);
 
   return (
     <div className={wrapperClassName} tabIndex={tabIndex}>
@@ -267,8 +213,32 @@ const SwitchBox = React.forwardRef(({
         }
       </label>) || null)}
       <p className={"switch_wrapper-box"}>
-        <EllipseIcon size={switchIconSize} />
-        <input {...props} id={id} ref={ref} type="checkbox" className={className} />
+        <EllipseIcon size={switchWidgetSize} />
+        <input
+          {...props}
+          id={id}
+          ref={ref}
+          type="checkbox"
+          className={className}
+          onChange={(event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+            const status = event.target.checked;
+            if (status) {
+              if (switchActiveText !== ''
+                 && typeof switchActiveText === "string") {
+                event.currentValue = switchActiveText;
+              }
+            } else {
+              if (switchInactiveText !== ''
+                 && typeof switchInactiveText === "string") {
+                event.currentValue = switchInactiveText;
+              }
+            }
+
+            if (typeof onChange === "function") {
+              return onChange(event);
+            }
+          }}
+        />
         <span data-switch-on-text={switchActiveText} data-switch-off-text={switchInactiveText}></span>
       </p>
       {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
@@ -289,10 +259,30 @@ const SwitchBox = React.forwardRef(({
   );
 });
 
+/*
+  const screenReaderText = "Tick-Tok!";
+
+  <SwitchBox
+    switchWidgetSize={SwitchWidget.WidgetSizes.LARGE}
+    switchActiveText={'On'}
+    switchInactiveText={'Off'}
+    labelPosition={'afterInput'}
+    labelClassName={"text-[#333344] ml-2"}
+  >
+   <span className="sr-only">{screenReaderText}</span>
+  </SwitchBox>
+*/
+
+export const SwitchWidget = {
+  'WidgetSizes': {
+    TINY: 16,
+    MID: 22,
+    BIG: 24,
+    LARGE: 29
+  }
+};
 
 type SwitchBoxProps = React.ComponentProps<typeof SwitchBox>;
-
-export { SwitchWidget };
 
 export type { SwitchBoxProps };
 
