@@ -4,8 +4,7 @@ import Button from "../Button";
 import type { ButtonProps } from "../Button";
 
 import {
-  useUICommands,
-  COPY_COMMAND
+  useUICommands
 } from "react-busser";
 
 const ClipboardButton = ({
@@ -25,7 +24,7 @@ const ClipboardButton = ({
       onClick={(event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement, currentTarget: HTMLButtonElement }) => {
         if (canCopy) {
           const button = event.currentTarget!;
-          commands.hub.execute(COPY_COMMAND, textToCopy).then((isTriggered) => {
+          commands.hub.copy(textToCopy).then((isTriggered) => {
             if (isTriggered) {
               return;
             }
