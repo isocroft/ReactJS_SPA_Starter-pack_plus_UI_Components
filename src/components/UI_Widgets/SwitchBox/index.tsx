@@ -288,3 +288,12 @@ const SwitchBox = React.forwardRef(({
     </div>
   );
 });
+
+
+type SwitchBoxProps = React.ComponentProps<typeof SwitchBox>;
+
+export { SwitchWidget };
+
+export type { SwitchBoxProps };
+
+export default SwitchBox;
