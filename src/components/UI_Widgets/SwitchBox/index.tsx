@@ -123,11 +123,13 @@ const SwitchBox = React.forwardRef(({
       .switch_wrapper-box input:checked::before {
         left: 49%;
       }
-      
+
+      /*
       .switch_wrapper-box input:focus-visible {
         outline: 2px solid dodgerblue;
         outline-offset: 2px;
       }
+      */
       
       .switch_wrapper-box span {
         display: flex;
@@ -203,10 +205,12 @@ const SwitchBox = React.forwardRef(({
           hasChildren(children, 1)
             ? React.cloneElement(
                 children as React.ReactElement<
-                  { required: boolean }
+                  { required: boolean, switchActiveText: string, switchInactiveText: string }
                 >,
                 {
-                  required: props.required
+                  required: props.required,
+                  switchActiveText,
+                  switchInactiveText
                 }
               )
             : null
@@ -246,10 +250,12 @@ const SwitchBox = React.forwardRef(({
           hasChildren(children, 1)
             ? React.cloneElement(
                 children as React.ReactElement<
-                  { required: boolean }
+                  { required: boolean, switchActiveText: string, switchInactiveText: string }
                 >,
                 {
-                  required: props.required
+                  required: props.required,
+                  switchActiveText,
+                  switchInactiveText
                 }
               )
             : null
