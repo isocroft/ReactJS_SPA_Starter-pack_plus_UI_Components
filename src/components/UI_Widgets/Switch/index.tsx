@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 
 import { EllipseIcon } form "./assets/EllipseIcon";
 
+import { hasChildren } from "../../../helpers/render-utils";
+
 /*
 import { React, useEffect, useMemo, useState } from 'react';
 import styles from './Switch.module.scss';
