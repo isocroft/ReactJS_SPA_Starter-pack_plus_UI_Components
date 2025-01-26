@@ -9,9 +9,9 @@ import { hasChildren } from "../../../helpers/render-utils";
 import { format, isValid, parse } from "date-fns";
 
 
-const DateInput = ({ children, ...props }: Omit<TextBoxProps, "labelPosition">) => {
+const DateInput = ({ children, ...props }: Omit<TextBoxProps, "labelPosition" | "valueSync">) => {
   return (
-    <TextBox {...props}>
+    <TextBox valueSync {...props}>
       {children}
     </TextBox>
   );
