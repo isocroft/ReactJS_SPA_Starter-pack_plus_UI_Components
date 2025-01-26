@@ -147,7 +147,7 @@ const CalendarBox: FC<
 
   return (
     <section {...props} tabIndex={tabIndex} className={`calendar_wrapper-box ${wrapperClassName}`}>
-      <div className={`calendar_input-box ${className}`} onChange={onChange} onFocus={onClick} onBlur={onBlur}>
+      <div className={`calendar_input-box ${className}`} onChange={onChange} onFocus={onFocus} onBlur={onBlur}>
         {children}
       </div>
       <div className={"calendar_picker-box"} ref={pickerBoxRef}>
