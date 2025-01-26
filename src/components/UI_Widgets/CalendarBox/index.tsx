@@ -97,7 +97,7 @@ const CalendarBox: FC<
     }; 
   }, []);
 
-  const onClick = (event: React.MouseEvent<HTMLElement> & { target: HTMLInputElement }) => {
+  const onFocus = (event: React.FocusEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
     /* @HINT: This will be used to 'shim' the `:focus-within` pseudo-class in deficient browsers */
     let isFocusWithinPsuedoSupported = false;
     const focusedElement = event.target as HTMLInputElement;
@@ -123,9 +123,31 @@ const CalendarBox: FC<
     }
   };
 
+  const onBlur = (event: React.FocusEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+    /* @HINT: This will be used to 'shim' the `:focus-within` pseudo-class in deficient browsers */
+    let isFocusWithinPsuedoSupported = false;
+    const focusedElement = event.target as HTMLInputElement;
+
+    if ("CSS" in window) {
+      isFocusWithinPsuedoSupported = window.CSS.supports(":focus-within", "");
+    } else {
+      try {
+        /* @CHECK: https://stackoverflow.com/a/58281769 */
+        document.querySelector(':focus-within');
+        isFocusWithinPsuedoSupported = true;
+      } catch {
+        isFocusWithinPsuedoSupported = false
+      }
+    }
+
+    if (focusedElement.tagName !== "INPUT" || isFocusWithinPsuedoSupported) {
+      return;
+    }
+  };
+
   return (
     <section {...props} tabIndex={tabIndex} className={`calendar_wrapper-box ${wrapperClassName}`}>
-      <div className={`calendar_input-box ${className}`} onChange={onChange} onClick={onClick}>
+      <div className={`calendar_input-box ${className}`} onChange={onChange} onFocus={onClick} onBlur={onBlur}>
         {children}
       </div>
       <div className={"calendar_picker-box"} ref={pickerBoxRef}>
