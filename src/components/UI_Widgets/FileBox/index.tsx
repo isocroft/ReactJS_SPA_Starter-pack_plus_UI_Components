@@ -131,7 +131,18 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
   return (
     <div id={id} name={name} tabIndex={tabIndex} {...props} className={`file_wrapper-box ${wrapperClassName}`} ref={wrapperDivRef}>
       {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
-        {children}
+        {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
       </label>) || null)}
       <input
         id={id}
@@ -153,7 +164,18 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
         }}
       />
       {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
-        {children}
+        {
+            hasChildren(children, 1)
+              ? React.cloneElement(
+                children as React.ReactElement<
+                  { required: boolean }
+                >,
+                {
+                  required: props.required
+                }
+              )
+              : null
+          }
       </label>) || null)}
     </div>
   );
