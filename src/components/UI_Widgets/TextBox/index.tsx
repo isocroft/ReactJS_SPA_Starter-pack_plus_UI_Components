@@ -72,7 +72,6 @@ const TextBox: FC<
   labelClassName,
   className,
   defaultValue = "",
-  textLength,
   valueSync = false,
   tabIndex = 0,
   ...props
@@ -102,6 +101,7 @@ const TextBox: FC<
     );
 
     if (styleSheetsOnly.length > 0
+      /* @ts-ignore */
       && styleSheetsOnly.includes("react-busser-headless-ui_text")) {
       return;
     }
@@ -185,9 +185,6 @@ const TextBox: FC<
             typeof wrap === "string" && Component === "textarea"
               ? wrap
               : undefined
-          }
-          textLength={
-            typeof textLength === "number" && Component === "textarea" ? type : undefined
           }
           type={
             typeof type === "string" && Component === "input" ? type : undefined
