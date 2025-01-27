@@ -43,7 +43,7 @@ const ClipBoardInput = ({ defaultValue = "", ...props }: Omit<InputBoxProps, "on
 
 const ClipDataBox = ({ defaultValue, children, ...props }: React.ComponentProps<"div"> & { defaultValue: string }) => {
   const [value] = useCurrentValue(defaultValue);
-  const renderChildren = ($children: React.ReactNode) {
+  const renderChildren = ($children: React.ReactNode) => {
     const childrenProps = React.Children.map($children, (child) => {
       switch (true) {
         case React.isValidElement(child) && isSubChild(child, "ClipInput"):
