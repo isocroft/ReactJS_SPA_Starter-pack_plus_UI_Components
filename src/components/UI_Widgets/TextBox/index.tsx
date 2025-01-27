@@ -7,6 +7,7 @@ type CustomElementTagProps<T extends React.ElementType> =
     as?: T;
   };
 
+/* @ts-ignore */
 const TextBox: FC<
   CustomElementTagProps<"input" | "textarea"> &
     Omit<
@@ -46,10 +47,10 @@ const TextBox: FC<
       ) => void;
       onInput?: () => void;
       onInvalid?: () => void;
-      type?: "text" | "password" | "email" | "search" | "url";
+      type?: "text" | "password" | "email" | "search" | "url" | "date";
     } & {
       wrapperClassName?: string;
-      labelPosition: "beforeInput" | "afterInput";
+      labelPosition?: "beforeInput" | "afterInput";
       labelClassName?: string;
       valueSync?: boolean;
     }
@@ -71,6 +72,7 @@ const TextBox: FC<
   labelClassName,
   className,
   defaultValue = "",
+  textLength,
   valueSync = false,
   tabIndex = 0,
   ...props
@@ -111,6 +113,11 @@ const TextBox: FC<
       .text_wrapper-box {
         overflow: hidden;
       }
+
+      .text_wrapper-box input,
+      .text_wrapper-box textarea {
+        display: block;
+      }
     `;  
     window.document.head.appendChild(textStyle);  
  
@@ -148,7 +155,7 @@ const TextBox: FC<
 
   return (
     <>
-      <div className={wrapperClassName}>
+      <div className={`text_wrapper-box ${wrapperClassName}`}>
         {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={name} className={labelClassName}>
           {
             hasChildren(children, 1)
@@ -205,7 +212,8 @@ const TextBox: FC<
           defaultValue={
             !props.value && defaultValue !== "" ? defaultValue : undefined
           }
-          ref={(node?: HTMLInputElement) => {
+          /* @ts-ignore */
+          ref={(node) => {
             if (node) {
               textBoxRef.current = node;
             } else {
