@@ -23,6 +23,7 @@ declare global {
 
   interface Navigator {
     readonly standalone?: boolean;
+    writeText: (copyText: string) => Promise<void>;
   }
 
   interface Window {
