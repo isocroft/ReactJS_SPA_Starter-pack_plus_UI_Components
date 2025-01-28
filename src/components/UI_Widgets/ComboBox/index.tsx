@@ -19,7 +19,7 @@ type CustomElementTagProps<T extends React.ElementType> =
 
 const Trigger = <I extends ComboBoxItem>({
   children,
-  className,
+  className = "",
   style,
   type = "button",
   placeholder = "",
@@ -97,7 +97,7 @@ const C_$$ListItem: FC<
 > = ({
   as: Component = "li",
   children,
-  className,
+  className = "",
   style,
   selected,
   disabled,
@@ -122,7 +122,7 @@ type ComboBoxListItemProps = React.ComponentProps<typeof C_$$ListItem>;
 const List = <I extends ComboBoxItem>({
   as: Component = "ul",
   children,
-  className,
+  className = "",
   style,
   render,
   items = [],
@@ -135,6 +135,7 @@ const List = <I extends ComboBoxItem>({
   ...props
 }: {
   innerRef?: (node: HTMLOListElement | null) => void;
+  "data-retract-classlist-item"?: string;
   listItemClassName?: string;
   items?: Array<I>;
   isMultiSelect?: boolean;
@@ -169,7 +170,7 @@ const List = <I extends ComboBoxItem>({
   return setSize > 0 ? (
     <>
       <Component
-        className={`combo_list ${className}`}
+        className={`${props['data-retract-classlist-item'] === "yes" ? "" : "combo_list "}${className}`}
         style={style}
         {...props}
         role="listbox"
@@ -246,7 +247,7 @@ const List = <I extends ComboBoxItem>({
 const SearchableList = <I extends ComboBoxItem>({
   as: Component = "section",
   children,
-  className,
+  className = "",
   style,
   render,
   searchInputClassName,
@@ -290,7 +291,11 @@ const SearchableList = <I extends ComboBoxItem>({
   };
 
   return (
-    <section style={style} className={className} {...props} role="group">
+    <section
+      style={style}
+      className={`combo_list ${className}`}
+      {...props}
+      role="group">
       <div className={searchWrapperClassName} key={searchInputId} role="search">
         <input
           type="text"
@@ -316,6 +321,7 @@ const SearchableList = <I extends ComboBoxItem>({
             innerRef,
             items: controller.list,
             onListItemClick,
+            'data-retract-classlist-item': "yes",
             render,
             isMultiSelect,
             composite,
@@ -335,7 +341,7 @@ const ComboBox = <I extends ComboBoxItem>({
   tabIndex,
   name,
   id,
-  className,
+  className = "",
   isMultiSelect = false,
   children,
   ...props
@@ -477,6 +483,26 @@ const ComboBox = <I extends ComboBoxItem>({
         transition-duration: 200ms;
         transition-timing-function: ease-in;
         transition-behavior: allow-discrete;
+      }
+
+      .combo_list[data-vertical-position-anchor="top"] {
+        bottom: auto;
+        top: 100%;
+      }
+
+      .combo_list[data-vertical-position-anchor="bottom"] {
+        top: auto;
+        bottom: 100%;
+      }
+
+      .combo_list[data-horizontal-position-anchor="left"] {
+        right: auto;
+        left: 0;
+      }
+
+      .combo_list[data-horizontal-position-anchor="right"] {
+        left: auto;
+        right: 0;
       }
     
       .combo_list.combo_show-list {
