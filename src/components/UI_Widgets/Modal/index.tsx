@@ -171,7 +171,7 @@ const Modal = Object.assign(
 
     return ReactDOM.createPortal(
       typeof window.HTMLDialogElement === 'function'
-      ? (<dialog className={className || ""} id={id} ref={ref}>
+      ? (<dialog className={className || ""} id={id} role="dialog" aria-modal ref={ref} onClose={() => undefined}>
           {renderChildren(allChildren, {
             close: close,
             parent: "Modal",
@@ -182,6 +182,7 @@ const Modal = Object.assign(
         id={id}
         ref={ref}
         role="dialog"
+        aria-modal
         {...modalProps}
       >
         <div className={wrapperClassName || ""}>
