@@ -1,4 +1,4 @@
-import React, { FC, Ref, useEffect, useRef } from "react";
+import React, { FC, Ref, useRef, useCallback, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
@@ -67,17 +67,17 @@ const TextBox: FC<
   size,
   onChange,
   children,
-  wrapperClassName,
+  wrapperClassName = "",
   labelPosition = "afterInput",
-  labelClassName,
-  className,
+  labelClassName = "",
+  className = "",
   defaultValue = "",
   valueSync = false,
   tabIndex = 0,
   ...props
 }, ref: Ref<HTMLInputElement & HTMLTextAreaElement>) => {
   const anyValue = (
-    defaultValue !== "" ? defaultValue : props.value
+    defaultValue ? defaultValue : props.value
   ) as string;
   const textBoxRef = useRef<(HTMLInputElement & HTMLTextAreaElement) | null>(null);
   useEffect(() => {  
@@ -152,6 +152,15 @@ const TextBox: FC<
     }
   /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [valueSync, anyValue]);
+
+  const $ref = useCallback((node) => {
+    if (node) {
+      textBoxRef.current = node;
+    } else {
+      textBoxRef.current = null;
+    }
+    return typeof ref === "function" ? ref(node) : ref;
+  }, []);
 
   return (
     <>
