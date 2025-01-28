@@ -13,7 +13,7 @@ const ClipboardButton = ({
   textToCopy,
   ...props
 }: Omit<ButtonProps, "onClick" | "type" | "disabled"> & {
-  textToCopy: string;
+  textToCopy?: string;
 }) => {
   const commands = useUICommands();
   const canCopy = typeof textToCopy === "string" && textToCopy.length > 0;
