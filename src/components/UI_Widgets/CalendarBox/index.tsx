@@ -261,6 +261,18 @@ const CalendarBox = ({
     }
   }, []);
 
+  const [wrapperRef] = useOutsideClick<HTMLDivElement>((wrapper) => {
+    const pickerBox = wrapper.querySelector(
+      "div[data-horizontal-position-anchor]"
+    ) as HTMLElement | null;
+
+    if (pickerBox !== null) {
+      if (pickerBox.classList.contains("show")) {
+        pickerBox.classList.remove("show");
+      }
+    }
+  });
+
   const onFocus = (
     event: React.FocusEvent<HTMLInputElement> & { target: HTMLInputElement }
   ) => {
@@ -271,7 +283,7 @@ const CalendarBox = ({
     }
 
     if (pickerBoxRef.current !== null) {
-      pickerBoxRef.current.classList.toggle("show");
+      pickerBoxRef.current.classList.add("show");
     }
   };
 
@@ -403,6 +415,7 @@ const CalendarBox = ({
           }
         }
       }}
+      ref={wrapperRef}
     >
       <div
         className={`calendar_input-box ${className}`}
