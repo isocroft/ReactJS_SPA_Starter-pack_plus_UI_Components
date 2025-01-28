@@ -1,61 +1,78 @@
 import React, { Ref, useEffect } from "react";
 
-import { EllipseIcon } form "./assets/EllipseIcon";
+import { EllipseIcon } from "./assets/EllipseIcon";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
+const SwitchBox = React.forwardRef(
+  (
+    {
+      id,
+      children,
+      switchWidgetSize = 16,
+      tabIndex = 0,
+      switchActiveText = "",
+      switchInactiveText = "",
+      wrapperClassName = "",
+      labelClassName = "",
+      className = "",
+      labelPosition = "beforeInput",
+      onChange,
+      onBlur,
+      name,
+      ...props
+    }: Pick<
+      React.ComponentProps<"input">,
+      | "checked"
+      | "disabled"
+      | "required"
+      | "readOnly"
+      | "onChange"
+      | "onBlur"
+      | "className"
+      | "name"
+      | "id"
+    > & {
+      tabIndex?: number;
+      children?: React.ReactNode;
+      switchWidgetSize?: number;
+      switchActiveText?: string;
+      switchInactiveText?: string;
+      wrapperClassName?: string;
+      labelClassName?: string;
+      labelPosition?: "beforeInput" | "afterInput";
+    },
+    ref: Ref<HTMLInputElement>
+  ) => {
+    useEffect(() => {
+      const styleSheetsOnly = [].slice
+        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
+        .filter((sheet) => {
+          if (sheet.ownerNode) {
+            return sheet.ownerNode.nodeName === "STYLE";
+          }
+          return false;
+        })
+        .map((sheet) => {
+          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
+            return sheet.ownerNode.id;
+          }
+          return "";
+        })
+        .filter((id) => id !== "");
 
-const SwitchBox = React.forwardRef(({
-  id,
-  children,
-  switchWidgetSize = 16,
-  tabIndex = 0,
-  switchActiveText = '',
-  switchInactiveText = '',
-  wrapperClassName = '',
-  labelClassName = '',
-  labelPosition = "beforeInput",
-  onChange,
-  ...props
-}: Pick<React.ComponentProps<"input">, "checked" | "disabled" | "required" | "readonly" | "onChange" | "onBlur" | "name" | "id"> & {
-  tabIndex? number;
-  children?: React.ReactNode;
-  switchWidgetSize?: number;
-  switchActiveText?: string;
-  switchInactiveText?: string;
-  wrapperClassName?: string;
-  labelClassName?: string;
-  labelPosition?: "beforeInput" | "afterInput";
-}, ref: Ref<HTMLInputElement>) => {
-  useEffect(() => {
-    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-      window.document.styleSheets
-    ).filter(
-      (sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-    }).map(
-      (sheet) => {
-        if (sheet.ownerNode
-          && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-    }).filter(
-      (id) => id !== ""
-    );
+      if (
+        styleSheetsOnly.length > 0 &&
+        /* @ts-ignore */
+        styleSheetsOnly.includes("react-busser-headless-ui_switch")
+      ) {
+        return;
+      }
 
-    if (styleSheetsOnly.length > 0
-      && styleSheetsOnly.includes("react-busser-headless-ui_switch")) {
-      return;
-    }
+      const switchStyle = window.document.createElement("style");
+      switchStyle.id = "react-busser-headless-ui_switch";
 
-    const switchStyle = window.document.createElement('style');
-    switchStyle.id = "react-busser-headless-ui_switch";
-
-    switchStyle.innerHTML = `
+      switchStyle.innerHTML = `
       :root {
         --switch-wrapper-box-font-size: 0.8em;
       }
@@ -177,106 +194,139 @@ const SwitchBox = React.forwardRef(({
         outline-color: transparent;
       }
       
-    `;  
-    window.document.head.appendChild(switchStyle);  
-  
-    return () => {  
-      window.document.head.removeChild(switchStyle);  
-    };  
-  }, []);
+    `;
+      window.document.head.appendChild(switchStyle);
 
-  useEffect(() => {
-    const topRange = switchWidgetSize * 2;
-    const downRange = switchWidgetSize + 4;
+      return () => {
+        window.document.head.removeChild(switchStyle);
+      };
+    }, []);
 
-    const dimension = (topRange/downRange);
-    const factor = dimension <= 1.6 ? 3 : 2;
+    useEffect(() => {
+      const topRange = switchWidgetSize * 2;
+      const downRange = switchWidgetSize + 4;
 
-    document.documentElement.style.setProperty(
-      '--switch-wrapper-box-font-size',
-      (dimension/factor).toFixed(4) + 'em'
+      const dimension = topRange / downRange;
+      const factor = dimension <= 1.6 ? 3 : 2;
+
+      document.documentElement.style.setProperty(
+        "--switch-wrapper-box-font-size",
+        (dimension / factor).toFixed(4) + "em"
+      );
+    }, [switchWidgetSize]);
+
+    return (
+      <div className={wrapperClassName} tabIndex={tabIndex}>
+        {hasChildren(children, 0)
+          ? null
+          : (labelPosition === "beforeInput" && (
+              <label htmlFor={id} className={labelClassName}>
+                {hasChildren(children, 1)
+                  ? React.cloneElement(
+                      children as React.ReactElement<{
+                        required: boolean;
+                        switchActiveText: string;
+                        switchInactiveText: string;
+                      }>,
+                      {
+                        required: props.required,
+                        switchActiveText,
+                        switchInactiveText,
+                      }
+                    )
+                  : null}
+              </label>
+            )) ||
+            null}
+        <p className={"switch_wrapper-box"}>
+          <EllipseIcon size={switchWidgetSize} />
+          <input
+            {...props}
+            id={id}
+            name={name}
+            ref={ref}
+            type="checkbox"
+            className={className}
+            onBlur={onBlur}
+            onChange={(
+              event: React.MouseEvent<HTMLInputElement> & {
+                target: HTMLInputElement;
+              }
+            ) => {
+              const status = event.target.checked;
+              if (status) {
+                if (
+                  switchActiveText !== "" &&
+                  typeof switchActiveText === "string"
+                ) {
+                  /* @ts-ignore */
+                  event.currentValue = switchActiveText;
+                }
+              } else {
+                if (
+                  switchInactiveText !== "" &&
+                  typeof switchInactiveText === "string"
+                ) {
+                  /* @ts-ignore */
+                  event.currentValue = switchInactiveText;
+                }
+              }
+
+              if (typeof onChange === "function") {
+                return onChange(event);
+              }
+            }}
+          />
+          <span
+            data-switch-on-text={switchActiveText}
+            data-switch-off-text={switchInactiveText}
+          ></span>
+        </p>
+        {hasChildren(children, 0)
+          ? null
+          : (labelPosition === "afterInput" && (
+              <label htmlFor={id} className={labelClassName}>
+                {hasChildren(children, 1)
+                  ? React.cloneElement(
+                      children as React.ReactElement<{
+                        required: boolean;
+                        switchActiveText: string;
+                        switchInactiveText: string;
+                      }>,
+                      {
+                        required: props.required,
+                        switchActiveText,
+                        switchInactiveText,
+                      }
+                    )
+                  : null}
+              </label>
+            )) ||
+            null}
+      </div>
     );
-  }, [switchWidgetSize]);
-
-  return (
-    <div className={wrapperClassName} tabIndex={tabIndex}>
-      {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
-        {
-          hasChildren(children, 1)
-            ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean, switchActiveText: string, switchInactiveText: string }
-                >,
-                {
-                  required: props.required,
-                  switchActiveText,
-                  switchInactiveText
-                }
-              )
-            : null
-        }
-      </label>) || null)}
-      <p className={"switch_wrapper-box"}>
-        <EllipseIcon size={switchWidgetSize} />
-        <input
-          {...props}
-          id={id}
-          ref={ref}
-          type="checkbox"
-          className={className}
-          onChange={(event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
-            const status = event.target.checked;
-            if (status) {
-              if (switchActiveText !== ''
-                 && typeof switchActiveText === "string") {
-                event.currentValue = switchActiveText;
-              }
-            } else {
-              if (switchInactiveText !== ''
-                 && typeof switchInactiveText === "string") {
-                event.currentValue = switchInactiveText;
-              }
-            }
-
-            if (typeof onChange === "function") {
-              return onChange(event);
-            }
-          }}
-        />
-        <span data-switch-on-text={switchActiveText} data-switch-off-text={switchInactiveText}></span>
-      </p>
-      {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
-        {
-          hasChildren(children, 1)
-            ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean, switchActiveText: string, switchInactiveText: string }
-                >,
-                {
-                  required: props.required,
-                  switchActiveText,
-                  switchInactiveText
-                }
-              )
-            : null
-        }
-      </label>) || null)}
-    </div>
-  );
-});
+  }
+);
 
 /*
+  import React, { useState } from "react";
+
+  const [switchStatus, setSwitcStatus] = useState(true);
   const screenReaderText = "Tick-Tok!";
 
   <SwitchBox
-    switchWidgetSize={SwitchWidget.WidgetSizes.LARGE}
-    switchActiveText={'On'}
-    switchInactiveText={'Off'}
-    labelPosition={'afterInput'}
-    labelClassName={"text-[#333344] ml-2"}
-  >
-   <span className="sr-only">{screenReaderText}</span>
-  </SwitchBox>
+        switchWidgetSize={SwitchWidget.WidgetSizes.MID}
+        switchActiveText={"On"}
+        checked={switchStatus}
+        switchInactiveText={"Off"}
+        labelPosition={"afterInput"}
+        labelClassName={"text-[#333344] ml-2"}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          setSwitcStatus(e.target.checked);
+        }}
+    >
+      <span className="sr-only">{screenReaderText}</span>
+    </SwitchBox>
 */
 
 export const SwitchWidget = {
