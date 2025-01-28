@@ -37,26 +37,34 @@ function useModalCore(styles: {
     const close = (modalRefId: string, callback?: () => void) => {
       let id = modalRefId;
 
-      setModals((prevModals) => {
-        if (!id) {
-          return prevModals;
-        }
-
-        const clonedPrevModals = prevModals.slice(0);
+      if (typeof HTMLDialogElement == "function") {
         const { position, ref } = markModalsPosition.current[id];
 
-        clonedPrevModals.splice(position, 1);
         delete markModalsPosition.current[id];
-
+  
         if (ref.current
           && ref.current.tagName === 'DIALOG') {
           ref.current.close();
         }
-      
-        ref.current = null;
 
-        return clonedPrevModals;
-      });
+        ref.current = null;
+      } else {
+        setModals((prevModals) => {
+          if (!id) {
+            return prevModals;
+          }
+  
+          const clonedPrevModals = prevModals.slice(0);
+          const { position, ref } = markModalsPosition.current[id];
+  
+          clonedPrevModals.splice(position, 1);
+          delete markModalsPosition.current[id];
+        
+          ref.current = null;
+  
+          return clonedPrevModals;
+        });
+      }
 
       if (typeof callback === "function") {
         callback();
@@ -87,19 +95,21 @@ function useModalCore(styles: {
             {node}
           </Modal>
         );
-
+  
         setModals((prevModals) => {
           markModalsPosition.current[id] = {
             position: prevModals.length,
             ref: reference,
           };
 
-          window.setTimeout(() => {
-            if (reference.current
-              && reference.current.tagName === 'DIALOG') {
-              reference.current.showModal();
-            }
-          }, 0);
+          if (typeof HTMLDialogElement == "function") {
+            window.setTimeout(() => {
+              if (reference.current
+                && reference.current.tagName === 'DIALOG') {
+                reference.current.showModal();
+              }
+            }, 0);
+          } 
 
           return [...prevModals, modal];
         });
