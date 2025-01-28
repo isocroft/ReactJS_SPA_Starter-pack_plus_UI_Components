@@ -16,7 +16,9 @@ const useCurrentValue = (defaultValue: string) => {
     prevDefaultValue.current = value;
   }
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }
+  ) => {
     const currentValue = event.target.value;
     setValue((prevValue) => {
       prevDefaultValue.current = prevValue;
@@ -30,44 +32,49 @@ const useCurrentValue = (defaultValue: string) => {
   return [value, handleInputChange] as const;
 };
 
-const ClipBoardInput = ({ defaultValue = "", ...props }: Omit<InputBoxProps, "onChange" | "type" | "children">) => {
+const ClipBoardInput = ({
+  defaultValue = "",
+  ...props
+}: Omit<InputBoxProps, "onChange" | "type" | "children">) => {
+  const stringDdefaultValue = defaultValue as string;
   return (
     <InputBox
       {...props}
       type={"text"}
       defaultValue={defaultValue}
-      readonly={defaultValue.length > 0}
+      readOnly={stringDdefaultValue.length > 0}
     />
   );
 };
 
-const ClipDataBox = ({ defaultValue, children, ...props }: React.ComponentProps<"div"> & { defaultValue: string }) => {
+const ClipDataBox = ({
+  defaultValue,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & { defaultValue: string }) => {
   const [value] = useCurrentValue(defaultValue);
   const renderChildren = ($children: React.ReactNode) => {
     const childrenProps = React.Children.map($children, (child) => {
       switch (true) {
-        case React.isValidElement(child) && isSubChild(child, "ClipInput"):
+        case React.isValidElement(child) && isSubChild(child, "ClipBoardInput"):
           return React.cloneElement(
-            child as React.ReactElement<
-              Omit<InputBoxProps, "onChange">
-            >,
+            child as React.ReactElement<Omit<InputBoxProps, "onChange">>,
             {
-              defaultValue: value
+              defaultValue: value,
             }
           );
           break;
-        case React.isValidElement(child) && isSubChild(child, "ClipButton"):
+        case React.isValidElement(child) &&
+          isSubChild(child, "ClipboardButton"):
           return React.cloneElement(
-            child as React.ReactElement<
-              ClipboardButtonProps
-            >,
+            child as React.ReactElement<ClipboardButtonProps>,
             {
-              textToCopy: value
+              textToCopy: value,
             }
           );
           break;
         default:
-          return null
+          return null;
           break;
       }
     });
