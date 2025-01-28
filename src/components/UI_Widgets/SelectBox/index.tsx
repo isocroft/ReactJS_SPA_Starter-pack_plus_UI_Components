@@ -1,4 +1,4 @@
-import React, { FC, Ref, useEffect, useRef } from "react";
+import React, { FC, Ref, useRef, useCallback, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
@@ -50,34 +50,28 @@ const SelectBox: FC<
   {
     placeholder?: string;
     wrapperClassName?: string;
-    labelClassName?: string;
-    labelPosition?: "beforeInput" | "afterInput";
     valueSync?: boolean;
     children?: React.ReactNode;
-    renderOptions: () => React.ReactNode;
     chevronIconSize?: number;
     chevronIconFillColor?: string;
   } &
    CustomElementTagProps<"select">
   > = React.forwardRef(({
   children,
-  wrapperClassName,
-  labelClassName,
-  labelPosition = "afterInput",
-  className,
+  wrapperClassName = "",
+  className = "",
   as: Component = "select",
   chevronIconSize,
   chevronIconFillColor,
   name,
   onChange,
   onBlur,
-  renderOptions,
   defaultValue = "",
   valueSync = "" 
   ...props
 }, ref: Ref<HTMLSelectElement>) => {
   const anyValue = (
-    defaultValue !== "" ? defaultValue : props.value
+    defaultValue ? defaultValue : props.value
   ) as string;
   const selectRef = useRef<HTMLSelectElement | null>(null);
   /*
@@ -177,22 +171,17 @@ const SelectBox: FC<
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [valueSync, anyValue]);
 
+  const $ref = useCallback((node) => {
+    if (node) {
+      selectRef.current = node;
+    } else {
+      selectRef.current = null;
+    }
+    return typeof ref === "function" ? ref(node) : ref;
+  }, []);
+
   return (
-    <div className={`select_wrapper-box ${wrapperClassname}`}>
-      {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
-          {
-            hasChildren(children, 1)
-              ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean }
-                >,
-                {
-                  required: props.required
-                }
-              )
-              : null
-          }
-        </label>) || null)}
+    <div className={`select_wrapper-box ${wrapperClassName}`}>
       <Component
         className={`select_masked ${className}`}
         name={name}
@@ -202,28 +191,10 @@ const SelectBox: FC<
         defaultValue={
           !props.value && defaultValue !== "" ? defaultValue : undefined
         }
-        ref={(node) => {
-            if (node) {
-              selectRef.current = node;
-            }
-            return typeof ref === "function" ? ref(node) : ref;
-          }>
-        {typeof renderOptions === "function" ? renderOptions().props.children : null}
+        ref={$ref}
+      >
+        {hasChildren(children, 0) ? null : children}
       </Component>
-      {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
-          {
-            hasChildren(children, 1)
-              ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean }
-                >,
-                {
-                  required: props.required
-                }
-              )
-              : null
-          }
-        </label>) || null)}
     </div>
   );
 }
