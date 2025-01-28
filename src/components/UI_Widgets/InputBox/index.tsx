@@ -8,7 +8,7 @@ const InputBox = React.forwardRef(
       tabIndex = 0,
       valueSync = false,
       ...props
-    }: React.ComponentProps<"input"> & { valueSync: boolean },
+    }: React.ComponentProps<"input"> & { valueSync?: boolean },
     ref: Ref<HTMLInputElement>
   ) => {
     const anyValue = (defaultValue ? defaultValue : props.value) as string;
