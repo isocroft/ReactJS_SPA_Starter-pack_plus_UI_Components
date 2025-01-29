@@ -2,12 +2,12 @@ import React, { FC } from "react";
 
 const Link: FC<React.ComponentPropsWithRef<"a">> = ({
   id,
-  tabIndex,
+  tabIndex = 0,
   children,
   ...props
 }) => {
   return (
-    <a id={id} tabIndex={tabIndex || 0} {...props}>
+    <a {...props} id={id} tabIndex={tabIndex}>
       {children}
     </a>
   );
