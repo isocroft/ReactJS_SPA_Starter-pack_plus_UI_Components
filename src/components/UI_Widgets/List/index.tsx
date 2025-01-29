@@ -18,7 +18,7 @@ const $List = <D extends string | Record<string, string | number | object>>(
     DataListItem = "li",
     ...props
   }: Omit<React.ComponentProps<"ol">, "start" | "reversed"> &
-    Omit<CustomElementTagNoChildrenProps<"ul" | "ol">, "ref"> & {
+    Omit<CustomElementTagNoChildrenProps<"ul" | "ol" | "menu">, "ref"> & {
       data?: Array<D>;
       keyPropName?: string;
       textPropName?: string;
