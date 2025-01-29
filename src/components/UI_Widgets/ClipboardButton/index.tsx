@@ -1,11 +1,11 @@
 import React from "react";
-
-import Button from "../Button";
-import type { ButtonProps } from "../Button";
-
 import {
   useUICommands
 } from "react-busser";
+
+import Button from "../Button";
+
+import type { ButtonProps } from "../Button";
 
 const ClipboardButton = ({
   className,
