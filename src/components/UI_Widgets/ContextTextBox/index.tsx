@@ -1,33 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+
 import TextBox from "../TextBox";
 
 import type { TextBoxProps } from "../TextBox";
 
-const ContextTextBox: TextBoxProps & { valueAsType: boolean, ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
-  name,
-  type,
+const ContextTextBox = ({
+  name = "",
+  type = "text",
   placeholder,
   children,
-  className,
+  className = "",
   disabled,
   required,
   min,
   max,
   value,
   valueAsType = false,
-  wrapperClassName,
-  labelClassName,
+  wrapperClassName = "",
+  labelClassName = "",
   ErrorComponent,
   ...props
+}: TextBoxProps & {
+  valueAsType?: boolean;
+  ErrorComponent?: React.FunctionComponent<{
+    isDirty: boolean;
+    invalid: boolean;
+    errorMessage: string | null;
+  }>;
 }) => {
-  const { register, unregister, getFieldState, formState, resetField } = useFormContext();
+  const { register, unregister, getFieldState, formState, resetField } =
+    useFormContext();
 
-  const { isDirty, invalid, error } = getFieldState(name, formState)
+  const { isDirty, invalid, error } = getFieldState(name, formState);
   const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
     setTimeout(() => {
-      if (!props.value && !props.defaultValue) {
-        resetField(name, { keepTouched: true })
+      if (!value && !props.defaultValue) {
+        resetField(name, { keepTouched: true });
       }
     }, 0)
   );
@@ -35,13 +44,13 @@ const ContextTextBox: TextBoxProps & { valueAsType: boolean, ErrorComponent?: Re
   useEffect(() => {
     return () => {
       if (typeof timerId === "number") {
-        clearTimeout(timerId)
+        clearTimeout(timerId);
       }
       unregister(name);
-    }
+    };
   }, [timerId]);
 
-  const extraRegisterOptions = {};
+  const extraRegisterOptions: Record<string, unknown> = {};
 
   switch (type) {
     case "number":
@@ -71,15 +80,21 @@ const ContextTextBox: TextBoxProps & { valueAsType: boolean, ErrorComponent?: Re
       <TextBox
         {...register(name, { ...extraRegisterOptions, required, disabled })}
         type={type}
-        placeholder={placeholder}
         {...props}
+        placeholder={placeholder}
         className={className}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
       >
         {children}
       </TextBox>
-      {ErrorComponent ? <ErrorComponent isDirty={isDirty} invalid={invalid} errorMessage={error?.message || null} /> : null}
+      {ErrorComponent ? (
+        <ErrorComponent
+          isDirty={isDirty}
+          invalid={invalid}
+          errorMessage={error?.message || null}
+        />
+      ) : null}
     </>
   );
 };
