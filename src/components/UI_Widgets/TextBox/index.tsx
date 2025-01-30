@@ -47,7 +47,7 @@ const TextBox: FC<
       ) => void;
       onInput?: () => void;
       onInvalid?: () => void;
-      type?: "text" | "password" | "email" | "search" | "url" | "date" | "number";
+      type?: "text" | "password" | "email" | "search" | "url" | "date" | "number" | "range";
     } & {
       wrapperClassName?: string;
       labelPosition?: "beforeInput" | "afterInput";
