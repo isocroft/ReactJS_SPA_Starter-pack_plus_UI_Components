@@ -2,15 +2,22 @@ import React, { useEffect } from "react";
 import { useForm, FormProvider, FieldValues, Form, SubmitHandler, UseFormProps, UseFormReturn } from "react-hook-form";
 import BasicForm from "../Form";
 
-interface ContextFormPresetProps<V = FieldValues>
+interface ContextFormPresetProps<V extends FieldValues>
   extends Omit<
     React.ComponentPropsWithRef<"form">,
     "onSubmit" | "method"
   > {
   onSubmit: SubmitHandler<V>;
   formOptions: UseFormProps<V>;
-  onAfterSubmitFailure?: (options: { response?: Response }) => void;
-  onAfterSubmitSuccessful: (options: { response?: Response, reset: UseFormReturn<V>["reset"], submitCount: number, defaultValues: UseFormProps<V>["defaultValues"] }) => void;
+  onAfterSubmitFailure?: (options: {
+    response?: Response
+  }) => void;
+  onAfterSubmitSuccessful: (options: {
+    response?: Response,
+    reset: UseFormReturn<V>["reset"],
+    submitCount: number,
+    defaultValues: UseFormProps<V>["defaultValues"]
+  }) => void;
   method?: "post" | "put" | "delete";
   headers?: Record<string, string>;
 }
@@ -50,12 +57,12 @@ const ContextForm = <F extends FieldValues>({
           action={action}
           method={method}
           onSubmit={({ data, event }) => onSubmit(data, event)}
-          onError={({ response }) => {
+          onError={({ response }: { response?: Response }) => {
             if (typeof onAfterSubmitFailure === "function") {
               onAfterSubmitFailure({ response });
             }
           }}
-          onSuccess={({ response }) => {
+          onSuccess={({ response }: { response?: Response }) => {
             onAfterSubmitSuccessful({
               response,
               reset: methods.reset,
@@ -68,7 +75,7 @@ const ContextForm = <F extends FieldValues>({
           <div className={className}>{children}</div>
         </Form>
       ) : (
-        <FormProvider children={null} {...methods} control={control}>
+        <FormProvider {...methods} control={control}>
           <BasicForm
             onSubmit={methods.handleSubmit(onSubmit)}
             className={className}
@@ -84,8 +91,14 @@ const ContextForm = <F extends FieldValues>({
 };
 
 /*
+  import React, { useMemo } from "react";
+
+  const formOptions = useMemo(() => {
+    return { defaultValues: {}, mode: "all" }
+  }, []);
+  
   <ContextForm
-   formOptions={{ defaultValues: {}, mode: "all" }}
+   formOptions={formOptions}
    onSubmit={(data, event) => console.log(data, " >>> ", event)}
    onAfterSubmitSuccessful={() => undefined}>
     <ContextTextBox
@@ -101,20 +114,25 @@ const ContextForm = <F extends FieldValues>({
     >
       <span>Rate:</span>
     </ContextCheckBox>
-    <CustomContextComboBox
-      id="gender"
-      className="">
-{/ *   <ComboBox.Trigger
+    <ContextFormItem>
+      <label className="">
+        <span>Okay Go:</span>
+      </label>
+      <ContextComboBox
+        id="gender"
         className=""
-        type="panel">
-        <p>Select Gender:</p>
-      </ComboBox.Trigger>
-      <ComboBox.List className="">
-        <li>Male</li>
-        <li>Female</li>
-      </ComboBox.List> * /}
-      <span>Okay Go:</span>
-    </CustomContextComboBox>
+      >
+        <ContextComboBox.Trigger
+          className=""
+          type="panel">
+          <p>Select Gender:</p>
+        </<ContextComboBox.Trigger>
+        <<ContextComboBox.List className="">
+          <li>Male</li>
+          <li>Female</li>
+        </<ContextComboBox.List>
+      </ContextComboBox>
+    </ContextFormItem>
     <ContextFileBox
       accept="image/png, image/jpeg"
       labelPosition="afterInput"
@@ -122,9 +140,23 @@ const ContextForm = <F extends FieldValues>({
     >
       <span>Text Input:</span>
     </ContextFileBox>
-    <CustomContextRadioBoxList>
+    <ContextSwitchBox
+      id={"myswitch"}
+      switchWidgetSize={SwitchWidget.WidgetSizes.MID}
+      switchActiveText={"Yes"}
+      switchInactiveText={"No"}
+      labelPosition={"beforeInput"}
+    >
+      <span>Switchy:</span>
+    </ContextSwitchBox>
+    <ContextCalendarBox>
+      <ContextCalendarBox.DateInput>
+        <span>Date of Birth:</span>
+      </ContextCalendarBox.DateInput>
+    </ContextCalendarBox>
+    <ContextFormItem>
       
-    </CustomContextRadioBoxList>
+    </ContextFormItem>
  </ContextForm>
 
 */
