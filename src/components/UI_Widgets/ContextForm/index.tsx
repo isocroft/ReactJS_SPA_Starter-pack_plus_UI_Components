@@ -34,7 +34,9 @@ const ContextForm = <F extends FieldValues>({
   onAfterSubmitSuccessful,
   ...props
 }: ContextFormPresetProps<F>) => {
-  const { control, ...methods } = useForm<F>(formOptions);
+  const { control, ...methods } = useForm<F>(
+    Object.assign({ mode: "onChange" as const }, formOptions)
+  );
   const { formState } = methods;
 
   useEffect(() => {
