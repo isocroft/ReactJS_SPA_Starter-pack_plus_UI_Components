@@ -1,5 +1,17 @@
-import React, { FC, useState, useEffect } from "react";
-import { useFormContext, Controller, FieldValues, UseFormProps } from "react-hook-form";
+import React, { FC, useEffect } from "react";
+import { useFormContext, Controller } from "react-hook-form";
+
+import type { FieldValues, UseFormProps } from "react-hook-form";
+
+/*
+const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
+    setTimeout(() => {
+      if (!props.value && !props.defaultValue) {
+        resetField(props.name, { keepTouched: true })
+      }
+    }, 0);
+  );
+*/
 
 type ContextControlledFormInputProps = React.ComponentProps<typeof Controller> & {
   wrapperClassName?: string;
@@ -7,28 +19,18 @@ type ContextControlledFormInputProps = React.ComponentProps<typeof Controller> &
 }
 
 const ContextControlledFormInput: ContextControlledFormInputProps = <F extends FieldValues>({
-  wrapperClassName,
+  wrapperClassName = "",
   children,
   ...props
 }) => {
-  const { control, formState, resetField } = useFormContext<F>();
-
-  const { isDirty, invalid, error } = getFieldState(props.name, formState)
-  const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
-    setTimeout(() => {
-      if (!props.value && !props.defaultValue) {
-        resetField(props.name, { keepTouched: true })
-      }
-    }, 0);
-  );
+  const { control, formState } = useFormContext<F>();
+  let { isDirty, invalid, error } = getFieldState(props.name, formState)
 
   useEffect(() => {
-    return () => {
-      if (typeof timerId === "number") {
-        clearTimeout(timerId)
-      }
-    }
-  }, [timerId]);
+    const fieldState = getFieldState(props.name, formState);
+    invalid = fieldState.invalid;
+    error = fieldState.error;
+  }, [isDirty]);
 
   return (
     <div className={wrapperClassName}>
