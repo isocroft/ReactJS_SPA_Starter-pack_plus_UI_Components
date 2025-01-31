@@ -19,6 +19,7 @@ const ContextTextBox = ({
   name = "",
   type = "text",
   placeholder,
+  pattern,
   children,
   className = "",
   disabled,
@@ -54,6 +55,11 @@ const ContextTextBox = ({
   /* @NOTE: `maxLength` doesn't work as an option for `require(name, ...)` */
   /* @CHECK: https://github.com/react-hook-form/documentation/issues/1043 */
   switch (type) {
+    case "text":
+      if (typeof pattern === "string") {
+        extraRegisterOptions.pattern = new RegExp(pattern);
+      }
+      break;
     case "email":
       extraRegisterOptions.validate = (data: string) => {
         const hasAtSymbol = /^(?:[^@]+)(?=\@)/.test(data);
@@ -100,6 +106,7 @@ const ContextTextBox = ({
         aria-invalid={invalid ? "true" : "false"}
         ref={(node?: HTMLInputElement | null) => ref(node)}
         type={type}
+        pattern={pattern}
         placeholder={placeholder}
         className={className}
         wrapperClassName={wrapperClassName}
@@ -111,7 +118,7 @@ const ContextTextBox = ({
         <ErrorComponent
           isDirty={isDirty}
           invalid={invalid}
-          errorMessage={`${error?.type}: ${error?.message || ""}` || null}
+          errorMessage={`${error?.type || ""}: ${error?.message || ""}` || null}
         />
       ) : null}
     </>
