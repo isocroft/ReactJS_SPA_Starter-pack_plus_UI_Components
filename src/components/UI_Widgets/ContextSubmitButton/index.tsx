@@ -1,33 +1,31 @@
-import React from "react";
+import React, { FC } from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 
 import Button from "../Button";
 
 import type { ButtonProps } from "../Button";
 
-const ContextSubmitButton: Omit<ButtonProps, "disabled" | "type"> & { isLoading: boolean } = ({
-  children,
-  className,
-  isLoading = false,
-  disabled,
-  ...props
-}) => {
+const ContextSubmitButton: FC<
+  Omit<ButtonProps, "disabled" | "type"> & { isLoading: boolean }
+> = ({ children, className = "", isLoading = false, ...props }) => {
   const { control } = useFormContext();
   const { isValid, isSubmitting } = useFormState({ control });
 
   return (
-      <Button
-        {...props}
-        type={"submit"}
-        disabled={!isValid || isSubmitting || isLoading}
-        className={className}
-      >
-        {children}
-      </Button>
+    <Button
+      {...props}
+      type={"submit"}
+      disabled={!isValid || isSubmitting || isLoading}
+      className={className}
+    >
+      {children}
+    </Button>
   );
 };
 
-type ContextSubmitButtonProps = React.ComponentProps<typeof ContextSubmitButton>;
+type ContextSubmitButtonProps = React.ComponentProps<
+  typeof ContextSubmitButton
+>;
 
 export type { ContextSubmitButtonProps };
 
