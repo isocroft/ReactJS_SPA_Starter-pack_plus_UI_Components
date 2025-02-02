@@ -7,7 +7,7 @@ import {
 import { AnimatePresence } from "framer-motion";
 
 import AppLayout from "./layouts/AppLayout";
-import BrowserEventToastMessages from "./components/UI_Widgets/BrowserEventToastMessages";
+import BrowserEventToasts from "./components/UI_Widgets/BrowserEventToasts";
 
 import { breadcrumbsMap } from "./routes/routes.breadcrumbs.map";
 import { ProtectedRoutes, UnProtectedRoutes } from "./routes/routes.config";
@@ -50,7 +50,7 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
 function App({ isAuthenticated }) {
   return (
     <AppLayout className="App" breadcrumbsMap={breadcrumbsMap}>
-      <BrowserEventToastMessages />
+      <BrowserEventToasts />
       <AppLayout.RouteNavigation>
         {isAuthenticated ? null : (<nav className="">
           <ul>
