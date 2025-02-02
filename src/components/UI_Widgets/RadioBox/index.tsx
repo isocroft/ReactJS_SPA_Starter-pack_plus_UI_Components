@@ -136,13 +136,13 @@ const RadioBox: FC<
         `}
       >
         <input
+          {...props}
           id={id}
           name={name}
           type="radio"
           data-display-style={displayStyle}
           onChange={onChange}
           onBlur={onBlur}
-          {...props}
           className={"radio_hidden-input"}
           ref={ref}
         />
