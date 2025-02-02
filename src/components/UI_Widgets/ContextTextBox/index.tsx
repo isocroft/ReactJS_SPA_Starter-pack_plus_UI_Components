@@ -28,12 +28,14 @@ const ContextTextBox = ({
   max,
   value,
   valueAsType = false,
+  shouldUnregister = true,
   wrapperClassName = "",
   labelClassName = "",
   ErrorComponent,
   ...props
-}: Omit<TextBoxProps, "onChange" | "onBlur"> & {
+}: TextBoxProps & {
   valueAsType?: boolean;
+  shouldUnregister?: boolean;
   ErrorComponent?: React.FunctionComponent<{
     isDirty: boolean;
     invalid: boolean;
@@ -89,12 +91,27 @@ const ContextTextBox = ({
       break;
   }
 
-  const { onChange, onBlur, ref } = register(name, {
+  const mergedRegisterOptions: Record<string, unknown> = {
     ...extraRegisterOptions,
     required,
     disabled,
-    shouldUnregister: true,
-  });
+    shouldUnregister,
+  };
+
+  if (typeof props.onChange === "function") {
+    mergedRegisterOptions.onChange = props.onChange;
+    delete props["onChange"];
+  }
+
+  if (typeof props.onBlur === "function") {
+    mergedRegisterOptions.onBlur = props.onBlur;
+    delete props["onBlur"];
+  }
+
+  const { onChange, onBlur, ref } = register(
+    name,
+    mergedRegisterOptions
+  );
 
   return (
     <>
@@ -118,7 +135,7 @@ const ContextTextBox = ({
         <ErrorComponent
           isDirty={isDirty}
           invalid={invalid}
-          errorMessage={`${error?.type || ""}: ${error?.message || ""}` || null}
+          errorMessage={error ? `${error.type}: ${error.message}` : null}
         />
       ) : null}
     </>
