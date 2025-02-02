@@ -2,10 +2,13 @@ import React, { useEffect } from "react";
 
 import { useToastManager } from "../../../../hooks";
 
-export default function BrowserEventToastMessages = () => {
-  const FIVE_SECONDS_DURATION = 5000;
-  /* @HINT: This returns a toast API from a `useContext()` */
-  const { showToast } = useToastManager({ timeout: FIVE_SECONDS_DURATION });
+const FIVE_SECONDS_DURATION = 5000;
+
+export default function BrowserEventToasts = (
+  { timeout = FIVE_SECONDS_DURATION }: { timeout?: number }
+) => {
+
+  const { showToast } = useToastManager({ timeout });
 
   useEffect(() => {
     let printingStarted = false;
