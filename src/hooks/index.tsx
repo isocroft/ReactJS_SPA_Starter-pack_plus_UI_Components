@@ -17,17 +17,18 @@ const murmurhash = () => {
 
 const MAX_UNSIGNED_INT_32 = 4_294_967_295;
 
-export const useToastManager = ({ timeout = Infinity, className = "" }: {
-  timeout?: number,
-  className?: string
-}) =>  {
+export const useToastManager = ({
+  timeout = Infinity,
+  className = "",
+}: {
+  timeout?: number;
+  className?: string;
+}) => {
   const { toasts } = useSonner();
 
   useEffect(() => {
     function removeAllToasts() {
-      toasts.forEach(
-        ($toast) => toast.dismiss($toast.id)
-      );
+      toasts.forEach(($toast: ToastT) => toast.dismiss($toast.id));
     }
 
     return () => {
@@ -36,31 +37,48 @@ export const useToastManager = ({ timeout = Infinity, className = "" }: {
   }, [toasts.length]);
 
   return {
-    showToast ({ cancel, title, description = "", icon, action, position, onClose }: {
-      title: string | React.FunctionComponent<{}>,
-      description?: string | React.FunctionComponent<{}>,
-      cancel?: React.ReactNode,
-      icon?: React.ReactNode,
-      action?: React.ReactNode,
-      onClose?: (t: ToastT) => void,
-      position: 'top-center' | 'top-left' | 'top-right' | 'bottom-center' | 'bottom-left' | 'bottom-right'
-    }) => {
-      return toast(title, Object.assign(
-        {
-          position: 'bottom-right',
-        },
-        {
-          className,
-          description,
-          duration: timeout,
-          onAutoClose: onClose,
-          icon,
-          cancel,
-          action,
-        }
-      ));
-    }
-  }
+    showToast({
+      cancel,
+      title,
+      description = "",
+      icon,
+      action,
+      position,
+      onClose,
+    }: {
+      title: string | React.FunctionComponent<{}>;
+      description?: string | React.FunctionComponent<{}>;
+      cancel?: React.ReactNode;
+      icon?: React.ReactNode;
+      action?: React.ReactNode;
+      onClose?: (t: ToastT) => void;
+      position?:
+        | "top-center"
+        | "top-left"
+        | "top-right"
+        | "bottom-center"
+        | "bottom-left"
+        | "bottom-right";
+    }) {
+      return toast(
+        title,
+        Object.assign(
+          {
+            position: "bottom-right" as const,
+          },
+          {
+            className,
+            description,
+            duration: timeout,
+            onAutoClose: onClose,
+            icon,
+            cancel,
+            action,
+          }
+        )
+      );
+    },
+  };
 };
 
 export const useFeatureToggle = (user: Record<string, unknown>) => {
