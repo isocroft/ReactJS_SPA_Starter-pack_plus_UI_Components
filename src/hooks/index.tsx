@@ -1,6 +1,10 @@
-import { useEffect } from "react";
-import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvider";
+import React, { useEffect } from "react";
+import { toast, useSonner } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvider";
+
+import type { ToastT } from "sonner";
 
 type FeatureToggleHandlers = {
   isDisabledFor: (feature: string) => boolean,
@@ -12,6 +16,52 @@ const murmurhash = () => {
 };
 
 const MAX_UNSIGNED_INT_32 = 4_294_967_295;
+
+export const useToastManager = ({ timeout = Infinity, className = "" }: {
+  timeout?: number,
+  className?: string
+}) =>  {
+  const { toasts } = useSonner();
+
+  useEffect(() => {
+    function removeAllToasts() {
+      toasts.forEach(
+        ($toast) => toast.dismiss($toast.id)
+      );
+    }
+
+    return () => {
+      removeAllToasts();
+    };
+  }, [toasts.length]);
+
+  return {
+    showToast ({ cancel, title, description = "", icon, action, position, onClose }: {
+      title: string | React.FunctionComponent<{}>,
+      description?: string | React.FunctionComponent<{}>,
+      cancel?: React.ReactNode,
+      icon?: React.ReactNode,
+      action?: React.ReactNode,
+      onClose?: (t: ToastT) => void,
+      position: 'top-center' | 'top-left' | 'top-right' | 'bottom-center' | 'bottom-left' | 'bottom-right'
+    }) => {
+      return toast(title, Object.assign(
+        {
+          position: 'bottom-right',
+        },
+        {
+          className,
+          description,
+          duration: timeout,
+          onAutoClose: onClose,
+          icon,
+          cancel,
+          action,
+        }
+      ));
+    }
+  }
+};
 
 export const useFeatureToggle = (user: Record<string, unknown>) => {
   const features = useContext(FeaturesToggleContext);
