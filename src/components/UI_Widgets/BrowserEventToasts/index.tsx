@@ -28,7 +28,7 @@ export default function BrowserEventToasts = (
     };
     const onBeforePrintStart = () => {
       showToast(
-        { title: "User Action", description: "Please wait... Printing will start shortly!" },
+        { title: "User Action", description: "Please wait... Print dialog will appear shortly!" },
       );
       console.info(`printing this page (${document.title}) is just about to start`);
     };
