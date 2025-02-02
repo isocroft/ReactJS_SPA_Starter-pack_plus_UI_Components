@@ -1,7 +1,7 @@
 import React, { FC, Ref, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
-import { CircleIcon } form "./assets/CircleIcon";
+import { CircleIcon } from "./assets/CircleIcon";
 import { RadioIcon } from "../RadioBoxList";
 
 const RadioBox: FC<
@@ -19,12 +19,12 @@ const RadioBox: FC<
   id,
   name,
   tabIndex = 0,
-  wrapperClassName,
-  labelClassName,
+  wrapperClassName = "",
+  labelClassName = "",
   labelPosition = "beforeInput",
-  className,
+  className = "",
   children,
-  radioIconSize,
+  radioIconSize = 16,
   radioIconStrokeColor,
   displayStyle = "transparent",
   onChange,
@@ -52,6 +52,7 @@ const RadioBox: FC<
     );
 
     if (styleSheetsOnly.length > 0
+      /* @ts-ignore */
       && styleSheetsOnly.includes("react-busser-headless-ui_radio")) {
       return;
     }
