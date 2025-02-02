@@ -13,8 +13,9 @@ const RadioBox: FC<
     displayStyle?: "transparent" | "adjusted";
     radioIconSize?: number;
     radioIconStrokeColor?: string;
+    ref?: Ref<HTMLInputElement>;
   } &
-   Omit<React.ComponentProps<"input">, "type" | "placeholder">
+   Omit<React.ComponentProps<"input">, "type" | "placeholder" | "ref">
 > = React.forwardRef(({
   id,
   name,
@@ -95,6 +96,7 @@ const RadioBox: FC<
 
       /*.radio_hidden-input:checked + svg rect {
         stroke: #888888;
+        fill: #23ef4b;
       }*/
 
       .radio_control-icon-box {
