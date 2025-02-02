@@ -1,5 +1,6 @@
 import React, { FC, useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+
 import RadioBox from "../RadioBox";
 
 import type { RadioBoxProps } from "../RadioBox";
@@ -14,13 +15,23 @@ const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
   );
 */
 
-const ContextRadioBox: FC<RadioBoxProps & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> }> = ({
-  name,
+const ContextRadioBox: FC<
+  RadioBoxProps & {
+    shouldUnregister?: boolean;
+    ErrorComponent?: React.FunctionComponent<{
+      isDirty: boolean;
+      invalid: boolean;
+      errorMessage: string | null;
+    }>;
+  }
+> = ({
+  name = "",
   children,
   className = "",
   wrapperClassName = "",
   tabIndex = 0,
-  displayStyle = "",
+  displayStyle = "transparent",
+  shouldUnregister = true,
   labelClassName = "",
   radioIconSize,
   radioIconStrokeColor,
@@ -43,7 +54,7 @@ const ContextRadioBox: FC<RadioBoxProps & { ErrorComponent?: React.FunctionCompo
   const mergedRegisterOptions: Record<string, unknown> = {
     required,
     disabled,
-    shouldUnregister: true,
+    shouldUnregister
   };
 
   if (typeof props.onChange === "function") {
@@ -95,7 +106,13 @@ const ContextRadioBox: FC<RadioBoxProps & { ErrorComponent?: React.FunctionCompo
 };
 
 /*
-  <ContextRadioBox displayStyle={""} radioIconSize={14} raddioIconStrokeColor={"green"}>
+  <ContextRadioBox
+      name="optionx"
+      id="optionz"
+      displayStyle={"adjusted"}
+      radioIconSize={22}
+      radioIconStrokeColor={"green"}
+    >
     <span>Option 1:</span>
   </ContextRadioBox>
 */
