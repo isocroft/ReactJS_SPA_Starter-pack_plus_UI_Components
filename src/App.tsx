@@ -6,6 +6,8 @@ import {
 } from "react-router-dom";
 
 import AppLayout from "./layouts/AppLayout";
+import BrowserEventToastMessages from "./components/UI_Widgets/BrowserEventToastMessages";
+
 import { breadcrumbsMap } from "./routes/routes.breadcrumbs.map";
 import { ProtectedRoutes, UnProtectedRoutes } from "./routes/routes.config";
 import { AnimatePresence } from "framer-motion";
