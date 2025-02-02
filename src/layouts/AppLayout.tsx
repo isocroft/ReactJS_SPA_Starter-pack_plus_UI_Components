@@ -45,7 +45,10 @@ const AppLayout = ({
   );
 };
 
-const RouteNavigation = ({ children?: React.ReactNode, className?: string, id?: string }) => {
+const RouteNavigation = ({ children, className, id }: PropsWithChildren<{
+  className?: string,
+  id?: string
+}>) => {
   if (hasChildren(children, 0)) {
     return null;
   }
@@ -66,12 +69,15 @@ const ErrorFallbackUI = ({ location: Location, error: Error }) => {
   );
 };
 
-const RoutePages = (routes: RoutesInterface[]) => { 
+const RoutePages = ({ routes, FallbackUI }: {
+  routes: RoutesInterface[],
+  FallbackUI?: React.FunctionComponent<{ location: Location, error: Error }>
+}) => { 
 /* {
   getUserConfirmation,
 }: Pick<HashRouterProps, "getUserConfirmation"> */
   return (
-    <ErrorBoundary FallbackUI={ErrorFallbackUI}>
+    <ErrorBoundary FallbackUI={FallbackUI ? FallbackUI : ErrorFallbackUI}>
       <Switch>
         {routes.map((route) => {
           return (
@@ -87,7 +93,7 @@ const RoutePages = (routes: RoutesInterface[]) => {
             />
           );
         })}
-        <Redirect to={RoutePaths.ERROR} />
+        <Redirect to={RoutePaths.NOT_FOUND} />
       </Switch>
     </ErrorBoundary>
   );
