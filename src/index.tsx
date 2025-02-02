@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { EventBusProvider /*, SharedGlobalStateProvider */ } from "react-busser";
+import { Toaster } from "sonner";
 
 import App from "./App";
 
@@ -26,6 +27,13 @@ root.render(
       [envProduction]: config.PROD_FEATURES_LIST
     }} environment={config.ENV} authUserOptions={{ "[identifier]": "id", "[access_control]": "permission" }}>
       <EventBusProvider>
+        <Toaster
+          position="bottom-right"
+          expand
+          visibleToasts={4}
+          mobileOffset={{ bottom: '12px' }}
+          loadingIcon={<span>Loading...</span>}
+        />
         <App />
       </EventBusProvider>
     </FeaturesToggleProvider>
