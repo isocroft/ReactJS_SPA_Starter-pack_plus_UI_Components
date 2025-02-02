@@ -47,6 +47,7 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
 function App({ isAuthenticated }) {
   return (
     <AppLayout className="App" breadcrumbsMap={breadcrumbsMap}>
+      <BrowserEventToastMessages />
       <AppLayout.RouteNavigation>
         {isAuthenticated ? null : (<nav className="">
           <ul>
