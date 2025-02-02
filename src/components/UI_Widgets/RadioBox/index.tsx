@@ -114,15 +114,8 @@ const RadioBox: FC<
     };  
   }, []);
 
-  let ariaInvalid = false;
-
-  if (typeof props["aria-invalid"] === "boolean") {
-    ariaInvalid = props["aria-invalid"];
-    delete props["aria-invalid"];
-  }
-
   return (
-    <div {...props} aria-invalid={undefined} className={wrapperClassName} tabIndex={tabIndex}>
+    <div className={wrapperClassName} tabIndex={tabIndex}>
       {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
         {
           hasChildren(children, 1)
@@ -150,7 +143,6 @@ const RadioBox: FC<
           onChange={onChange}
           onBlur={onBlur}
           {...props}
-          aria-invalid={ariaInvalid}
           className={"radio_hidden-input"}
           ref={ref}
         />
