@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-import { useToastManager } from "..."; // makes use of `useBus()` and is a source hook for target hook `useToastUpdates()`
+import { useToastManager } from "../../../../hooks";
 
 export default function BrowserEventToastMessages = () => {
   const FIVE_SECONDS_DURATION = 5000;
@@ -12,7 +12,7 @@ export default function BrowserEventToastMessages = () => {
     const onCopy = (event: Event) => {
       if (event.target.hasAttribute('data-clipboard-object')) {
         showToast(
-          { title: "User Action", description: "Copied to clipboard!"}
+          { title: "User Action", description: "Copied to clipboard!" }
         );
         console.info("text copied to clipboard!");
       }
