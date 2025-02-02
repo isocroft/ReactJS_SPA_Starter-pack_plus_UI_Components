@@ -1,5 +1,5 @@
 export const RoutePaths = {
   HOME: "/",
   VEHICLES: "/vehicles",
-  ERROR: "/not-found",
+  NOT_FOUND: "/redirected/not-found",
 };
