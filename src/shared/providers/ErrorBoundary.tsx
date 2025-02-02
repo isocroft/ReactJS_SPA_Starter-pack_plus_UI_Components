@@ -38,7 +38,7 @@ interface ErrorBoundaryProps extends RouteComponentProps {
     info: ErrorInfo
     clearError: () => void
   }>;
-  FallbackUI: React.FunctionComponent<{ location: Location, error: Error }>;
+  FallbackUI?: React.FunctionComponent<{ location: Location, error: Error }>;
   children: ReactNode;
 }
 
@@ -97,7 +97,7 @@ class ErrorBoundaryComponent extends React.Component<
     if (this.state.hasError && this.state.error !== null) {
       const { FallbackUI } = this.props;
       // Render any custom Fallback UI
-      return <FallbackUI error={this.state.error} location={this.props.location} />;
+      return FallbackUI ? <FallbackUI error={this.state.error} location={this.props.location} /> : <p>Error: {this.state.error.message}</p>;
     }
 
     return this.props.children;
