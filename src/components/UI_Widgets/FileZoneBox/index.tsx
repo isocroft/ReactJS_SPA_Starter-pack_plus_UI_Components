@@ -10,7 +10,17 @@ import Button from "../Button";
 
 import { hasChildren, isSubChild } from "../../../helpers/render-utils";
  
-const FileDropZoneContext = createContext();  
+const FileDropZoneContext = createContext({
+  ready: false,
+  acceptedFiles: [],
+  fileRejections: [],
+  isDragActive: false,
+  isDragAccept: false,
+  isDragReject: false,
+  open: () => undefined,
+  getInputProps: () => ({}),
+  getRootProps: ({ ...props }) => ({ ...props }),
+});  
  
 const FileDropZoneProvider = ({
   children,
@@ -50,7 +60,9 @@ const FileDropZoneProvider = ({
     maxFiles,
     accept,
     validator
-  });  
+  });
+
+ const ready = true;
 
   return (  
     <FileDropZoneContext.Provider value={{
@@ -61,19 +73,25 @@ const FileDropZoneProvider = ({
       fileRejections,
       isDragActive,
       isDragAccept,
-      isDragReject
+      isDragReject,
+      ready
     }}>  
       {children}  
     </FileDropZoneContext.Provider>  
   );  
 };  
 
-// Custom hook to use dropzone context  
 export const useDropZoneContext = () => {
-  return useContext(DropzoneContext);  
+  const context = useContext(DropzoneContext); 
+  if (context.ready === false) {
+    console.error("react-busser-ui: <FileDropZoneProvider> not set");
+    return context;
+  }
+
+  return context;
 };  
 
-// Example usage in a component  
+
 const DragDropPanel = React.forwardRef(({
     children,
     required,
