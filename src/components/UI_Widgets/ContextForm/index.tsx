@@ -96,15 +96,23 @@ const ContextForm = <F extends FieldValues>({
   import React, { useMemo } from "react";
 
   const formOptions = useMemo(() => {
-    return { defaultValues: {}, mode: "all" }
+    return {
+      defaultValues: {
+        texty: "",
+        switchy: "off"
+      },
+      mode: "all" as const
+    }
   }, []);
   
-  <ContextForm
+  <ContextForm<Record<string, unknown>>
    formOptions={formOptions}
    onSubmit={(data, event) => console.log(data, " >>> ", event)}
    onAfterSubmitSuccessful={() => undefined}>
     <ContextTextBox
       as="textarea"
+      name="texty"
+      maxLength={140}
       labelPosition="afterInput"
       className=""
     >
@@ -136,6 +144,7 @@ const ContextForm = <F extends FieldValues>({
       </ContextComboBox>
     </ContextFormItem>
     <ContextFileBox
+      name="filey"
       accept="image/png, image/jpeg"
       labelPosition="afterInput"
       className=""
@@ -144,6 +153,7 @@ const ContextForm = <F extends FieldValues>({
     </ContextFileBox>
     <ContextSwitchBox
       id={"myswitch"}
+      name={"switchy"}
       switchWidgetSize={SwitchWidget.WidgetSizes.MID}
       switchActiveText={"Yes"}
       switchInactiveText={"No"}
