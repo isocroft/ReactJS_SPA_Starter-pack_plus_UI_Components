@@ -36,13 +36,13 @@ const ClipBoardInput = ({
   defaultValue = "",
   ...props
 }: Omit<InputBoxProps, "onChange" | "type" | "children">) => {
-  const stringDdefaultValue = defaultValue as string;
+  const stringDefaultValue = defaultValue as string;
   return (
     <InputBox
       {...props}
       type={"text"}
       defaultValue={defaultValue}
-      readOnly={stringDdefaultValue.length > 0}
+      readOnly={stringDefaultValue.length > 0}
     />
   );
 };
