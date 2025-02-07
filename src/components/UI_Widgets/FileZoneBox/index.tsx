@@ -18,8 +18,8 @@ type FileDropZoneContextValue = {
   isDragAccept: boolean,
   isDragReject: boolean,
   open: () => void;
-  getInputProps<T extends DropzoneRootProps>(props?: T) => T,
-  getRootProps<T extends DropzoneInputProps>(props?: T) => T
+  getInputProps<T extends DropzoneInputProps>(props?: T) => T,
+  getRootProps<T extends DropzoneRootProps>(props?: T) => T
 }
  
 const FileDropZoneContext = createContext<FileDropZoneContextValue>({
