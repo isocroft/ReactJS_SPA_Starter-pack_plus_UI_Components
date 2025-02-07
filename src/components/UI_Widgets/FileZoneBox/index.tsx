@@ -123,7 +123,7 @@ export const useDropZoneContext = () => {
 };  
 
 
-const DragDropPanel = React.forwardRef(({
+const DragDropInputPanel = React.forwardRef(({
     children,
     required,
     name,
@@ -234,7 +234,7 @@ const DragDropPanel = React.forwardRef(({
   );  
 });
 
-const DialogButton = ({ ...props }: Omit<ButtonProps, "type" | "onClick">) => {
+const FileDialogButton = ({ ...props }: Omit<ButtonProps, "type" | "onClick">) => {
   const { open } = useDropZoneContext();
   return (
     <Button type="button" onClick={open} {...props}>
@@ -314,8 +314,8 @@ const FileZoneBox = (
   );
 };
 
-FileZoneBox.DragnDropPanel = DragDropPanel;
-FileZoneBox.DialogButton = DialogButton;
+FileZoneBox.DragnDropInput = DragDropInputPanel;
+FileZoneBox.DialogButton = FileDialogButton;
 
 type FileZoneBoxProps = React.ComponentProps<typeof FileZoneBox>;
 
