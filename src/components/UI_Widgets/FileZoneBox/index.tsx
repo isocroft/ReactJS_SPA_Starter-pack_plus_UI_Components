@@ -2,23 +2,37 @@ import React, { useRef, useCallback, useEffect, createContext, useContext } from
 import { useDropzone } from "react-dropzone";
 
 import type { Ref, PropsWithChildren } from "react";
-import type { FileWithPath } from "react-dropzone";
+import type { FileWithPath, FileRejection, FileError, DropEvent, DropzoneRootProps, DropzoneInputProps } from "react-dropzone";
 
 import type { ButtonProps } from "../Button";
 
 import Button from "../Button";
 
-import { hasChildren, isSubChild } from "../../../helpers/render-utils";
+type FileDropZoneContextValue = {
+  ready: boolean,
+  acceptedFiles: FileWithPath[],
+  fileRejections: FileRejection[],
+  isFocused: boolean,
+  isFileDialogActive: boolean,
+  isDragActive: boolean,
+  isDragAccept: boolean,
+  isDragReject: boolean,
+  open: () => void;
+  getInputProps<T extends DropzoneRootProps>(props?: T) => T,
+  getRootProps<T extends DropzoneInputProps>(props?: T) => T
+}
  
-const FileDropZoneContext = createContext({
+const FileDropZoneContext = createContext<FileDropZoneContextValue>({
   ready: false,
   acceptedFiles: [],
   fileRejections: [],
+  isFocused: false,
+  isFileDialogActive: false,
   isDragActive: false,
   isDragAccept: false,
   isDragReject: false,
   open: () => undefined,
-  getInputProps: () => ({}),
+  getInputProps: ({ ...props }) => ({ ...props }),
   getRootProps: ({ ...props }) => ({ ...props }),
 });  
  
@@ -29,18 +43,28 @@ const FileDropZoneProvider = ({
   noClick = false,
   disabled = false,
   noKeyboard = false,
+  preventDropOnDocument = false,
   noDrag = false,
+  maxSize = 1,
+  minSize = 1,
   maxFiles = 1,
   validator = (files: FileWithPath[]) => null
 }: PropsWithChildren<{
-  onDrop<T extends FileWithPath>(acceptedFiles: T[]): void;
-  accept?: Record<string, string[]>;
+  onDrop<T extends FileWithPath>(
+    acceptedFiles: T[],
+    fileRejections: FileRejection[],
+    event: DropEvent
+  ): void;
+  accept?: string | Record<string, string[]>;
   noClick?: boolean;
   disabled?: boolean;
   noDrag?: boolean;
   noKeyboard?: boolean;
   maxFiles?: number;
-  validator?: (files: FileWithPath[]) => Record<"code" | "message", string> | null
+  maxSize?: number;
+  minSize?: number;
+  preventDropOnDocument?: boolean;
+  validator?: (files: FileWithPath[]) => FileError | FileError[] | null
 }>) => {
   const {
     getRootProps,
@@ -50,16 +74,21 @@ const FileDropZoneProvider = ({
     fileRejections,
     isDragActive,
     isDragAccept,
-    isDragReject 
+    isDragReject,
+    isFocused,
+    isFileDialogActive
   } = useDropzone({
     onDrop,
     noClick,
     noKeyboard,
     disabled,
     noDrag,
+    minSize,
+    maxSize,
     maxFiles,
     accept,
-    validator
+    validator,
+    preventDropOnDocument
   });
 
  const ready = true;
@@ -71,6 +100,8 @@ const FileDropZoneProvider = ({
       open,
       acceptedFiles,
       fileRejections,
+      isFileDialogActive,
+      isFocused,
       isDragActive,
       isDragAccept,
       isDragReject,
@@ -101,10 +132,21 @@ const DragDropPanel = React.forwardRef(({
     onBlur,
     id,
     ...props
-  }: Omit<React.ComponentProps<"div">, "onClick"> & Pick<React.ComponentProps<"input">, "required" | "name" | "disabled" | "onChange">,
+  }: Omit<React.ComponentProps<"div">, "onClick" | "onBlur"> & Pick<React.ComponentProps<"input">, "required" | "name" | "disabled" | "onChange" | "onBlur">,
   ref: Ref<HTMLInputElement>
-) => {  
+) => {
+  const hiddenInputRef = useRef<HTMLInputElement | null>(null);
   const { getRootProps, getInputProps } = useDropZoneContext();
+
+  const $ref = useCallback((node?: HTMLInputElement) => {
+    if (node) {
+      hiddenInputRef.current = node;
+    } else {
+      hiddenInputRef.current = null;
+    }
+
+    return typeof ref === "function" ? ref(node) : ref;
+  }, []);
 
   useEffect(() => {
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
@@ -147,6 +189,21 @@ const DragDropPanel = React.forwardRef(({
     };
   }, []);
 
+  useEffect(() => {
+    const onFileZoneDropAction = (event: Event) => {
+      if (hiddenInputRef.current !== null) {
+        hiddenInputRef.current.files = event.detail.files;
+        hiddenInputRef.current.dispatchEvent(new Event("input"));
+      }
+    };
+
+    document.addEventListener('filezonedropaction', onFileZoneDropAction, false);
+
+    return () => {
+      document.removeEventListener('filezonedropaction', onFileZoneDropAction, false);
+    };
+  }, []);
+
   return (
     <div {...getRootProps({
       ...props
@@ -158,12 +215,20 @@ const DragDropPanel = React.forwardRef(({
         required={required}
         disabled={disabled}
         className={"file-input_tag"}
-        ref={ref}
+        ref={$ref}
         onChange={onChange}
+        onBlur={onBlur}
         onFocus={(event: React.FocusEvent<HTMLInputElement>) => {
           event.stopPropagation();
       }} />
-      <input {...getInputProps()} />
+      <input {...getInputProps({
+       onChange: (e: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+         if (hiddenInputRef.current !== null) {
+           hiddenInputRef.current.files = e.target.files;
+           hiddenInputRef.current.dispatchEvent(new Event("input"));
+         }
+       }
+      })} />
       {children}
     </div>  
   );  
@@ -181,25 +246,23 @@ const DialogButton = ({ ...props }: Omit<ButtonProps, "type" | "onClick">) => {
 
 const FileZoneBox = (
   { children, onDrop, disabled, ...props }: {
-    onDrop<T extends FileWithPath>(acceptedFiles: T[]): void;
-    accept?: Record<string, string[]>;
+    onDrop<T extends FileWithPath>(
+      acceptedFiles: T[],
+      fileRejections: FileRejection[],
+      event: DropEvent
+    ): void;
+    accept?: string | Record<string, string[]>;
     noClick?: boolean;
     disabled?: boolean;
     noDrag?: boolean;
     noKeyboard?: boolean;
     maxFiles?: number;
-    validator?: (files: FileWithPath[]) => Record<"code" | "message", string> | null
+    maxSize?: number;
+    minSize?: number;
+    preventDropOnDocument?: boolean;
+    validator?: (files: FileWithPath[]) => FileError | FileError[] | null
   },
 ) => {
-  const hiddenInputRef = useRef<HTMLInputElement | null>(null);
-  
-  const $ref = useCallback((node?: HTMLInputElement) => {
-    if (node) {
-      hiddenInputRef.current = node;
-    } else {
-      hiddenInputRef.current = null;
-    }
-  }, []);
 
   useEffect(() => {
     /* @HINT: `window.DataTransfer` polyfill for `files` property */
@@ -219,38 +282,6 @@ const FileZoneBox = (
     }
   }, []);
 
-  const renderChildren = ($children: React.ReactNode) => {
-    const childrenProps = React.Children.map($children, (child) => {
-      switch (true) {
-        case React.isValidElement(child) && isSubChild(child, "DragDropPanel"):
-          return React.cloneElement(
-            child as React.ReactElement<Omit<React.ComponentProps<"div">, "onClick"> & Pick<React.ComponentProps<"input">, "ref", "disabled">>,
-            {
-              ref: (node) => {
-                if (typeof $ref === "function") {
-                  $ref(node);
-                }
-                /* @HINT: Call the original ref on the child, if any */
-                /* @CHECK: https://github.com/facebook/react/issues/8873#issuecomment-489579878 */
-                const { ref } = child;
-                if (typeof ref === "function") {
-                  ref(node);
-                } else if (ref !== null) {
-                  ref.current = node;
-                }
-              },
-              disabled
-            }
-          );
-          break;
-        default:
-          return child;
-          break;
-      }
-    });
-    return childrenProps;
-  };
-
   return (
     <>
       <FileDropZoneProvider {...props} disabled={disabled} onDrop={(incomingFiles: FileWithPath[]) => {
@@ -262,15 +293,22 @@ const FileZoneBox = (
             dataTransfer.items.add(file);
           });
           
-          window.setTimeout(() => {
-            hiddenInputRef.current.files = dataTransfer.files;
-            hiddenInputRef.current.dispatchEvent(new Event("input"));
-          },0);
+          window.setTimeout((dt) => {
+           const event = new window.CustomEvent('filezonedropaction', {
+             detail: {
+               files: dt.files
+             },
+             bubbles: true,
+             cancelable: true
+           })
+   
+            window.document.dispatchEvent(event);
+          }, 0, dataTransfer);
   
           return onDrop(incomingFiles);
         }
       }}>
-      {hasChildren(children, 0) ? null : renderChildren(children)}
+      {children}
     </FileDropZoneProvider>
   </>
   );
