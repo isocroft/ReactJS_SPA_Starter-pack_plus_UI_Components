@@ -48,7 +48,8 @@ const FileDropZoneProvider = ({
   maxSize = 1,
   minSize = 1,
   maxFiles = 1,
-  validator = (files: FileWithPath[]) => null
+  validator = (files: FileWithPath[]) => null,
+  ...props
 }: PropsWithChildren<{
   onDrop<T extends FileWithPath>(
     acceptedFiles: T[],
@@ -64,7 +65,14 @@ const FileDropZoneProvider = ({
   maxSize?: number;
   minSize?: number;
   preventDropOnDocument?: boolean;
-  validator?: (files: FileWithPath[]) => FileError | FileError[] | null
+  noDragEventsBubbling?: boolean;
+  getFilesFromEvent?: (
+    event: DropEvent
+  ) => Promise<Array<File | DataTransferItem>>;
+  onFileDialogCancel?: () => void;
+  onFileDialogOpen?: () => void;
+  validator?: <T extends FileWithPath>(file: T) => FileError | FileError[] | null;
+  useFsAccessApi?: boolean;
 }>) => {
   const {
     getRootProps,
@@ -88,7 +96,8 @@ const FileDropZoneProvider = ({
     maxFiles,
     accept,
     validator,
-    preventDropOnDocument
+    preventDropOnDocument,
+    ...props
   });
 
  const ready = true;
@@ -122,17 +131,19 @@ export const useDropZoneContext = () => {
   return context;
 };  
 
+// // All valid HTML tags like 'div' | 'form' | 'a' | ...
+// type ValidTags = HTMLElementTagNameMap;
 
 const DragDropInputPanel = React.forwardRef(({
     children,
     required,
     name,
-    disabled,
     onChange,
     onBlur,
+    onFocus,
     id,
     ...props
-  }: Omit<React.ComponentProps<"div">, "onClick" | "onBlur"> & Pick<React.ComponentProps<"input">, "required" | "name" | "disabled" | "onChange" | "onBlur">,
+  }: Omit<React.ComponentPropsWithoutRef<"div">, "onClick" | "onBlur" | "onFocus"> & Pick<React.ComponentPropsWithoutRef<"input">, "required" | "name" | "onChange" | "onBlur" | "onFocus">,
   ref: Ref<HTMLInputElement>
 ) => {
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
@@ -204,6 +215,15 @@ const DragDropInputPanel = React.forwardRef(({
     };
   }, []);
 
+  const { disabled, ...inputProps } = getInputProps({
+    onChange: (e: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+      if (hiddenInputRef.current !== null) {
+         hiddenInputRef.current.files = e.target.files;
+         hiddenInputRef.current.dispatchEvent(new Event("input"));
+      }
+    }
+  });
+
   return (
     <div {...getRootProps({
       ...props
@@ -220,15 +240,11 @@ const DragDropInputPanel = React.forwardRef(({
         onBlur={onBlur}
         onFocus={(event: React.FocusEvent<HTMLInputElement>) => {
           event.stopPropagation();
+          if (typeof onFocus === "function") {
+            onFocus(event);
+          }
       }} />
-      <input {...getInputProps({
-       onChange: (e: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
-         if (hiddenInputRef.current !== null) {
-           hiddenInputRef.current.files = e.target.files;
-           hiddenInputRef.current.dispatchEvent(new Event("input"));
-         }
-       }
-      })} />
+      <input {...inputProps} disabled={disabled} />
       {children}
     </div>  
   );  
