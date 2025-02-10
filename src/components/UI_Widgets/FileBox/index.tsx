@@ -2,80 +2,98 @@ import React, { FC, Ref, useRef, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
 
-const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirectory" | "multiple" | "onChange" | "onBlur"> & {
-  wrapperClassName?: string;
-  labelClassName?: string;
-  labelPosition?: "beforeInput" | "afterInput";
-}> = React.forwardRef(({
-  id,
-  name,
-  tabIndex = 0,
-  wrapperClassName,
-  labelClassName,
-  labelPosition = "beforeInput",
-  accept,
-  webkitdirectory = false,
-  multiple = false,
-  children,
-  onChange,
-  onBlur,
-  className = "",
-  ...props
-}, ref: Ref<HTMLInputElement>) => {
-  const wrapperDivRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+declare module "react" {
+  interface InputHTMLAttributes<T> extends React.HTMLAttributes<T> {
+    webkitdirectory?: string;
+  }
+}
 
-  useEffect(() => {
-    if (fileInputRef.current !== null) {
-      /* @NOTE: ReactJS does not yet support the `onCancel` event on file inputs */
-      /* @CHECK: https://github.com/facebook/react/issues/27858 */
-      fileInputRef.adddEventListener('cancel', () => {
-        // @TODO: ...
-      });
-    }
+const FileBox: FC<
+  Pick<
+    React.ComponentProps<"input">,
+    | "accept"
+    | "multiple"
+    | "onChange"
+    | "onBlur"
+    | "tabIndex"
+    | "name"
+    | "id"
+    | "required"
+    | "disabled"
+    | "autoFocus"
+  > & {
+    className?: string;
+    wrapperClassName?: string;
+    labelClassName?: string;
+    webkitdirectory?: boolean;
+    labelPosition?: "beforeInput" | "afterInput";
+    prompt?: string;
+    ref?: Ref<HTMLInputElement>;
+  }
+> = React.forwardRef(
+  (
+    {
+      id,
+      name,
+      tabIndex = 0,
+      wrapperClassName,
+      labelClassName,
+      labelPosition = "beforeInput",
+      prompt = "No File Chosen",
+      accept,
+      webkitdirectory = false,
+      multiple = false,
+      children,
+      onChange,
+      onBlur,
+      className = "",
+      ...props
+    },
+    ref: Ref<HTMLInputElement>
+  ) => {
+    const wrapperDivRef = useRef<HTMLDivElement | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-      window.document.styleSheets
-    ).filter(
-      (sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-    }).map(
-      (sheet) => {
-        if (sheet.ownerNode
-          && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-    }).filter(
-      (id) => id !== ""
-    );
+    useEffect(() => {
+      const styleSheetsOnly = [].slice
+        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
+        .filter((sheet) => {
+          if (sheet.ownerNode) {
+            return sheet.ownerNode.nodeName === "STYLE";
+          }
+          return false;
+        })
+        .map((sheet) => {
+          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
+            return sheet.ownerNode.id;
+          }
+          return "";
+        })
+        .filter((id) => id !== "");
 
-    if (styleSheetsOnly.length > 0
-      && styleSheetsOnly.includes("react-busser-headless-ui_file")) {
-      return;
-    }
+      if (
+        styleSheetsOnly.length > 0 &&
+        /* @ts-ignore */
+        styleSheetsOnly.includes("react-busser-headless-ui_file")
+      ) {
+        return;
+      }
 
-    const fileStyle = window.document.createElement('style');
-    fileStyle.id = "react-busser-headless-ui_file";
+      const fileStyle = window.document.createElement("style");
+      fileStyle.id = "react-busser-headless-ui_file";
 
-    fileStyle.innerHTML = `
+      fileStyle.innerHTML = `
       :root {
         --file-input-content-font-size: 1rem;
       }
       
       .file_wrapper-box {
         position: static;
-        display: inline-block; /* shrink-to-fit trigger */
         min-height: 0;
         min-width: fit-content;
       }
 
       .file-updated-input {
-        display: block;
-        font-size: 0;
         position: relative;
         z-index: 0;
         clear: both;
@@ -100,86 +118,194 @@ const FileBox: FC<Pick<React.ComponentProps<"input">, "accept" | "webkitdirector
         display: none;
       }
 
+      input[type="file"][class*="file-updated-input"]:not([data-prompt=""]) {
+        font-size: 0;
+        display: block;
+        min-width: -webkit-fill-available;
+        min-width: fill-available;
+        min-height: 16px;
+        width: 100%;
+      }
+
       .file-updated-input::after {
+        content: attr(data-prompt);
         font-size: var(--file-input-content-font-size);
         position: relative;
-        z-index: 10;
-        display:inline-block;
+        z-index: 2;
+        display: inline-block;
       }
       
-    `;  
-    window.document.head.appendChild(fileStyle);  
-  
-    return () => {  
-      window.document.head.removeChild(fileStyle);  
-    };  
-  }, []);
+    `;
+      window.document.head.appendChild(fileStyle);
 
-  useEffect(() => {
-    if (wrapperDivRef.current !== null && fileInputRef.current !== null) {
-      const $style = window.getComputedStyle(wrapperDivRef.current);
-      const style = window.getComputedStyle(fileInputRef.current, '::after');
-      if (style['font-size'] !== $style['font-size']) {
-        document.documentElement.style.setProperty(
-          '--file-input-content-font-size',
-          (parseInt(style['font-size']) / 16) + 'rem'
-        );
+      return () => {
+        window.document.head.removeChild(fileStyle);
+      };
+    }, []);
+
+    useEffect(() => {
+      /* @NOTE: TypeScript has refused to make `CSSStyleDelcaration` a record-like type */
+      /* @HINT: So, i have to use an ignore flag for the TSC to use valid JavaScript syntax */
+      /* @CHECK: https://github.com/Microsoft/TypeScript/issues/17827 */
+      if (wrapperDivRef.current !== null && fileInputRef.current !== null) {
+        const $style = window.getComputedStyle(wrapperDivRef.current);
+        const style = window.getComputedStyle(fileInputRef.current, "::after");
+        /* @ts-ignore */
+        if (style["font-size"] !== $style["font-size"]) {
+          document.documentElement.style.setProperty(
+            "--file-input-content-font-size",
+            /* @ts-ignore */
+            parseInt(style["font-size"]) / 16 + "rem"
+          );
+        }
       }
-    }
-  }, []);
+    }, []);
 
-  return (
-    <div id={id} name={name} tabIndex={tabIndex} {...props} className={`file_wrapper-box ${wrapperClassName}`} ref={wrapperDivRef}>
-      {hasChildren(children, 0) ? null : (labelPosition === "beforeInput" && (<label htmlFor={id} className={labelClassName}>
-        {
-            hasChildren(children, 1)
-              ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean }
-                >,
-                {
-                  required: props.required
+    useEffect(() => {
+      const onCancel = () => {
+        if (typeof prompt === "string" && prompt !== "") {
+          if (fileInputRef.current !== null) {
+            fileInputRef.current.files = null;
+            fileInputRef.current.dispatchEvent(new Event("input"));
+            fileInputRef.current.dataset.prompt = prompt;
+            fileInputRef.current.setAttribute("title", prompt);
+          }
+        }
+      };
+
+      if (fileInputRef.current !== null) {
+        /* @NOTE: ReactJS does not yet support the `onCancel` event on file inputs */
+        /* @CHECK: https://github.com/facebook/react/issues/27858 */
+        fileInputRef.current.addEventListener("cancel", onCancel, false);
+      }
+
+      return () => {
+        if (fileInputRef.current !== null) {
+          fileInputRef.current.removeEventListener("cancel", onCancel, false);
+        }
+      };
+    }, [fileInputRef]);
+
+    return (
+      <div
+        tabIndex={tabIndex}
+        {...props}
+        className={`file_wrapper-box ${wrapperClassName}`}
+        ref={wrapperDivRef}
+      >
+        {hasChildren(children, 0)
+          ? null
+          : (labelPosition === "beforeInput" && (
+              <label htmlFor={id} className={labelClassName}>
+                {hasChildren(children, 1)
+                  ? React.cloneElement(
+                      children as React.ReactElement<{ required: boolean }>,
+                      {
+                        required: props.required,
+                      }
+                    )
+                  : null}
+              </label>
+            )) ||
+            null}
+        <input
+          id={id}
+          name={name}
+          type={"file"}
+          accept={accept}
+          title={
+            typeof prompt === "string" && prompt !== "" ? prompt : undefined
+          }
+          onChange={(
+            event: React.ChangeEvent<HTMLInputElement> & {
+              target: HTMLInputElement;
+            }
+          ) => {
+            if (typeof prompt === "string" && prompt !== "") {
+              const files = (event.target.files || [null]) as FileList;
+              const firstFile = files[0];
+
+              if (firstFile) {
+                const fileLength = files.length;
+                if (fileInputRef.current !== null) {
+                  fileInputRef.current.dataset.prompt =
+                    fileLength === 1 ? firstFile.name : `${fileLength} files`;
+                  fileInputRef.current.setAttribute(
+                    "title",
+                    Array.from(files)
+                      .map((file) => file.name)
+                      .join("\r\n")
+                  );
                 }
-              )
-              : null
-          }
-      </label>) || null)}
-      <input
-        id={id}
-        name={name}
-        type={"file"}
-        accept={accept}
-        onChange={onChange}
-        onBlur={onBlur}
-        webkitdirectory={webkitdirectory ? "" : undefined}
-        multiple={multiple ? "" : undefined}
-        className={`file-updated-input ${className}`}
-        ref={(node?: HTMLInputElement) => {
-          if (node) {
-            fileInputRef.current = node;
-          } else {
-            fileInputRef.current = null;
-          }
-          return typeof ref === "function" ? ref(node) : ref;
-        }}
-      />
-      {hasChildren(children, 0) ? null : (labelPosition === "afterInput" && (<label htmlFor={id} className={labelClassName}>
-        {
-            hasChildren(children, 1)
-              ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean }
-                >,
-                {
-                  required: props.required
+              } else {
+                if (fileInputRef.current !== null) {
+                  fileInputRef.current.dataset.prompt = prompt;
+                  fileInputRef.current.setAttribute("title", prompt);
                 }
-              )
-              : null
-          }
-      </label>) || null)}
-    </div>
-  );
-});
+              }
+            }
+            if (typeof onChange === "function") {
+              onChange(event);
+            }
+          }}
+          onBlur={onBlur}
+          data-prompt={prompt}
+          webkitdirectory={webkitdirectory ? "" : undefined}
+          multiple={multiple ? multiple : undefined}
+          className={`file-updated-input ${className}`}
+          ref={(node) => {
+            if (node) {
+              fileInputRef.current = node;
+            } else {
+              fileInputRef.current = null;
+            }
+            return typeof ref === "function" ? ref(node) : ref;
+          }}
+        />
+        {hasChildren(children, 0)
+          ? null
+          : (labelPosition === "afterInput" && (
+              <label htmlFor={id} className={labelClassName}>
+                {hasChildren(children, 1)
+                  ? React.cloneElement(
+                      children as React.ReactElement<{ required: boolean }>,
+                      {
+                        required: props.required,
+                      }
+                    )
+                  : null}
+              </label>
+            )) ||
+            null}
+      </div>
+    );
+  }
+);
+
+/*
+import React, { useState } from "react";
+const [myFile, setMyFile] = useState<File | null>(null);
+
+<FileBox
+  id="myfile"
+  name="myfile"
+  className=""
+  prompt="Lol"
+  onChange={(
+    event: React.ChangeEvent<HTMLInputElement> & {
+      target: HTMLInputElement;
+    }
+  ) => {
+    if (event.target.files !== null) {
+      setMyFile(event.target.files[0]);
+    }
+  }}
+>
+  <span>My File:</span>
+</FileBox>
+
+{myFile ? myFile.name : "No File!"}
+*/
 
 type FileBoxProps = React.ComponentProps<typeof FileBox>;
 
