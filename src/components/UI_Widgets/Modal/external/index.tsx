@@ -201,7 +201,7 @@ const useModalControls = (
   } else {
     if (modalRef.current !== null) {
       setModalVisibilityState("hidden");
-      controls.close(modalRef.current.id);
+      controls.close(id || modalRef.current.id);
     }
   }
 
@@ -239,10 +239,10 @@ const useModalControls = (
           })
       );
     },
-    closeModal(id?: string) {
+    closeModal($id?: string) {
       if (modalRef.current) {
         setModalVisibilityState("hidden");
-        controls.close(id || modalRef.current.id);
+        controls.close($id || modalRef.current.id);
         modalRef.current = null;
       }
     },
@@ -295,3 +295,27 @@ export const useModal = (
     ariaTags
   );
 };
+
+/*
+ import DeleteConfimationModalContent from './components/ModalContent/DeleteConfimationModal';
+ 
+ const useConfirmationModal = () => {
+   const { showModal, closeModal, isModalVisible } = useModal("Confirmation_Delete_Task");
+   const showConfirmatioModal = () => {
+     return showModal(
+       <DeleteConfimationModalContent
+         id="Confirmation_Delete_Task"
+       />
+     );
+   };
+   const closeConfirmatioModal = () => {
+     closeModal("Confirmation_Delete_Task");
+   };
+
+   return {
+     isConfirmatioModalVisible: isModalVisible,
+     showConfirmatioModal,
+     closeConfirmatioModal
+   };
+ };
+*/
