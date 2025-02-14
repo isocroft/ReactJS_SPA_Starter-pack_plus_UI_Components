@@ -9,17 +9,15 @@ const SwitchBox = React.forwardRef(
     {
       id,
       children,
-      switchWidgetSize = 16,
+      widgetSize = 16,
       tabIndex = 0,
-      switchActiveText = "",
-      switchInactiveText = "",
+      activeText = "",
+      inactiveText = "",
       wrapperClassName = "",
       labelClassName = "",
       className = "",
       labelPosition = "beforeInput",
       onChange,
-      onBlur,
-      name,
       ...props
     }: Pick<
       React.ComponentProps<"input">,
@@ -35,9 +33,9 @@ const SwitchBox = React.forwardRef(
     > & {
       tabIndex?: number;
       children?: React.ReactNode;
-      switchWidgetSize?: number;
-      switchActiveText?: string;
-      switchInactiveText?: string;
+      widgetSize?: number;
+      activeText?: string;
+      inactiveText?: string;
       wrapperClassName?: string;
       labelClassName?: string;
       labelPosition?: "beforeInput" | "afterInput";
@@ -203,8 +201,8 @@ const SwitchBox = React.forwardRef(
     }, []);
 
     useEffect(() => {
-      const topRange = switchWidgetSize * 2;
-      const downRange = switchWidgetSize + 4;
+      const topRange = widgetSize * 2;
+      const downRange = widgetSize + 4;
 
       const dimension = topRange / downRange;
       const factor = dimension <= 1.6 ? 3 : 2;
@@ -213,7 +211,7 @@ const SwitchBox = React.forwardRef(
         "--switch-wrapper-box-font-size",
         (dimension / factor).toFixed(4) + "em"
       );
-    }, [switchWidgetSize]);
+    }, [widgetSize]);
 
     return (
       <div className={wrapperClassName} tabIndex={tabIndex}>
@@ -225,13 +223,13 @@ const SwitchBox = React.forwardRef(
                   ? React.cloneElement(
                       children as React.ReactElement<{
                         required: boolean;
-                        switchActiveText: string;
-                        switchInactiveText: string;
+                        "data-switch-active-text": string;
+                        "data-switch-inactive-text": string;
                       }>,
                       {
                         required: props.required,
-                        switchActiveText,
-                        switchInactiveText,
+                        "data-switch-active-text": activeText,
+                        "data-switch-inactive-text": inactiveText,
                       }
                     )
                   : null}
@@ -239,15 +237,13 @@ const SwitchBox = React.forwardRef(
             )) ||
             null}
         <p className={"switch_wrapper-box"}>
-          <EllipseIcon size={switchWidgetSize} />
+          <EllipseIcon size={widgetSize} />
           <input
             {...props}
             id={id}
-            name={name}
             ref={ref}
             type="checkbox"
             className={className}
-            onBlur={onBlur}
             onChange={(
               event: React.MouseEvent<HTMLInputElement> & {
                 target: HTMLInputElement;
@@ -256,19 +252,19 @@ const SwitchBox = React.forwardRef(
               const status = event.target.checked;
               if (status) {
                 if (
-                  switchActiveText !== "" &&
-                  typeof switchActiveText === "string"
+                  activeText !== "" &&
+                  typeof activeText === "string"
                 ) {
                   /* @ts-ignore */
-                  event.currentValue = switchActiveText;
+                  event.currentValue = activeText;
                 }
               } else {
                 if (
-                  switchInactiveText !== "" &&
-                  typeof switchInactiveText === "string"
+                  inactiveText !== "" &&
+                  typeof inactiveText === "string"
                 ) {
                   /* @ts-ignore */
-                  event.currentValue = switchInactiveText;
+                  event.currentValue = inactiveText;
                 }
               }
 
@@ -278,8 +274,8 @@ const SwitchBox = React.forwardRef(
             }}
           />
           <span
-            data-switch-on-text={switchActiveText}
-            data-switch-off-text={switchInactiveText}
+            data-switch-on-text={activeText}
+            data-switch-off-text={inactiveText}
           ></span>
         </p>
         {hasChildren(children, 0)
@@ -288,18 +284,18 @@ const SwitchBox = React.forwardRef(
               <label htmlFor={id} className={labelClassName}>
                 {hasChildren(children, 1)
                   ? React.cloneElement(
-                      children as React.ReactElement<{
-                        required: boolean;
-                        switchActiveText: string;
-                        switchInactiveText: string;
-                      }>,
-                      {
-                        required: props.required,
-                        switchActiveText,
-                        switchInactiveText,
-                      }
-                    )
-                  : null}
+                    children as React.ReactElement<{
+                      required: boolean;
+                      "data-switch-active-text": string;
+                      "data-switch-inactive-text": string;
+                    }>,
+                    {
+                      required: props.required,
+                      "data-switch-active-text": activeText,
+                      "data-switch-inactive-text": inactiveText,
+                    }
+                  )
+                : null}
               </label>
             )) ||
             null}
@@ -315,10 +311,10 @@ const SwitchBox = React.forwardRef(
   const screenReaderText = "Tick-Tok!";
 
   <SwitchBox
-        switchWidgetSize={SwitchWidget.WidgetSizes.MID}
-        switchActiveText={"On"}
+        widgetSize={SwitchWidget.WidgetSizes.MID}
+        activeText={"On"}
         checked={switchStatus}
-        switchInactiveText={"Off"}
+        inactiveText={"Off"}
         labelPosition={"afterInput"}
         labelClassName={"text-[#333344] ml-2"}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
