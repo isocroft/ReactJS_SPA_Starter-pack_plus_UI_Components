@@ -53,7 +53,11 @@ const FileDropZoneContext = createContext<FileDropZoneContextValue>({
 const FileDropZoneProvider = ({
   children,
   onDrop,
-  accept = { "text/*": [] },
+  accept = {
+    "text/*": [".css", ".html", ".htm", ".txt", ".csv"],
+    "application/*": [".pdf", ".docx", ".doc", ".json"],
+    "image/*": [".png", ".gif", ".jpeg", ".jpg", ".svg"]
+  },
   noClick = false,
   disabled = false,
   noKeyboard = false,
@@ -386,7 +390,7 @@ const FileZoneBox = ({
   }, []);
 
   return (
-    <section className={className}>
+    <section className={className} role="group">
       <FileDropZoneProvider
         {...props}
         onDrop={(incomingFiles: FileWithPath[], fileRejections, event) => {
@@ -488,20 +492,23 @@ function FilesPreviewList() {
     console.error("File Zone Error: ", error.message);
   }}
  >
-  <FileZoneBox.DragnDropInput
-    required
-    id="afile"
-    name="aphile"
-    onChange={(
-      event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }
-    ) => {
-      if (event.target.files !== null) {
-        setAFile(event.target.files[0]);
-      }
-    }}
-  >
-    <span>Drop files here...</span>
-  </FileZoneBox.DragnDropInput>
+   <div className="">
+    <label htmlFor="afile">A File</label>
+    <FileZoneBox.DragnDropInput
+      required
+      id="afile"
+      name="aphile"
+      onChange={(
+        event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }
+      ) => {
+        if (event.target.files !== null) {
+          setAFile(event.target.files[0]);
+        }
+      }}
+    >
+      <span>Drop files here...</span>
+    </FileZoneBox.DragnDropInput>
+  </div>
   <FileZoneBox.DialogButton>
     Open File Dialog
   </FileZoneBox.DialogButton>
