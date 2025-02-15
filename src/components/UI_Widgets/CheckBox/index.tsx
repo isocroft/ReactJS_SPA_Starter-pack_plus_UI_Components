@@ -1,7 +1,7 @@
 import React, { FC, Ref, useEffect } from "react";
 
 import { hasChildren } from "../../../helpers/render-utils";
-import { MarkIcon } form "./assets/MarkIcon";
+import { MarkIcon } from "./assets/MarkIcon";
 
 
 const CheckBox: FC<
