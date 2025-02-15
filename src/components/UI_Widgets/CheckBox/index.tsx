@@ -10,17 +10,18 @@ const CheckBox: FC<
     wrapperClassName?: string;
     labelClassName?: string;
     children?: React.ReactNode;
-    checkIconSize?: number,
+    checkIconSize?: number;
     checkIconFillColor?: string;
+    ref?: Ref<HTMLInputElement>;
   } &
-   Omit<React.ComponentProps<"input">, "type" | "placeholder">
+   Omit<React.ComponentProps<"input">, "type" | "placeholder" | "ref">
 > = React.forwardRef(({
   id,
   name,
   tabIndex = 0,
-  wrapperClassName,
-  labelClassName,
-  className,
+  wrapperClassName = "",
+  labelClassName = "",
+  className = "",
   children,
   checkIconSize,
   checkIconFillColor,
@@ -47,6 +48,7 @@ const CheckBox: FC<
     );
 
     if (styleSheetsOnly.length > 0
+      /* @ts-ignore */
       && styleSheetsOnly.includes("react-busser-headless-ui_check")) {
       return;
     }
@@ -98,7 +100,7 @@ const CheckBox: FC<
 
   return (
     <>
-      <div className={wrapperClassName}>
+      <div className={wrapperClassName} role="group">
         <span
           className={`
             check_control-icon-box ${className}
