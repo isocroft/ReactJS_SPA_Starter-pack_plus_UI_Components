@@ -26,3 +26,23 @@ export const removeHyphens = (stringWithHyphens: string) => {
  * console.log(stringWithoutHyphens) // "helloworld"
  *
  */
+
+/**
+ * slugify:
+ *
+ * @param {String} text
+ * @param {String} separator
+ *
+ * @returns {String}
+ *
+ */
+export const slugify = (text: string, separator = "_") => {
+  return text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9 ]/g, "") 
+    .replace(/\s+/g, separator);
+};
