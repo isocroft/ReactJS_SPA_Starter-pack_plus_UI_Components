@@ -91,7 +91,11 @@ const RadioBox: FC<
         top: 0;
         right: 0;
         bottom: 0;
-        left: 0;
+        cursor: pointer;
+      }
+
+      .radio_hidden-input + svg {
+        display: block;
       }
 
       /*.radio_hidden-input:checked + svg rect {
