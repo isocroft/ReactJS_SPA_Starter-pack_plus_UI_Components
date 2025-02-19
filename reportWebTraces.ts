@@ -13,7 +13,7 @@ import { envDevelopment, envTest } from "utils/constants";
 
 const provider = new WebTracerProvider({
  resource: new Resource({
-  [SemanticResourceAttributes.SERVICE_NAME]: process.env.REACT_HONEYCOMB_OTEL_SERVICE_NAME || "merchant-frontend"
+  [SemanticResourceAttributes.SERVICE_NAME]: process.env.REACT_HONEYCOMB_OTEL_SERVICE_NAME || "isolate-frontend"
  })
 });
 
