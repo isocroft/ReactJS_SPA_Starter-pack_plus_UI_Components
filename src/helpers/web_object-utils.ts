@@ -1,4 +1,33 @@
 /**
+ * convertObjToFormData:
+ *
+ * @returns {Object}
+ *
+ */
+export const convertObjToFormData = (obj: { [key: string]: string | Blob }) => {
+  const formData = new FormData();
+  for (const key in obj) {
+    formData.append(key, obj[key]);
+  }
+
+  return { data: formData };
+};
+
+/*!
+ * @EXAMPLE:
+ *
+ * const { formData } = convertObjToFormData({
+ *   name: "Wilson Ukachukwu",
+ *   pager: new File(["foo"], "foo.txt", {
+ *     type: "text/plain",
+ *   })
+ * })
+ *
+ * console.log(formData) //
+ *
+ */
+
+/**
  * isLocalHost:
  *
  * @returns {Boolean}
