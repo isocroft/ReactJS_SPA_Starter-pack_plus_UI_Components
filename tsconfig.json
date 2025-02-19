@@ -21,8 +21,8 @@
         "noEmit": true,
         "jsx": "react-jsx",
         "typeRoots": [
-            "react-busser-components.d.ts",
-            "node_modules/@types"
+            "./typings/react-busser-components.d.ts",
+            "./node_modules/@types"
           ]
     }
 }
