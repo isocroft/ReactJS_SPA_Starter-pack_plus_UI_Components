@@ -9,7 +9,7 @@ import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions"
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import { XMLHttpRequestInstrumentation } from "@opentelemetry/instrumentation-xml-http-request";
 
-import { envDevelopment, envTest } from "utils/constants";
+import { envDevelopment, envTest } from "./src/shared/constants";
 
 const provider = new WebTracerProvider({
  resource: new Resource({
