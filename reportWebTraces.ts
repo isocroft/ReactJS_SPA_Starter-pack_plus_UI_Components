@@ -42,7 +42,7 @@ provider.register({
 });
 
 var bindingSpan: Span | undefined;
-const webTracer = provider.getTracer("tracing-duplo-merchant-frontend");
+const webTracer = provider.getTracer("codesplinta-isolate-frontend");
 
 window.startBindingSpan = (
   spanName: string,
@@ -66,6 +66,15 @@ registerInstrumentations({
     })
   ]
 });
+
+const isPromise = (object?: { then?: unknown } | null) => {
+  return Boolean(object && (typeof object.then === 'function' || Object.prototype.toString.call(object) === "[object Promise]"));
+};
+
+const isAsync = (callback: Function) => {
+  const string = callback.toString().trim();
+  return !! (string.match(/^async /) || callback.constructor.name === "AsyncFunction")
+};
 
 const getNewSpan = ({ spanName, asClient = false }: { spanName: string, asClient: boolean }) => {
   return webTracer.startSpan(spanName, {
@@ -92,7 +101,54 @@ const execOnActiveSpan = <Args extends unknown, RType = any>(spanName: string, w
   });
 };
 
+async function withTracing<T extends unknown>(
+  spanName: string,
+  workUnit: Function,
+  args: T[],
+  tracerName?: string,
+) {
+ const tracer = api.trace.getTracer(tracerName ||  "codesplinta-isolate-frontend");
+ let currentSpan: Span | null = null;
+ 
+ if (window.bindingSpan) {
+   const rootContext = api.trace.setSpan(context.active(), window.bindingSpan);
+   currentSpan = tracer.startSpan(spanName, undefined, rootContext);
+ } else {
+   currentSpan = tracer.startSpan(spanName);
+ }
+
+  return context.with(trace.setSpan(context.active(), currentSpan), async () => {
+    let result: {} | null = null;
+    try {
+      if (isAsync(workUnit)) {
+        result = await workUnit(...args);
+      } else {
+        result = workUnit.apply(null, args);
+
+        if (isPromise(result)) {
+          result = await result;
+        }
+      }
+      return result;
+    } catch (error) {
+      const workUnitError = error as Error;
+      if (currentSpan) {
+        currentSpan.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: workUnitError.message
+        });
+      }
+      throw error;
+    } finally {
+      if (currentSpan) {
+        currentSpan.end();
+      }
+    }
+  });
+};
+
 export {
   getNewSpan,
-  execOnActiveSpan
+  execOnActiveSpan,
+  withTracing
 };
