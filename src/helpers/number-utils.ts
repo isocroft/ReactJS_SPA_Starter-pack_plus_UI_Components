@@ -9,6 +9,10 @@
  *
  */
 export const getOrdinalSuffixForNumber = (ordinal: number, asWord = false): string => {
+  if (Number.isNaN(ordinal) || typeof ordinal !== "number") {
+    throw new TypeError("getOrdinalSuffixForNumber(...): argument 1 is not a number");
+  }
+
   let ord = "th";
 
   if (ordinal % 10 == 1 && ordinal % 100 != 11) {
@@ -44,7 +48,11 @@ export const getOrdinalSuffixForNumber = (ordinal: number, asWord = false): stri
  *
  */
 export const getShortSuffixForAmount = (amount: number): string => {
-  const strFigure = String(Number.isNaN(amount) ? false : Math.round(amount))
+  if (Number.isNaN(amount) || typeof amount !== "number") {
+    throw new TypeError("getShortSuffixForAmount(...): argument 1 is not a number");
+  }
+
+  const strFigure = String(Math.round(amount));
   const [firstPart, ...remainingParts] = strFigure.match(
     /\d{1,3}(?=(\d{3})*$)/g
   ) || ['']
