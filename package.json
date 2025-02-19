@@ -32,7 +32,8 @@
     "react-scripts": "5.0.1",
     "resize-observer": "1.0.4",
     "sonner": "1.7.4",
-    "tailwind-merge": "2.5.2"
+    "tailwind-merge": "2.5.2",
+    "web-vitals": "1.0.1"
   },
   "devDependencies": {
     "@types/crypto-js": "4.0.2",
