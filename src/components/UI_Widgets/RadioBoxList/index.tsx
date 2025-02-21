@@ -15,7 +15,10 @@ type RadioBoxListControlProps = {
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
-} & Omit<React.ComponentProps<"input">, "type" | "value" | "placeholder" | "crossOrigin" | "id" | "name">;
+} & Omit<
+  React.ComponentProps<"input">,
+  "type" | "value" | "placeholder" | "crossOrigin"
+>;
 
 const Option: FC<
   {
@@ -23,7 +26,7 @@ const Option: FC<
     value?: string;
     onChange?: (
       event: React.ChangeEvent<HTMLInputElement>,
-      selectedValue: string | number,
+      selectedValue: string
     ) => void;
   } & Omit<RadioBoxListControlProps, "onChange">
 > = ({
@@ -37,7 +40,7 @@ const Option: FC<
   displayStyle = "transparent",
   radioIconFillColor,
   radioIconStrokeColor,
-  radioIconSize,
+  radioIconSize = 16,
   onChange,
   onBlur,
   children,
@@ -47,7 +50,9 @@ const Option: FC<
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.checked) {
         if (typeof onChange === "function") {
-          onChange(event, value);
+          if (value) {
+            onChange(event, value);
+          }
         }
       }
     },
@@ -74,31 +79,31 @@ const Option: FC<
           onBlur={onBlur}
           checked={selected}
         />
-        {typeof radioIconSize === "number" ? (<CircleIcon
-          size={radioIconSize}
-          iconFill={selected ? radioIconFillColor : "transparent"}
-          iconStroke={radioIconStrokeColor}
-        />) : null}
+        {typeof radioIconSize === "number" ? (
+          <CircleIcon
+            size={radioIconSize}
+            iconFill={selected ? radioIconFillColor : "transparent"}
+            iconStroke={radioIconStrokeColor}
+          />
+        ) : null}
       </span>
-      {hasChildren(children, 0) ? null : <label htmlFor={id || value} className={labelClassName}>
-        {
-          hasChildren(children, 1)
+      {hasChildren(children, 0) ? null : (
+        <label htmlFor={id || value} className={labelClassName}>
+          {hasChildren(children, 1)
             ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean }
-                >,
+                children as React.ReactElement<{ required: boolean }>,
                 {
-                  required: props.required
+                  required: props.required,
                 }
               )
-            : null
-        }
-      </label>}
+            : null}
+        </label>
+      )}
     </div>
   );
 };
 
-const RadioBoxList = <L = { text: string, value: string }>({
+const RadioBoxList = <L extends { text: string; value: string }>({
   as: Component = "div",
   className = "",
   name,
@@ -117,38 +122,52 @@ const RadioBoxList = <L = { text: string, value: string }>({
   disabled,
   radioIconSize,
   ...props
-}: Pick<RadioBoxListControlProps, "name" | "disabled" | "required" | "onChange" | "onBlur" | "radioIconSize" | "radioIconStrokeColor" | "radioIconFillColor" | "wrapperClassName" | "labelClassName" | "displayStyle"> &
-  { radioDefaultValue?: string, list: Array<L>, tabIndex?: number } &
-  CustomElementTagProps<"div" | "section"> &
+}: Pick<
+  RadioBoxListControlProps,
+  | "name"
+  | "disabled"
+  | "required"
+  | "onChange"
+  | "onBlur"
+  | "radioIconSize"
+  | "radioIconStrokeColor"
+  | "radioIconFillColor"
+  | "wrapperClassName"
+  | "labelClassName"
+  | "displayStyle"
+> & {
+  radioDefaultValue?: string;
+  list: Array<L>;
+  tabIndex?: number;
+} & CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
-
   const radioValue = useRef<string>(radioDefaultValue);
-  useEffect(() => {  
-    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-      window.document.styleSheets
-    ).filter(
-      (sheet) => {
+  useEffect(() => {
+    const styleSheetsOnly = [].slice
+      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
+      .filter((sheet) => {
         if (sheet.ownerNode) {
           return sheet.ownerNode.nodeName === "STYLE";
         }
         return false;
-    }).map(
-      (sheet) => {
-        if (sheet.ownerNode
-          && sheet.ownerNode instanceof Element) {
+      })
+      .map((sheet) => {
+        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
           return sheet.ownerNode.id;
         }
         return "";
-    }).filter(
-      (id) => id !== ""
-    );
+      })
+      .filter((id) => id !== "");
 
-    if (styleSheetsOnly.length > 0
-      && styleSheetsOnly.includes("react-busser-headless-ui_radio")) {
+    if (
+      styleSheetsOnly.length > 0 &&
+      /* @ts-ignore */
+      styleSheetsOnly.includes("react-busser-headless-ui_radio")
+    ) {
       return;
     }
 
-    const radioStyle = window.document.createElement('style');
+    const radioStyle = window.document.createElement("style");
     radioStyle.id = "react-busser-headless-ui_radio";
 
     radioStyle.innerHTML = `
@@ -191,12 +210,12 @@ const RadioBoxList = <L = { text: string, value: string }>({
         display: inline-block;
         vertical-align: middle;
       }
-    `;  
-    window.document.head.appendChild(radioStyle);  
-  
-    return () => {  
-      window.document.head.removeChild(radioStyle);  
-    };  
+    `;
+    window.document.head.appendChild(radioStyle);
+
+    return () => {
+      window.document.head.removeChild(radioStyle);
+    };
   }, []);
 
   const childrenProps = React.Children.map(children, (child) => {
@@ -209,23 +228,31 @@ const RadioBoxList = <L = { text: string, value: string }>({
     return React.cloneElement(
       child as React.ReactElement<
         {
-          selected: boolean,
-          value?: string,
+          selected: boolean;
+          value?: string;
           onChange?: (
             event: React.ChangeEvent<HTMLInputElement>,
-            selectedValue: string,
-          ) => void
+            selectedValue: string
+          ) => void;
         } & Omit<RadioBoxListControlProps, "onChange">
       >,
       {
-        onChange: (event, selectedValue) => {
+        onChange: (
+          event: React.ChangeEvent<HTMLInputElement>,
+          selectedValue: string
+        ) => {
           radioValue.current = selectedValue;
           /* @ts-ignore */
           event.currentValue = selectedValue;
-          onChange(event);
+
+          if (typeof onChange === "function") {
+            onChange(event);
+          }
         },
-        onBlur: (event) => {
-          onBlur(event);
+        onBlur: (event: React.FocusEvent<HTMLInputElement>) => {
+          if (typeof onBlur === "function") {
+            onBlur(event);
+          }
         },
         value: childValue,
         selected: radioValue.current === childValue,
@@ -245,42 +272,44 @@ const RadioBoxList = <L = { text: string, value: string }>({
   return (
     <Component
       {...props}
-      className={`radio_wrapper-box${
-        className ? ` ${className}` : ""
-      }`}
+      className={`radio_wrapper-box${className ? ` ${className}` : ""}`}
       tabIndex={tabIndex}
     >
       {hasChildren(children, 0)
-      ? list.map((listitem) => {
-        return (
-          <Option
-            value={listitem.value}
-            selected: radioValue.current === listitem.value
-            id={listitem.value}
-            onChange: (event, selectedValue) => {
-              radioValue.current = selectedValue;
-              /* @ts-ignore */
-              event.currentValue = selectedValue;
-              return onChange(event);
-            },
-            onBlur: (event) => {
-              return onBlur(event);
-            },
-            labelClassName={labelClassName}
-            wrapperClassName={wrapperClassName}
-            displayStyle={displayStyle}
-            radioIconFillColor={radioIconFillColor}
-            radioIconStrokeColor={radioIconStrokeColor}
-            radioIconSize={radioIconSize}
-            required={required}
-            disabled={disabled}
-            name={name}
-          >
-            <span>{listitem.text}</span>
-          </Option>
-        );
-      })
-      : childrenProps}
+        ? list.map((listitem) => {
+            return (
+              <Option
+                value={listitem.value}
+                selected={radioValue.current === listitem.value}
+                id={listitem.value}
+                onChange={(event, selectedValue) => {
+                  radioValue.current = selectedValue;
+                  /* @ts-ignore */
+                  event.currentValue = selectedValue;
+                  if (typeof onChange === "function") {
+                    return onChange(event);
+                  }
+                }}
+                onBlur={(event) => {
+                  if (typeof onBlur === "function") {
+                    return onBlur(event);
+                  }
+                }}
+                labelClassName={labelClassName}
+                wrapperClassName={wrapperClassName}
+                displayStyle={displayStyle}
+                radioIconFillColor={radioIconFillColor}
+                radioIconStrokeColor={radioIconStrokeColor}
+                radioIconSize={radioIconSize}
+                required={required}
+                disabled={disabled}
+                name={name}
+              >
+                <span>{listitem.text}</span>
+              </Option>
+            );
+          })
+        : childrenProps}
     </Component>
   );
 };
