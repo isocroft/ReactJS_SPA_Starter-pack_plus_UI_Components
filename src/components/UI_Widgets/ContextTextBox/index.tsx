@@ -131,7 +131,7 @@ const ContextTextBox = ({
         ? requiredErrorMessage || `${name} is required`
         : undefined,
     disabled,
-    shouldUnregister: true,
+    shouldUnregister
   };
 
   if (typeof props.onChange === "function") {
