@@ -120,7 +120,7 @@ const RadioBoxList = <L extends { text: string; value: string }>({
   radioIconStrokeColor,
   required,
   disabled,
-  radioIconSize,
+  radioIconSize = 16,
   ...props
 }: Pick<
   RadioBoxListControlProps,
@@ -202,6 +202,15 @@ const RadioBoxList = <L extends { text: string; value: string }>({
         bottom: 0;
         left: 0;
       }
+
+      .radio_hidden-input + svg {
+        display: block;
+      }
+
+      /*.radio_hidden-input:checked + svg rect {
+        stroke: #888888;
+        fill: #23ef4b;
+      }*/
 
       .radio_control-icon-box {
         min-height: 0;
