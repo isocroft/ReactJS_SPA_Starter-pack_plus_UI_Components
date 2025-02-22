@@ -28,6 +28,42 @@ export const convertObjToFormData = (obj: { [key: string]: string | Blob }) => {
  */
 
 /**
+ * composeEventHandlers:
+ *
+ * @param {Function=} originalEventHandler
+ * @param {Function=} ourEventHandler
+ * @param {Object=} config
+ *
+ * @returns {Function}
+ *
+ * Stole this from the @radix-ui/primitive
+ * @see https://github.com/radix-ui/primitives/blob/main/packages/core/primitive/src/primitive.tsx
+ */
+export function composeEventHandlers<E extends Event>(
+  originalEventHandler?: (event: E) => void,
+  ourEventHandler?: (event: E) => void,
+  { checkForDefaultPrevented = true } = {}
+) {
+  return function handleEvent(event: E) {
+    originalEventHandler?.(event)
+
+    if (
+      checkForDefaultPrevented === false ||
+      !(event).defaultPrevented
+    ) {
+      return ourEventHandler?.(event)
+    }
+  }
+}
+
+/*!
+ * @EXAMPLE:
+ *
+ *
+ *
+ */
+
+/**
  * isLocalHost:
  *
  * @returns {Boolean}
