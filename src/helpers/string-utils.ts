@@ -1,34 +1,34 @@
 /**
- * removeHyphens:
+ * removeHyphensFromText:
  *
- * @param {String} stringWithHyphens
+ * @param {String} textWithHyphens
  *
  * @returns {String}
  *
  */
-export const removeHyphens = (stringWithHyphens: string) => {
-  if (typeof stringWithHyphens !== "string") {
+export const removeHyphensFromText = (textWithHyphens: string) => {
+  if (typeof textWithHyphens !== "string") {
     throw new TypeError("removeHyphens(...): argument 1 is not a string");
   }
 
-  if ('replaceAll' in stringWithHyphens) {
-    return stringWithHyphens.replaceAll("-", "");
+  if ('replaceAll' in textWithHyphens) {
+    return textWithHyphens.replaceAll("-", "");
   }
 
-  return stringWithHyphens.replace(/-/g, "");
+  return textWithHyphens.replace(/-/g, "");
 };
 
 /*!
  * @EXAMPLE:
  *
- * const stringWithoutHyphens = removeHyphens("hello-world");
+ * const textWithoutHyphens = removeHyphensFromText("hello-world");
  *
- * console.log(stringWithoutHyphens) // "helloworld"
+ * console.log(textWithoutHyphens) // "helloworld"
  *
  */
 
 /**
- * slugify:
+ * slugifyText:
  *
  * @param {String} text
  * @param {String} separator
@@ -36,7 +36,17 @@ export const removeHyphens = (stringWithHyphens: string) => {
  * @returns {String}
  *
  */
-export const slugify = (text: string, separator = "_") => {
+export const slugifyText = (text: string, separator = "_") => {
+  if (typeof text !== "string") {
+    throw new TypeError("slugify(...): argument 1 is not a string");
+  }
+
+  let $separator = separator;
+
+  if (typeof $separator !== "string") {
+    throw new TypeError("slugify(...): argument 2 is not a string");
+  }
+
   return text
     .toString()
     .normalize("NFD")
@@ -44,5 +54,21 @@ export const slugify = (text: string, separator = "_") => {
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9 ]/g, "") 
-    .replace(/\s+/g, separator);
+    .replace(/\s+/g, $separator);
 };
+
+/*!
+ * @EXAMPLE:
+ *
+ * const slugifiedString = slugifyText("A Bumling Bee");
+ *
+ * console.log(slugifiedString) // "a_bumbling_bee"
+ */
+
+/**
+ * truncateText:
+ *
+ * @param {String} text
+ *
+ * @returns {String}
+ */
