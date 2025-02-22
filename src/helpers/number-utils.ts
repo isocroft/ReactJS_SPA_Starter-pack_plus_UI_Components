@@ -95,6 +95,14 @@ export function getShortSuffixForBytes(
 ) {
   const { decimals = 0, sizeType = "normal" } = opts
 
+  if (Number.isNaN(bytes) || typeof bytes !== "number") {
+    throw new TypeError("getShortSuffixForBytes(...): argument 1 is not a number");
+  }
+
+  if (Number.isNaN(decimals) || typeof decimals !== "number") {
+    throw new TypeError("getShortSuffixForBytes(...): In argument 2; `decimals` is not a number");
+  }
+
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"]
   const accurateSizes = ["Bytes", "KiB", "MiB", "GiB", "TiB"]
   if (bytes === 0) return "0 Byte"
