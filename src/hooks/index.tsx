@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useRef, useMemo, useContext, useEffect } from "react";
 import { toast, useSonner } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -195,6 +195,30 @@ export function useReactQueryCache<D, E>(queryKey: unknown[] = []) {
 
   const queryCache = queryClient.getQueryCache();
   return queryCache.find<D, E>(queryKey);
+}
+
+/**
+ * @see https://github.com/radix-ui/primitives/blob/main/packages/react/use-callback-ref/src/useCallbackRef.tsx
+ */
+
+/**
+ * A custom hook that converts a callback to a ref to avoid triggering re-renders when passed as a
+ * prop or avoid re-executing effects when passed as a dependency
+ */
+export function useCallbackRef<T extends (...args: never[]) => unknown>(
+  callback: T | undefined
+): T {
+  const callbackRef = useRef(callback)
+
+  useEffect(() => {
+    callbackRef.current = callback
+  })
+
+  // https://github.com/facebook/react/issues/19240
+  return useMemo(
+    () => ((...args) => callbackRef.current?.(...args)) as T,
+    []
+  )
 }
 
 export function useGlobalState<D = unknown>(key: string | string[], value: D) {
