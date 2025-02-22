@@ -157,7 +157,13 @@ export const detectAppleIOS = (): boolean => {
   return /iphone|ipad|ipod/.test(userAgent) && vendor.indexOf('apple') > -1
 }
 
-/* @EXAMPLE: const isIOS = detectAppleIOS() */
+/*!
+ * @EXAMPLE:
+ *
+ * const isIOS = detectAppleIOS();
+ *
+ * console.log(isIOS) // false
+ */
 
 /**
  * isInStandaloneMode:
@@ -186,4 +192,10 @@ export const isInStandaloneMode = (): boolean => {
   )
 };
 
-/* @EXAMPLE: const standalone = isInStandaloneMode(); */
+/*!
+ * @EXAMPLE:
+ *
+ * const standalone = isInStandaloneMode();
+ *
+ * console.log(standalone) // true
+ */
