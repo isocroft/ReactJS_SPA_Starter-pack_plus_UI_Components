@@ -1,4 +1,4 @@
-import React, { FC, useRef, useCallback, useState, useEffect } from "react";
+import React, { FC, Ref, useRef, useCallback, useState, useEffect } from "react";
 import type { RadioBoxListProps } from "../RadioBoxList";
 import { RadioIcon } from "../RadioBoxList";
 
@@ -13,34 +13,52 @@ type CustomElementTagProps<T extends React.ElementType> =
   };
 
 type ContextRadioBoxListControlProps = {
+  value?: string;
   displayStyle?: "transparent" | "adjusted";
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
-} & Omit<React.ComponentProps<"input">, "type" | "placeholder" | "crossOrigin">;
+  ref?: Ref<HTMLInputElement>;
+} & Omit<
+  React.ComponentProps<"input">,
+  "type" | "placeholder" | "crossOrigin" | "ref" | "value"
+>;
+
+/*
+const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
+    setTimeout(() => {
+      if (!props.value && !props.defaultCheck) {
+        resetField(name, { keepTouched: true })
+      }
+    }, 0)
+  );
+*/
 
 const InputOption: FC<
   {
     labelClassName?: string;
     wrapperClassName?: string;
   } & ContextRadioBoxListControlProps
-> = React.forwardRef(({
-  value,
-  tabIndex = 0,
-  name,
-  id,
-  displayStyle = "transparent",
-  wrapperClassName = "",
-  labelClassName = "",
-  className = "",
-  radioIconFillColor,
-  radioIconStrokeColor,
-  radioIconSize,
-  onChange,
-  onBlur,
-  children,
-  ...props
-}, ref) => {
+> = React.forwardRef(function InputOption(
+  {
+    value,
+    tabIndex = 0,
+    name = "",
+    id,
+    displayStyle = "transparent",
+    wrapperClassName = "",
+    labelClassName = "",
+    className = "",
+    radioIconFillColor,
+    radioIconStrokeColor,
+    radioIconSize = 16,
+    onChange,
+    onBlur,
+    children,
+    ...props
+  },
+  ref
+) {
   return (
     <div className={wrapperClassName}>
       <span
@@ -60,95 +78,103 @@ const InputOption: FC<
           value={value}
           className={"radio_hidden-input"}
         />
-        {typeof radioIconSize === "number" ? (<CircleIcon
-          size={radioIconSize}
-          iconFill={"transparent"}
-          iconStroke={radioIconStrokeColor}
-        />) : null}
+        {typeof radioIconSize === "number" ? (
+          <CircleIcon
+            size={radioIconSize}
+            iconFill={"transparent"}
+            iconStroke={radioIconStrokeColor}
+          />
+        ) : null}
       </span>
-      {hasChildren(children, 0) ? null : <label htmlFor={id || value} className={labelClassName}>
-        {
-          hasChildren(children, 1)
+      {hasChildren(children, 0) ? null : (
+        <label htmlFor={id || value} className={labelClassName}>
+          {hasChildren(children, 1)
             ? React.cloneElement(
-                children as React.ReactElement<
-                  { required: boolean }
-                >,
+                children as React.ReactElement<{ required: boolean }>,
                 {
-                  required: props.required
+                  required: props.required,
                 }
               )
-            : null
-        }
-      </label>}
+            : null}
+        </label>
+      )}
     </div>
   );
 });
 
-const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
+const ContextRadioBoxList = ({
   as: Component = "div",
   className = "",
-  name,
+  name = "",
   children,
   tabIndex = 0,
   displayStyle = "transparent",
   wrapperClassName = "",
   labelClassName = "",
-  radioDefaultValue = "",
   radioIconFillColor,
   radioIconStrokeColor,
-  radioIconSize,
+  requiredErrorMessage,
+  shouldUnregister = true,
+  ErrorComponent,
+  radioIconSize = 16,
   required,
   disabled,
   ...props
+}: Omit<RadioBoxListProps, "radioDefaultValue"> & {
+  requiredErrorMessage?: string;
+  shouldUnregister?: boolean;
+  ErrorComponent?: React.FunctionComponent<{
+    isDirty: boolean;
+    fieldName: string;
+    invalid: boolean;
+    errorMessage: string | null;
+  }>;
 }) => {
+  const { register, getFieldState, formState } = useFormContext();
 
-  const { register, unregister, getFieldState, formState, resetField } = useFormContext();
-  const radioValue = useRef<string>(radioDefaultValue);
+  let { isDirty, invalid, error } = getFieldState(name, formState);
 
-  const { isDirty, invalid, error } = getFieldState(name, formState)
-  const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
-    setTimeout(() => {
-      if (!props.value && !props.defaultCheck) {
-        resetField(name, { keepTouched: true })
-      }
-    }, 0)
-  );
+  const extraRegisterOptions: Record<string, unknown> = {
+    required:
+      required === true
+        ? requiredErrorMessage || `${name} is required`
+        : undefined,
+    disabled,
+    shouldUnregister,
+  };
 
   useEffect(() => {
-    return () => {
-      if (typeof timerId === "number") {
-        clearTimeout(timerId)
-      }
-      unregister(name);
-    }
-  }, [timerId]);
+    const fieldState = getFieldState(name, formState);
+    invalid = fieldState.invalid;
+    error = fieldState.error;
+  }, [isDirty]);
 
-  useEffect(() => {  
-    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-      window.document.styleSheets
-    ).filter(
-      (sheet) => {
+  useEffect(() => {
+    const styleSheetsOnly = [].slice
+      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
+      .filter((sheet) => {
         if (sheet.ownerNode) {
           return sheet.ownerNode.nodeName === "STYLE";
         }
         return false;
-    }).map(
-      (sheet) => {
-        if (sheet.ownerNode
-          && sheet.ownerNode instanceof Element) {
+      })
+      .map((sheet) => {
+        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
           return sheet.ownerNode.id;
         }
         return "";
-    }).filter(
-      (id) => id !== ""
-    );
+      })
+      .filter((id) => id !== "");
 
-    if (styleSheetsOnly.length > 0
-      && styleSheetsOnly.includes("react-busser-headless-ui_radio-contextbox")) {
+    if (
+      styleSheetsOnly.length > 0 &&
+      /* @ts-ignore */
+      styleSheetsOnly.includes("react-busser-headless-ui_radio-contextbox")
+    ) {
       return;
     }
 
-    const radioStyle = window.document.createElement('style');
+    const radioStyle = window.document.createElement("style");
     radioStyle.id = "react-busser-headless-ui_radio-contextbox";
 
     radioStyle.innerHTML = `
@@ -184,9 +210,14 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
         left: 0;
       }
 
-      .radio_hidden-input:checked + svg rect {
-        fill: ${radioIconFillColor};
+      .radio_hidden-input + svg {
+        display: block;
       }
+
+      /*.radio_hidden-input:checked + svg rect {
+        stroke: #888888;
+        fill: ${radioIconFillColor};
+      }*/
 
       .radio_control-icon-box {
         min-height: 0;
@@ -195,83 +226,126 @@ const ContextRadioBoxList: Omit<RadioBoxListProps, "onChange" | "onBlur"> & { Er
         display: inline-block;
         vertical-align: middle;
       }
-    `;  
-    window.document.head.appendChild(radioStyle);  
-  
-    return () => {  
-      window.document.head.removeChild(radioStyle);  
-    };  
+    `;
+    window.document.head.appendChild(radioStyle);
+
+    return () => {
+      window.document.head.removeChild(radioStyle);
+    };
   }, []);
 
-  const childrenProps = React.Children.map(children, (child) => {
-    if (!React.isValidElement(child) || !isSubChild(child, "InputOption")) {
-      return null;
-    }
-
-    const childValue: string = child.props.value;
-    /* @CHECK: https://stackoverflow.com/a/71497701  */
-    const { ref, ...rest } = register(name, { required, disabled });
-
-    return React.cloneElement(
-      child as React.ReactElement<
-        {
-          labelClassName?: string;
-          wrapperClassName?: string;
-        } & ContextRadioBoxListControlProps
-      >,
-      {
-        ...rest,
-        value: childValue,
-        radioIconFillColor,
-        wrapperClassName,
-        labelClassName,
-        displayStyle,
-        radioIconStrokeColor,
-        radioIconSize,
-        ref: (node?: HTMLInputElement) => {
-          //ref(node);
-          if (node) {
-            radioValue.current = node.value;
-          } else {
-            radioValue.current = radioDefaultValue;
-          }
-          return typeof ref === "function" ? ref(node) : ref;
+  const childrenProps = useMemo(
+    () =>
+      React.Children.map(children, (child) => {
+        if (!React.isValidElement(child) || !isSubChild(child, "InputOption")) {
+          return null;
         }
-      }
-    );
-  });
+        const childValue: string = child.props.value;
+
+        const { ref, onChange, onBlur } = register(name, extraRegisterOptions);
+
+        return React.cloneElement(
+          child as React.ReactElement<
+            {
+              labelClassName?: string;
+              wrapperClassName?: string;
+            } & ContextRadioBoxListControlProps
+          >,
+          {
+            name: name,
+            value: childValue,
+            radioIconFillColor,
+            wrapperClassName,
+            labelClassName,
+            onChange,
+            onBlur,
+            displayStyle,
+            radioIconStrokeColor,
+            radioIconSize,
+            ref: (node?: HTMLInputElement | null) => {
+              if (typeof ref === "function") {
+                ref(node);
+              }
+            },
+          }
+        );
+      }),
+    [
+      name,
+      displayStyle,
+      wrapperClassName,
+      labelClassName,
+      radioIconStrokeColor,
+      radioIconFillColor,
+      radioIconSize,
+      shouldUnregister,
+      requiredErrorMessage,
+      isDirty,
+      required,
+      disabled,
+    ]
+  );
 
   return (
     <Component
       {...props}
-      className={`radio_wrapper-box${
-        className ? ` ${className}` : ""
-      }`}
+      className={`radio_wrapper-box${className ? ` ${className}` : ""}`}
       tabIndex={tabIndex}
+      onChange={(
+        e: React.ChangeEvent<HTMLInputElement> & { currentValue: string }
+      ) => {
+        if (typeof props.onChange === "function") {
+          props.onChange(e);
+        }
+      }}
+      onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+        if (typeof props.onBlur === "function") {
+          props.onBlur(e);
+        }
+      }}
     >
-      <>
-        {childrenProps}
-      </>
-      {ErrorComponent ? <ErrorComponent isDirty={isDirty} invalid={invalid} errorMessage={error?.message || null} /> : null}
+      <>{childrenProps}</>
+      {ErrorComponent ? (
+        <ErrorComponent
+          isDirty={isDirty}
+          fieldName={name}
+          invalid={invalid}
+          errorMessage={error ? `${error.type}: ${error.message}` : null}
+        />
+      ) : null}
     </Component>
   );
 };
 
+/*
 
-// <ContextRadioBoxList as="section" name="gender" id="gender" displayStyle="adjusted" radioDefaultValue={"male"} radioIconSize={RadioIcon.IconSizes.BIG}>
-//   <ContextRadioBoxList.Option value="male" id="male">
-//     <span>Male</span>
-//   </ContextRadioBoxList.Option>
-//   <ContextRadioBoxList.Option value="female" id="female">
-//     <span>Female</span>
-//   </ContextRadioBoxList.Option>
-// </ContextRadioBoxList>
+<ContextRadioBoxList
+  as="section"
+  name="gender"
+  id="gender"
+  displayStyle="adjusted"
+  radioIconSize={RadioIcon.IconSizes.BIG}
+  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('current value: ', event.target.value);
+  }}
+>
+  <ContextRadioBoxList.Option value="male" id="male">
+    <span>Male</span>
+  </ContextRadioBoxList.Option>
+  <ContextRadioBoxList.Option value="female" id="female">
+    <span>Female</span>
+  </ContextRadioBoxList.Option>
+</ContextRadioBoxList>
+
+*/
 
 ContextRadioBoxList.Option = InputOption;
 
 export { RadioIcon };
 
-type ContextRadioBoxListProps = React.ComponentProps<typeof ContextRadioBoxList>;
+type ContextRadioBoxListProps = React.ComponentProps<
+  typeof ContextRadioBoxList
+>;
 
 export type { ContextRadioBoxListProps };
 
