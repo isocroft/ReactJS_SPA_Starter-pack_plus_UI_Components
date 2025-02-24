@@ -159,6 +159,10 @@ export const removeFromChildren = (
  *
  */
 
+/**
+ * retrieveChildComponent:
+ *
+ */
 function retrieveChildComponent<A = any, T extends (...args: A[]) => React.JSX.Element>(
   children: React.ReactNode | React.ReactNode[],
   type: T,
@@ -185,6 +189,10 @@ function retrieveChildComponent<A = any, T extends (...args: A[]) => React.JSX.E
   return child;
 }
 
+/**
+ * retrieveChildComponennts:
+ *
+ */
 export function retrieveChildComponents<A = any, T extends (...args: A[]) => React.JSX.Element>(
   children: React.ReactNode | React.ReactNode[],
   type: T,
@@ -215,12 +223,38 @@ export function retrieveChildComponents<A = any, T extends (...args: A[]) => Rea
   return child;
 }
 
+/**
+ * isSubChild:
+ *
+ */
 export const isSubChild = <C extends React.ReactNode>(
   child: C,
   tag: string
-): child is C =>
-  React.isValidElement<C>(child) && (typeof(child?.type) === "function" ? child?.type?.name === tag : String(child?.type).includes(tag));
+): child is C => {
+  const getChildTypeName = (
+    $child: React.ReactElement<C, string | React.JSXElementConstructor<string>>
+  ) => {
+    if (typeof $child !== "object" || $child === null) {
+      return "";
+    }
+    /* @ts-ignore */
+    return "render" in $child?.type
+      ? $child?.type?.render?.name
+      : $child?.type;
+  };
 
+  return (
+    React.isValidElement<C>(child) &&
+    (typeof child?.type === "function"
+      ? child?.type?.name === tag
+      : String(getChildTypeName(child)).includes(tag))
+  );
+};
+
+/**
+ * renderBreadcrumbs:
+ *
+ */
 export const renderBreadcrumbs = (
   breadcrumbs: Location[],
   breadcrumbsMap = {},
