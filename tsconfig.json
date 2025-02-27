@@ -25,6 +25,7 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
+        "types": ["node"],
         "typeRoots": [
             "./typings/react-busser-components.d.ts",
             "./node_modules/@types"
