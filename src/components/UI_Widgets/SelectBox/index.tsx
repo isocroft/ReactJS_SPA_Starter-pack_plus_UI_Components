@@ -7,44 +7,6 @@ type CustomElementTagProps<T extends React.ElementType> =
     as?: T;
     children: undefined;
   };
-/*
-type Fn<ARGS extends any[], R> = (...args: ARGS) => R;
-
-const useEventCallback = <A extends any[], R>(fn: Fn<A, R>): Fn<A, R> => {
-  const ref = React.useRef<Fn<A, R>>(fn);
-
-  // not sure this I like assigning to a ref during the method call, but React recommends it for certain circumstances:
-  // https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
-  // so it's probably OK.
-  
-  if (ref.current !== fn) {
-    ref.current = fn;
-  }
-  
-
-  const immutableRef = useRef((...args: A) => {
-    // perform call on version of the callback from last commited render
-    return ref.current(...args);
-  }).current;
-
-  return immutableRef;
-
-};
-
-function useEventCallback<A extends any[], R>(fn: Fn<A, R>): Fn<A, R> {
-  const ref = React.useRef(fn);
-  const _effect = typeof React.useLayoutEffect === "function" ? React.useLayoutEffect : React.useEffect;
-
-  _effect(() => {
-    ref.current = fn;
-  }, [fn]);
-
-  return React.useCallback(() => {
-    const fn = ref.current;
-    return fn();
-  }, [ref]);
-}
-*/
 
 const SelectBox: FC<
   {
@@ -74,19 +36,6 @@ const SelectBox: FC<
     defaultValue ? defaultValue : props.value
   ) as string;
   const selectRef = useRef<HTMLSelectElement | null>(null);
-  /*
-  const onClick = useEventCallback<NonNullable<ComponentProps<"select">["onClick"]>>((event) => {
-    if (typeof props.onClick === "function") {
-      props.onClick(e);
-    }
-
-    if (e.defaultPrevented) {
-      return;
-    }
-
-    // @TODO: Do something later...
-  })
-  */
 
   useEffect(() => {  
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
