@@ -24,7 +24,7 @@ const isTabsHeaderOverflowing = (element: HTMLUListElement | HTMLMenuElement) =>
 
 const isActiveTabTitleInOverflow = (element: HTMLLIElement) => {
   const isCorrectOffsetParent = element.parentNode === element.offsetParent;
-  if (!isCorrectOffsetParent) {
+  if (!isCorrectOffsetParent || element.offsetParent == null) {
     return false;
   }
 
@@ -38,7 +38,7 @@ const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string, di
   const history = useHistory();
   const [activeTabIndex, setActiveTabIndex] = useState<number>(() => {
     const activeTabIdFromUrlQuery = Number(previousActiveTabIdQuery.current);
-    return activeTabFromUrlQuery - 1;
+    return activeTabIdFromUrlQuery - 1;
   });
 
   const handleSetActiveTab = useCallback<React.MouseEventHandler<HTMLElement>>((event: React.MouseEvent<HTMLElement>) => {
@@ -54,7 +54,7 @@ const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string, di
           : '-1'
       );
 
-      if (clickedTabIndex !== NaN
+      if (!Number.isNaN(clickedTabIndex)
         && clickedTabIndex !== -1) {
         setActiveTabIndex((prevTabIndex) => {
           if (prevTabIndex === clickedTabIndex) {
@@ -72,11 +72,11 @@ const useTabsCore = (initialActiveTabIndex: number, activeTabIdQuery: string, di
       return;
     }
     
-    const onTabIdQueryChange = ($location) => {
+    const onTabIdQueryChange = ($location: ReturnType<typeof useHistory>["location"]) => {
       const currentPageSearchParams = new window.URLSearchParams($location.search);
       const currentTabfromUrlQuery = Number(currentPageSearchParams.get(activeTabIdQuery));
 
-      if (currentTabfromUrlQuery !== NaN
+      if (!Number.isNaN(currentTabfromUrlQuery)
         && previousActiveTabIdQuery.current !== String(currentTabfromUrlQuery)) {
         previousActiveTabIdQuery.current = String(currentTabfromUrlQuery)
         setActiveTabIndex((prevTabIndex) => {
@@ -209,11 +209,12 @@ const Tabs = ({ activeTabIndex = 0, activeTabIdQuery = 'active_tab__react-busser
 };
 
 interface TabTitleProps extends React.ComponentPropsWithRef<"li"> {
-  isActive?: boolean
+  isActive?: boolean;
+  "data-tab-title-index": string;
 }
 
 const TabTitle: FC<TabTitleProps> = ({ children, className, isActive, ...props }) => {
-  return (<li className={className} {...props} role="tab" aria-selected={isActive ? "true" : "false"} tabIndex={isActive ? "0" : "-1"}>
+  return (<li className={className} {...props} role="tab" aria-selected={isActive ? "true" : "false"} tabIndex={isActive ? 0 : -1}>
     {children}
   </li>);
 };
@@ -223,7 +224,7 @@ type TabsHeaderProps = CustomElementTagProps<"menu" | "ul"> & {
   wrapperClassName?: string;
 };
 
-const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wrapperClassName, activeTabTitleIndex, children, ...props }) => {
+const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className = "", wrapperClassName = "", activeTabTitleIndex, children, ...props }) => {
   const tabTitleElement = useRef<HTMLUListElement | null>(null);
 
   useEffect(() => {
@@ -241,8 +242,8 @@ const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wra
         return;
       }
       if (isActiveTabTitleInOverflow(
-        activeTabElement
-      ) {
+        activeTabElement as HTMLLIElement
+      )) {
         /* @HINT: Make sure that no active tab is hidden within a CSS overflow */
         tabTitleElement.current.scrollBy(5000, 0);
       }
@@ -259,7 +260,7 @@ const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wra
 
         return React.cloneElement(child, {
           isActive: activeTabTitleIndex === index,
-          "data-tab-title-index": index
+          "data-tab-title-index": String(index),
         });
       })}
     </Component>
@@ -269,7 +270,7 @@ const TabsHeader: FC<TabsHeaderProps> = ({  as: Component = "ul", className, wra
 type TabPanelProps = React.ComponentPropsWithRef<"div">;
 
 const TabPanel: FC<TabPanelProps> = ({ children, className, ...props }) => {
-  return <div className={className} {...props} role="tabpanel" tabIndex="0">
+  return <div className={className} {...props} role="tabpanel" tabIndex={0}>
     {children}
   </div>
 };
