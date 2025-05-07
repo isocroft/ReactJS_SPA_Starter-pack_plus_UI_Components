@@ -1,4 +1,4 @@
-import React, { useTransition, PropsWithChildren } from "react";
+import React, { /*useTransition,*/ PropsWithChildren } from "react";
 import {
   Route,
 } from "react-router-dom";
@@ -15,15 +15,12 @@ import { hasChildren } from "../helpers/render-utils";
 //import type { HashRouterProps } from "react-router-dom";
 
 const AppLayout = ({
-  breadcrumbsMap = {}
   className = "",
   children
 }: PropsWithChildren<{
-  breadcrumbsMap?: Record<string, string>;
   className?: string;
-  onAppNavigation?: GlobalRoutingContextProps["onGlobalNavigation"];
 }>) => {
-  const [isPending, startTransition] = useTransition({ timeoutMS: 3500 });
+  /*const [isPending, startTransition] = useTransition({ timeoutMS: 3500 });
 
   if (isPending) {
     document.documentElement.classList.add("app-busy");
@@ -31,14 +28,14 @@ const AppLayout = ({
     document.documentElement.classList.remove("app-busy");
     document.documentElement.classList.remove("browser-navigation-animate");
   }
+
+  startTransition(() => {
+    document.documentElement.classList.add("browser-navigation-animate");
+  });*/
   
   return (
     <main className={className}>
-      <GlobalRoutingProvider onGlobalNavigation={({ previousPathname })=> {
-        startTransition(() => {
-          document.documentElement.classList.add("browser-navigation-animate");
-        });
-      }} breadcrumbsMap={breadcrumbsMap}>
+      <GlobalRoutingProvider>
         {children}
       </GlobalRoutingProvider>
     </main>
