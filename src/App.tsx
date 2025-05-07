@@ -49,7 +49,11 @@ const withAuth = (WrappedComponent: React.FunctionComponent<{ isAuthenticated: b
 
 function App({ isAuthenticated }) {
   return (
-    <AppLayout className="App" breadcrumbsMap={breadcrumbsMap}>
+    <AppLayout
+      className="App"
+      lockUnsavedChanges={true}
+      browserPromptText={"You seem to have unsaved changes, Are you sure you want to discard them?"}
+    >
       <BrowserEventToasts />
       <AppLayout.RouteNavigation>
         {isAuthenticated ? null : (<nav className="">
