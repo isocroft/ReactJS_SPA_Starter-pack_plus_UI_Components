@@ -3,8 +3,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { StaticContext, RouteComponentProps } from "react-router";
 import type { Location } from "history";
 
-//import { renderBreadcrumbs } from "../../helpers/render-utils";
-
+import { breadcrumbsMap } from "../../routes/routes.breadcrumbs.map";
 import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
@@ -23,7 +22,11 @@ export const PageHeader = ({
     bio?: Record<string, string | number>;
   };
 }) => {
-  const BreadCrumbsList = useRoutingBreadCrumbsData();
+  const BreadCrumbsList = useRoutingBreadCrumbsData(breadcrumbsMap, {
+    onNavigation ({ previousPathname }) {
+      console.log("navigation=>prev: ", previousPathname);
+    }
+  });
   return (
     <>
       <h2>{"Home"}</h2>
