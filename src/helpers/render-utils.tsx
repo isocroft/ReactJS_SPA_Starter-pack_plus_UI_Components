@@ -255,12 +255,19 @@ export const isSubChild = <C extends React.ReactNode>(
  * renderBreadcrumbs:
  *
  */
-export const renderBreadcrumbs = (
-  breadcrumbs: Location[],
+export const renderBreadcrumbs = ({
+  breadcrumbs = [],
   breadcrumbsMap = {},
   className = "breadcrumbList",
+  currentLocation: {},
   breadcrumbArrowNode = <span>{">"}</span>
-) => {
+}: {
+  breadcrumbs: Location[],
+  breadcrumbsMap: Record<string, string>,
+  className: string,
+  currentLocation: Location,
+  breadcrumbArrowNode: React.ReactElement
+}) => {
   const count = breadcrumbs.length;
   return (
     <>
@@ -289,7 +296,7 @@ export const renderBreadcrumbs = (
                   marginLeft: "5px",
                 }}
               >
-                <Link key={String(index)} to={breadcrumb.pathname}>
+                <Link key={String(index)} to={breadcrumb.pathname} isActive={breadcrumb.pathname === currentLocation.pathname}>
                   {breadcrumbsMap[breadcrumb.pathname]}
                 </Link>
               </li>
