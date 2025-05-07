@@ -18,12 +18,13 @@ const GlobalRoutingContext = createContext<{ browserPromptText: string, getUserC
   { browserPromptText: "Are you sure?", getUserConfirmation: () => false }
 );
 
-export const useRoutingBreadCrumbsData = (breadcrumbsMap: Record<string, string>, { onNavigation }: {
+export const useRoutingBreadCrumbsData = (breadcrumbsMap: Record<string, string>, { onNavigation, shouldBlockRoutingTo = (() => false) }: {
   onNavigation?: (options: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
     previousPathname: string,
     currentPathname: string,
     navigationDirection: 'refreshnavigation' | 'backwardnavigation' | 'forwardnavigation'
   }) => void;
+  shouldBlockRoutingTo?: (pathname: string) => boolean;
 }) => {
   const context = useContext(GlobalRoutingContext);
   
@@ -36,6 +37,7 @@ export const useRoutingBreadCrumbsData = (breadcrumbsMap: Record<string, string>
     promptMessage: context.browserPromptText,
     getUserConfirmation: context.getUserConfirmation,
     /* onNavigation() gets called each time the route changes */
+    shouldBlockRoutingTo,
     onNavigation: (
       history,
       { previousPathname, currentPathname, navigationDirection }
@@ -68,7 +70,7 @@ export default function GlobalRoutingProvider ({
   useBrowserPrompt = true
 }: PropsWithChildren<GlobalRoutingContextProps>) {
   /* @NOTE: Using the `useUnsavedChangesLock()` ReactJS hook */
-  const { getUserConfirmation/* allowTranstion, blockTransition */ } = useUnsavedChangesLock({
+  const { getUserConfirmation /* allowTranstion, blockTransition */ } = useUnsavedChangesLock({
     useBrowserPrompt,
   });
 
