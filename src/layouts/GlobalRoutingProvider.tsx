@@ -63,7 +63,7 @@ export default function GlobalRoutingProvider ({
   useBrowserPrompt = true
 }: PropsWithChildren<GlobalRoutingContextProps>) {
   /* @NOTE: Using the `useUnsavedChangesLock()` ReactJS hook */
-  const { getUserConfirmation } = useUnsavedChangesLock({
+  const { getUserConfirmation/* allowTranstion, blockTransition */ } = useUnsavedChangesLock({
     useBrowserPrompt,
   });
 
