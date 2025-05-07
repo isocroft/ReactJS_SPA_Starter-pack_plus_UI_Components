@@ -52,8 +52,8 @@ export const useRoutingBreadCrumbsData = (breadcrumbsMap: Record<string, string>
     },
   });
 
-  return ({ className }) => {
-    return renderBreadcrumbs(getBreadCrumbsList(), breadcrumbsMap, className, currentLocation);
+  return ({ className, pathnamePrefix }) => {
+    return renderBreadcrumbs(getBreadCrumbsList(pathnamePrefix), breadcrumbsMap, className, currentLocation);
   };
 };
 
