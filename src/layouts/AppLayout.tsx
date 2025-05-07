@@ -19,6 +19,8 @@ const AppLayout = ({
   children
 }: PropsWithChildren<{
   className?: string;
+  lockUnsavedChanges? boolean;
+  browserPromptText?: string;
 }>) => {
   /*const [isPending, startTransition] = useTransition({ timeoutMS: 3500 });
 
@@ -35,7 +37,7 @@ const AppLayout = ({
   
   return (
     <main className={className}>
-      <GlobalRoutingProvider>
+      <GlobalRoutingProvider lockUnsavedChanges={lockUnsavedChanges} browserPromptText={browserPromptText}>
         {children}
       </GlobalRoutingProvider>
     </main>
