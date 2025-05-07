@@ -259,13 +259,13 @@ export const renderBreadcrumbs = ({
   breadcrumbs = [],
   breadcrumbsMap = {},
   className = "breadcrumbList",
-  currentLocation: {},
+  currentLocation = null,
   breadcrumbArrowNode = <span>{">"}</span>
 }: {
   breadcrumbs: Location[],
   breadcrumbsMap: Record<string, string>,
   className: string,
-  currentLocation: Location,
+  currentLocation: Location | null,
   breadcrumbArrowNode: React.ReactElement
 }) => {
   const count = breadcrumbs.length;
@@ -296,7 +296,7 @@ export const renderBreadcrumbs = ({
                   marginLeft: "5px",
                 }}
               >
-                <Link key={String(index)} to={breadcrumb.pathname} isActive={breadcrumb.pathname === currentLocation.pathname}>
+                <Link key={String(index)} to={breadcrumb.pathname} isActive={breadcrumb.pathname === currentLocation?.pathname}>
                   {breadcrumbsMap[breadcrumb.pathname]}
                 </Link>
               </li>
