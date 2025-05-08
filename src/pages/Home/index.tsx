@@ -16,7 +16,7 @@ export const usePageDataLoader = () => {
     status: 'success',
     refetch: () => Promise.resolve({});
   };
-  return { home: query };
+  return { home: query } as Record<string, UseQueryResult>;
 };
 
 export const RoutePath = RoutePaths.HOME;
