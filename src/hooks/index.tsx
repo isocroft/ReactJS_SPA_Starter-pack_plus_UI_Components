@@ -254,5 +254,5 @@ export function useGlobalState<D = unknown>(key: string | string[], value: D) {
     queryClient.refetchQueries(_queryKey);
   };
 
-  [data, setState, clearState];
+  return [data, setState, clearState] as const;
 }
