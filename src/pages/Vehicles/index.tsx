@@ -36,7 +36,12 @@ export const PageHeader = ({
 export const PageTitle = "Vehicle *";
 
 export const usePageDataLoader = () => {
-  return { vehicles: null };
+  return Promise.resolve({
+    data: { vehicles: null },
+    isLoading: false,
+    isError: false,
+    status: 'success'
+  });
 };
 
 export const renderPage = (
