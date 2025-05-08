@@ -10,7 +10,7 @@ import { RoutePaths } from "../../routes/routes.paths";
 export const usePageDataLoader = async () => {
   /* @HINT: Pretending to be a call to `useQuery()` */
   const query =  await Promise.resolve({
-    data: { home: null },
+    data: [{ id: 123 }, { id: 456 }],
     isLoading: false,
     isError: false,
     status: 'success',
