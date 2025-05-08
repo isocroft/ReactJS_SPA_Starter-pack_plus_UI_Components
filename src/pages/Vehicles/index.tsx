@@ -36,12 +36,15 @@ export const PageHeader = ({
 export const PageTitle = "Vehicle *";
 
 export const usePageDataLoader = () => {
-  return Promise.resolve({
-    data: { vehicles: null },
+  /* @HINT: Pretending to be a call to `useQuery()` */
+  const query = {
+    data: [{ id: 789, make: "Volvo", color: "Red" }, { id: 567, make: "Mercedes", color: "Black" }],
     isLoading: false,
     isError: false,
-    status: 'success'
-  });
+    status: 'success',
+    refetch: () => Promise.resolve({})
+  };
+  return { vehicles: query };
 };
 
 export const renderPage = (
