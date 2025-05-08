@@ -7,13 +7,16 @@ import { breadcrumbsMap } from "../../routes/routes.breadcrumbs.map";
 import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
-export const usePageDataLoader = () => {
-  return Promise.resolve({
+export const usePageDataLoader = async () => {
+  /* @HINT: Pretending to be a call to `useQuery()` */
+  const query =  await Promise.resolve({
     data: { home: null },
     isLoading: false,
     isError: false,
-    status: 'success'
+    status: 'success',
+    refetch: () => Promise.resolve({});
   });
+  return { home: query };
 };
 
 export const RoutePath = RoutePaths.HOME;
