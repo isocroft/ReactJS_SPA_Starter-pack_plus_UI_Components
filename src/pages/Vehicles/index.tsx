@@ -44,7 +44,7 @@ export const usePageDataLoader = () => {
     status: 'success',
     refetch: () => Promise.resolve({})
   };
-  return { vehicles: query };
+  return { vehicles: query } as Record<string, UseQueryResult>;
 };
 
 export const renderPage = (
