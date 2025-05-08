@@ -8,7 +8,12 @@ import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
 export const usePageDataLoader = () => {
-  return { home: null };
+  return Promise.resolve({
+    data: { home: null },
+    isLoading: false,
+    isError: false,
+    status: 'success'
+  });
 };
 
 export const RoutePath = RoutePaths.HOME;
