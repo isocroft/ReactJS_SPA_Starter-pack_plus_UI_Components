@@ -36,7 +36,7 @@ interface DecoratedComponentProps<T = object> {
   PageElement: React.LazyExoticComponent<
     React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
   >;
-  useDataLoader: () => Record<string, UseQueryResult | null>;
+  useDataLoader: (location: Location) => Record<string, UseQueryResult | null>;
   renderProp: (
     location: Location,
     queries: Record<string, UseQueryResult | null>,
@@ -48,6 +48,17 @@ interface DecoratedComponentProps<T = object> {
       bio?: Record<string, string | number>;
     }
   ) => JSX.Element | null;
+}
+
+function dataLoaderQueriesLoading(queries: Record<string, UseQueryResult | null>) {
+  let result = false;
+  for (let key in queries) {
+    result = result || queries[key].isLoading;
+    if (result) {
+      break;
+    }
+  }
+  return result;
 }
 
 const PageRenderer: React.FC<DecoratedComponentProps> = ({
@@ -64,13 +75,17 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   titleTag.textContent = Title + " | React App";
   document.title = Title + " | React App";
 
-  const queries = useDataLoader();
+  //const previousPathname = usePreviousRoutePathname();
+  const history = useHistory<object>();
+
+  const queries = useDataLoader(history.location);
   const { getFromStorage } = useBrowserStorage({
     storageType: "local",
   });
 
-  //const previousPathname = usePreviousRoutePathname();
-  const history = useHistory<object>();
+  if (dataLoaderQueriesLoading(queries)) {
+    return <div>{Loading...}</div>
+  }
 
   return (
     <section id="page">
