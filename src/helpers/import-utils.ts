@@ -6,7 +6,6 @@ import type { JSX } from "react";
 /**
  * lazyWithRetry:
  *
- * @CHECK: https://gist.github.com/raphael-leger/4d703dea6c845788ff9eb36142374bdb#file-lazywithretry-js
  *
  * @param {( => Promise<*>} componentImport
  
@@ -28,6 +27,7 @@ export const lazyWithRetry = <
     ) as boolean;
 
     try {
+      /* @CHECK: https://gist.github.com/raphael-leger/4d703dea6c845788ff9eb36142374bdb#file-lazywithretry-js */
       const component = await componentImport();
 
       window.sessionStorage.setItem(retryStorageKey, "false");
@@ -35,21 +35,24 @@ export const lazyWithRetry = <
       return component;
     } catch (error) {
       if (!pageHasAlreadyBeenForceRefreshed) {
-        function onBeforeUnload (e: BeforeUnloadEvent) {
-          e.preventDefault();
-
-          if ('returnValue' in e) {
-            e.returnValue = undefined;
-          }
-
-          window.removeEventListener("beforeunload", onBeforeUnload);
-          window.sessionStorage.removeItem(retryStorageKey);
-        };
-        /* @HINT: Assuming that the user is not on the latest version of the application. */
-        /* @HINT: Let's refresh the page immediately. */
-        window.sessionStorage.setItem(retryStorageKey, "true");
-        window.addEventListener("beforeunload", onBeforeUnload);
-        window.location.reload();
+        const $retryStorageKey = window.sessionStorage.getItem(retryStorageKey);
+        if ($retryStorageKey !== "false") {
+          function onBeforeUnload (e: BeforeUnloadEvent) {
+            e.preventDefault();
+  
+            if ('returnValue' in e) {
+              e.returnValue = undefined;
+            }
+  
+            window.removeEventListener("beforeunload", onBeforeUnload);
+            window.sessionStorage.removeItem(retryStorageKey);
+          };
+          /* @HINT: Assuming that the user is not on the latest version of the application. */
+          /* @HINT: Let's refresh the page immediately. */
+          window.sessionStorage.setItem(retryStorageKey, "true");
+          window.addEventListener("beforeunload", onBeforeUnload);
+          window.location.reload();
+        }
       } else {
         /* @HINT: If we get here, it means the page has already been reloaded */
         /* @HINT: Assuming that user is already using the latest version of the application. */
@@ -64,9 +67,8 @@ export const lazyWithRetry = <
 /**
  * componentLoader:
  *
- * @CHECK: https://medium.com/@botfather/react-loading-chunk-failed-error-88d0bb75b406
  *
- * @param {} lazyComponent
+ * @param {Function} lazyComponent
  * @param {Number} attemptsLeft
  *
  * @returns {Promise<*>}
@@ -79,10 +81,11 @@ export function componentLoader<
   }
 >(lazyComponent: () => Promise<M>, attemptsLeft = 3) {
   return new Promise<M>((resolve, reject) => {
+    /* @CHECK: https://medium.com/@botfather/react-loading-chunk-failed-error-88d0bb75b406 */
     lazyComponent()
       .then(resolve)
       .catch((error) => {
-        /* @HINT: let us retry after 1500 milliseconds */
+        /* @HINT: let us retry after 500 milliseconds */
         window.setTimeout(() => {
           if (attemptsLeft === 1) {
             reject(error);
@@ -92,7 +95,7 @@ export function componentLoader<
             resolve,
             reject
           );
-        }, 1500);
+        }, 500);
       });
   });
 }
