@@ -67,7 +67,8 @@ export const useRoutingBreadCrumbsData = (breadcrumbsMap: Record<string, string>
 export default function GlobalRoutingProvider ({
   lockUnsavedChanges = false,
   browserPromptText = "Are you sure?",
-  useBrowserPrompt = true
+  useBrowserPrompt = true,
+  children
 }: PropsWithChildren<GlobalRoutingContextProps>) {
   /* @NOTE: Using the `useUnsavedChangesLock()` ReactJS hook */
   const { getUserConfirmation /* allowTranstion, blockTransition */ } = useUnsavedChangesLock({
