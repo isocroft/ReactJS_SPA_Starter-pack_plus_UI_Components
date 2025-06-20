@@ -87,7 +87,6 @@ export function componentLoader<
     lazyComponent()
       .then(resolve)
       .catch((error) => {
-        /* @HINT: let us retry after 500 milliseconds */
         window.setTimeout(() => {
           if (attemptsLeft === 1) {
             reject(error);
