@@ -8,7 +8,7 @@ import type { JSX } from "react";
  *
  *
  * @param {AsyncFunction<[], { default: () => JSX.Element }>} componentImport
- * @param {=String} retryStorageKey
+ * @param {String=} retryStorageKey
  *
  * @returns {Object}
  */
@@ -71,7 +71,7 @@ export const lazyWithRetry = <
  *
  *
  * @param {AsyncFunction<[], { default: () => JSX.Element }>} lazyComponent
- * @param {=Number} attemptsLeft
+ * @param {Number=} attemptsLeft
  *
  * @returns {Promise<*>}
  */
