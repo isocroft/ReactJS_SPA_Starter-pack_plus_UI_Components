@@ -7,9 +7,10 @@ import type { JSX } from "react";
  * lazyWithRetry:
  *
  *
- * @param {( => Promise<*>} componentImport
- 
- * @returns {}
+ * @param {AsyncFunction<[], { default: () => JSX.Element }>} componentImport
+ * @param {=String} retryStorageKey
+ *
+ * @returns {Object}
  */
 export const lazyWithRetry = <
   Props extends {
@@ -59,6 +60,7 @@ export const lazyWithRetry = <
         /* @HINT: Let's let the application crash and raise the error. */
         throw error;
       }
+
       return { default: () => null };
     }
   });
@@ -68,8 +70,8 @@ export const lazyWithRetry = <
  * componentLoader:
  *
  *
- * @param {Function} lazyComponent
- * @param {Number} attemptsLeft
+ * @param {AsyncFunction<[], { default: () => JSX.Element }>} lazyComponent
+ * @param {=Number} attemptsLeft
  *
  * @returns {Promise<*>}
  */
