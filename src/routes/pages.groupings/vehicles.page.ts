@@ -6,7 +6,7 @@ import {
   PageTitle,
   renderPage,
   RoutePath,
-} from "../../pages/Vehicles";
+} from "../../pages/Vehicles/artifacts";
 
 const Vehicles = lazyWithRetry(() =>
   componentLoader(() => import("../../pages/Vehicles/index"))
