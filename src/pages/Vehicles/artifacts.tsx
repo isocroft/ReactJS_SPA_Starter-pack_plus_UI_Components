@@ -8,6 +8,8 @@ import { breadcrumbsMap } from "../../routes/routes.breadcrumbs.map";
 import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
+import { useRegionDataLoader } from "../../components/UI_Regions/VehicleParts/artifacts";
+
 export const RoutePath = RoutePaths.VEHICLES;
 
 export const PageHeader = ({
@@ -36,7 +38,7 @@ export const PageHeader = ({
 
 export const PageTitle = "Vehicle *";
 
-export const usePageDataLoader = () => {
+export const usePageDataLoader = () => {//| string & {})
   /* @HINT: Pretending to be a call to `useQuery()` */
   const query = {
     data: [{ id: 789, make: "Volvo", color: "Red" }, { id: 567, make: "Mercedes", color: "Black" }],
@@ -45,6 +47,7 @@ export const usePageDataLoader = () => {
     status: 'success',
     refetch: () => Promise.resolve({})
   };
+  useRegionDataLoader({ vehicleIds: query.data.map((datum) => (datum.id)) });
 
   return { vehicles: query } as Record<string, UseQueryResult>;
 };
