@@ -1,7 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 
-export const useRegionDataLoader = () => {
-  /* @HINT: Pretending to be a call to `useQuery()` */
+export const useRegionDataLoader = ({ vehicleIds }: { vehicleIds: number[] }) => {
+  /* @HINT: Pretending to be a call to `useQueries({ vehicleIds })` */
   const query = {
     data: [{ make: "Toyota", partId: 11 }, { make: "Nissan", partId: 6 }],
     isLoading: false,
