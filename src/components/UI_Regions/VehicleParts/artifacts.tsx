@@ -10,5 +10,5 @@ export const useRegionDataLoader = () => {
     refetch: () => Promise.resolve({});
   };
 
-  return { vehicle: query } as Record<string, UseQueryResult>;
+  return { vehicleParts: query } as Record<string, UseQueryResult>;
 };
