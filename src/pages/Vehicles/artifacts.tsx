@@ -38,7 +38,7 @@ export const PageHeader = ({
 
 export const PageTitle = "Vehicle *";
 
-export const usePageDataLoader = () => {//| string & {})
+export const usePageDataLoader = () => {
   /* @HINT: Pretending to be a call to `useQuery()` */
   const query = {
     data: [{ id: 789, make: "Volvo", color: "Red" }, { id: 567, make: "Mercedes", color: "Black" }],
