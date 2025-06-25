@@ -8,8 +8,8 @@ import {
   //usePreviousRoutePathname,
 } from "react-busser";
 
-import { HomeRoute } from "./pages.groupings/home.pages";
-import { VehicleRoute } from "./pages.groupings/vehicles.pages";
+import { HomeRoute } from "./pages.groupings/home.page";
+import { VehicleRoute } from "./pages.groupings/vehicles.page";
 
 type ReactRoutingFunctionalComponent = () => JSX.Element | null;
 
