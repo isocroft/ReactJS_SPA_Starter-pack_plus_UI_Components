@@ -53,7 +53,8 @@ interface DecoratedComponentProps<T = object> {
 function dataLoaderQueriesLoading(queries: Record<string, UseQueryResult | null>) {
   let result = false;
   for (let key in queries) {
-    result = result || queries[key].isLoading;
+    query = queries[key] || { isLoading: false };
+    result = result || query.isLoading;
     if (result) {
       break;
     }
@@ -84,22 +85,20 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   });
 
   if (dataLoaderQueriesLoading(queries)) {
-    return <div>{Loading...}</div>
+    return (<div>{Loading...}</div>);
   }
 
   return (
     <section id="page">
-      {
-        <Header
-          history={history}
-          queries={queries}
-          user={getFromStorage("user", {
-            permission: "owner",
-            bio: {},
-          })}
-        />
-      }
-      <Suspense fallback={<span>Loading....</span>}>
+      <Header
+        history={history}
+        queries={queries}
+        user={getFromStorage("user", {
+          permission: "owner",
+          bio: {},
+        })}
+      />
+      <Suspense fallback={<div>Loading....</div>}>
         {renderProp(
           history.location,
           queries,
