@@ -1,7 +1,7 @@
 import React from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 
-const VehicleParts = (queries: Record<"vehicleParts", UseQueryResult>) => {
+const VehicleParts = ({ queries }: { queries: Record<"vehicleParts", UseQueryResult> }) => {
   if (!queries || !queries.vehicleParts) {
     return null;
   }
