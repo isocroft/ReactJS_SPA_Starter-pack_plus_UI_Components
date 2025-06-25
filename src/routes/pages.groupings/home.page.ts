@@ -6,7 +6,7 @@ import {
   PageTitle,
   RoutePath,
   renderPage,
-} from "../../pages/Home";
+} from "../../pages/Home/artifacts";
 
 const Home = lazyWithRetry(() =>
   componentLoader(() => import("../../pages/Home/index"))
