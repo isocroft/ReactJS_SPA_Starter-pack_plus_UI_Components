@@ -86,7 +86,7 @@ export function useArrayCache<A extends unknown[]>(list: A) {
   const ref = useRef([]);
   // check if each element of the old and new array match
   const areArraysConsideredTheSame =
-    ref.length !== 0 && list.length === ref.current.length
+    ref.current.length !== 0 && list.length === ref.current.length
       ? list.every((element, index) => {
         return element === ref.current[index];
       })
