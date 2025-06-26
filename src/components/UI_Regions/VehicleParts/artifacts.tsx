@@ -3,14 +3,14 @@ import type { UseQueryResult } from "@tanstack/react-query";
 
 export const useRegionDataLoader = ({ vehicleIds }: { vehicleIds: number[] }) => {
 
-  const combinedQueries = useQueries<Array<Array<{ id: number, make: string }>>({
+  const combinedQueries = useQueries<Array<Array<{ id: number, make: string, partsCount: number }>>({
     queries: vehicleIds.map((id) => ({
       queryKey: ['vehiclePart', id],
       queryFn: () => Promise.resolve([{ id, make: "Toyota", partsCount: Math.floor(Math.random() * 30) }]),
     })),
     combine: (results) => {
       return {
-        data: results.map((result) => result.data),
+        data: results.flatMap((result) => result.data),
         isPending: results.some((result) => result.isPending),
         isLoading: results.some((result) => result.isLoading),
         error: results.some((result) => result.error !== null) ? new Error("an error occured") : null,
@@ -21,7 +21,7 @@ export const useRegionDataLoader = ({ vehicleIds }: { vehicleIds: number[] }) =>
         refetch: () => Promise.resolve([]),
         fetchNextPage: () => ({}),
        /* @ts-ignore */
-      } as UseQueryResult<Array<{ id: number, make: string }>, Error>
+      } as UseQueryResult<Array<{ id: number, make: string, partsCount: number }>, Error>
     },
   })
 
