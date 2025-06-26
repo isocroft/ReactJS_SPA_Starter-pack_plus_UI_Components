@@ -3,7 +3,7 @@ import { VehicleParts } from "../../components/UI_Regions/VehicleParts/index";
 
 import type { UseQueryResult } from "@tanstack/react-query";
 
-const Vehicles = (injected: { queries: Record<("vehicles" | string & {}), UseQueryResult | null> } | undefined) => {
+const Vehicles = (injected: { queries: Record<("vehicles" | "vehicleParts" | string & {}), UseQueryResult | null> } | undefined) => {
   if (!injected || !injected.queries) {
     return null;
   }
