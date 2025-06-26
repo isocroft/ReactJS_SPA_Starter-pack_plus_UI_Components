@@ -9,7 +9,7 @@ const VehicleParts = ({ queries }: { queries: Record<"vehicleParts", UseQueryRes
   return (<>
     <h1>{"Vehicles Parts"}</h1>
     <ul>{queries.vehicleParts.data.map((datum) => {
-      return (<li>{datum.partId} - {datum.make}</li>)
+      return (<li>{datum.partCount} - {datum.make}</li>)
     })}</ul>
   </>);
 };
