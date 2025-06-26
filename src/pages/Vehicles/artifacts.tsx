@@ -43,13 +43,17 @@ export const usePageDataLoader = () => {
   const query = {
     data: [{ id: 789, make: "Volvo", color: "Red" }, { id: 567, make: "Mercedes", color: "Black" }],
     isLoading: false,
+    isSuccess: true,
+    error: null,
     isError: false,
-    status: 'success',
-    refetch: () => Promise.resolve({})
-  };
-  useRegionDataLoader({ vehicleIds: query.data.map((datum) => (datum.id)) });
+    status: 'idle',
+    refetch: () => Promise.resolve({}),
+    fetchNextPage: () => ({})
+  /* @ts-ignore */
+  } as UseQueryResult<Array<{ id: number, make: string, color: string }>, Error>;
+  const anotherQueryResult = useRegionDataLoader({ vehicleIds: query.data.map((datum) => (datum.id)) });
 
-  return { vehicles: query } as Record<string, UseQueryResult>;
+  return { ...anotherQueryResult, vehicles: query } as Record<string, UseQueryResult>;
 };
 
 export const renderPage = (
