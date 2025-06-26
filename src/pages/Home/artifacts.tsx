@@ -14,9 +14,13 @@ export const usePageDataLoader = () => {
     data: [{ id: 123 }, { id: 456 }],
     isLoading: false,
     isError: false,
-    status: 'success',
-    refetch: () => Promise.resolve({});
-  };
+    isSuccess: true,
+    error: null,
+    status: 'idle',
+    refetch: () => Promise.resolve({}),
+    fetchNextPage: () => ({})
+  /* @ts-ignore */
+  } as UseQueryResult<Array<{ id: number }>, Error>;
 
   return { home: query } as Record<string, UseQueryResult>;
 };
