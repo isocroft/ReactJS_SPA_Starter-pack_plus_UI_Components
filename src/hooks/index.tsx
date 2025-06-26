@@ -83,10 +83,10 @@ export const useToastManager = ({
 
 export function useArrayCache<A extends unknown[]>(list: A) {
   // this holds reference to previous value 
-  const ref = useRef();
+  const ref = useRef([]);
   // check if each element of the old and new array match
   const areArraysConsideredTheSame =
-    ref.current && list.length === ref.current.length
+    ref.length !== 0 && list.length === ref.current.length
       ? list.every((element, index) => {
         return element === ref.current[index];
       })
@@ -100,7 +100,7 @@ export function useArrayCache<A extends unknown[]>(list: A) {
     }
   }, [areArraysConsideredTheSame, list]);
 
-  return areArraysConsideredTheSame ? ref.current : list;
+  return (areArraysConsideredTheSame ? ref.current : list) as const;
 }
 
 export function useArrayMemo<L extends unknown[]>(list: L, callback = (() => undefined)) {
