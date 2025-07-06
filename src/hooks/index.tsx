@@ -1,14 +1,22 @@
 import React, { useRef, useMemo, useContext, useEffect } from "react";
+import { useIsDOMElementVisibleOnScreen } from "react-busser";
 import { toast, useSonner } from "sonner";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvider";
 
 import type { ToastT } from "sonner";
+import type { InfiniteQueryResult, InfiniteQueryKey, InfiniteQueryFunction, InfiniteQueryOptions } from "react-query";
 
-type FeatureToggleHandlers = {
+export type FeatureToggleHandlers = {
   isDisabledFor: (feature: string) => boolean,
   isEnabledFor: (feature: string, segments?: string[]) => boolean
+};
+
+export type InfiniteScrollQueryOptions<TK, TR, TMV, TE> = {
+  queryKey: InfiniteQueryKey<TK>;
+  queryFn?: InfiniteQueryFunction<TR, TK, TMV>;
+  config?: InfiniteQueryOptions<TR, TMV, TE>;
 };
 
 const murmurhash = () => {
@@ -105,7 +113,25 @@ export function useArrayCache<A extends unknown[]>(list: A) {
 
 export function useArrayMemo<L extends unknown[]>(list: L, callback = (() => undefined)) {
   const cachedList = useArrayCache(list);
-  return useMemo(callback, [cachedList]);
+  return useMemo(callback.bind(null, cachedList), [cachedList]);
+}
+
+export function useInfiniteScrollForQueries  <K, D, T, E = Error>(
+  queryOptions: InfiniteScrollQueryOptions<K, D, T, E>,
+  scrollOptions = { rootMargin: "0px", threshold: 1 }
+) {
+  const { fetchNextPage, hasNextPage, ...query } = useInfiniteQuery(queryOptions);
+  const [ isIntersecting, domElementRef ] = useIsDOMElementVisibleOnScreen(scrollOptions);
+
+  useEffect(() => {
+    if (isIntersecting && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [isIntersecting, hasNextPage]);
+
+  const queryResult = { ...query, hasNextPage, fetchNextPage } as InfiniteQueryResult<D, T, E>;
+
+  return [queryResult, domElementRef] as const;
 }
 
 export const useFeatureToggle = (user: Record<string, unknown>) => {
