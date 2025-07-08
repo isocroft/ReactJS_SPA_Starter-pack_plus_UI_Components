@@ -20,7 +20,7 @@ const [inputRefs] = useState(
 );
 const handleInputFocusOnClick = (event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => event.target.select();
 // Priority: isOnlyNumberAllowed > allCharactersAllowed
-const [selectedRegex] = useState(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
+const [selectedRegex] = useState<RegExp>(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
 
 const focusNextInput = (index: number): boolean => {
   if (index >= MAX_NUMBER_INPUTS - 1 || index < -1) {
