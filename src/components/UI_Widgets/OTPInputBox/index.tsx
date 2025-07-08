@@ -52,7 +52,7 @@ function ClonedFormInputElements ({
   children,
   count = 1,
   keyPrefix = "cloned",
-  elementProps = { type: "text" },
+  elementProps = { type: "text", name: "cloned[]", required: true, minLength: "1", maxlength: "1", size: "1" },
   ...props
 }: {
   count?: number,
