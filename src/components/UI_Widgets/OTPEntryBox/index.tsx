@@ -21,6 +21,7 @@ type OTPEntryBoxProps = {
   className?: string;
   wrapperClassname?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => void;
+  onComplete?: (value: string) => void; 
 };
 
 type CustomElementTagProps<T extends React.ElementType> =
@@ -97,22 +98,22 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   // Priority: entryType > allCharactersAllowed
   const [selectedRegex] = useState<RegExp>(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
   
-  const focusNextInput = (index: number): boolean => {
+  const focusNextInput = (index: number, parentNode): boolean => {
     if (index >= MAX_NUMBER_INPUTS - 1 || index < -1) {
       return false;
     }
   
-    const nextInputRef = inputRefs[index + 1];
+    const nextInputRef = //inputRefs[index + 1];
   
     return nextInputRef.current ? nextInputRef.current.focus(), true : false;
   };
   
-  const focusPrevInput = (index: number): boolean => {
+  const focusPrevInput = (index: number, parentNode): boolean => {
     if (index <= 0) {
       return false;
     }
   
-    const prevInputRef = inputRefs[index - 1];
+    const prevInputRef = //inputRefs[index - 1];
   
     return prevInputRef.current ? prevInputRef.current.focus(), true : false;
   };
