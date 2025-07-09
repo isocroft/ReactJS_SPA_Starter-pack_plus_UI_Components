@@ -1,9 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { FC, useState, useEffect, useRef } from "react";
 import InputBox from "../InputBox";
 
 import { hasChildren, isSubChild } from "../../../helpers/render-utils";
 
 import type { InputBoxProps } from "../InputBox";
+
+interface CompositionEvent<T = Element> extends SyntheticEvent<T, NativeCompositionEvent> {
+  data: string;
+}
+
+type OTPEntryBoxProps = {
+  name: string;
+  masked?: boolean;
+  entryType?: 'numeric' | 'text';
+  placeholder?: string;
+  slots?: number;
+  required?: boolean;
+  defaultValue?: string;
+  disabled?: boolean;
+  className?: string;
+  wrapperClassname?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => void;
+};
 
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentPropsWithRef<T> & {
@@ -16,11 +34,13 @@ function ClonedFormInputElements ({
   count = 1,
   keyPrefix = "cloned",
   elementProps = { type: "text" },
+  defaultValues = "",
   ...props
 }: {
   count?: number,
   keyPrefix?: string,
-  elementProps?: Pick<React.ComponentPropsWithRef<"input">, "text" | "inputMode" | "maxLength" | "minLength" | "size" | "name" | "" | "" | "" | "">,
+  defaultvalues?: string,
+  elementProps?: Pick<React.ComponentPropsWithRef<"input">, "type" | "inputMode" | "maxLength" | "minLength" | "size" | "tabIndex" | "disabled">,
 } & CustomElementTagProps<"nav" | "header" | "section" | "div"> &
     Omit<React.ComponentProps<"div">, "align">
 ) {
@@ -34,7 +54,7 @@ function ClonedFormInputElements ({
   const clonedElements = Array.from({ length: count }, (_, index) => {
     return React.cloneElement<InputBoxProps>(
       firstChild,
-      { key: `${keyPrefix.toLowerCase()}-${index}`, ...elementProps, valueSync: true, `data-${keyPrefix.toLowerCase()}-index`: String(index) }
+      { key: `${keyPrefix.toLowerCase()}-${index}`, ...elementProps, defaultValue: elementProps.type === 'tel' ? Number(defaultValues.charAt(index)) : defaultValues.charAt(index), valueSync: true, `data-${keyPrefix.toLowerCase()}-index`: String(index) }
     );
   });
 
@@ -45,12 +65,17 @@ function ClonedFormInputElements ({
   );
 }
 
-const OTPEntryBox = ({ masked = false, entryType = 'numeric', placeholder, slots = 4, required = false }: {
-  masked?: boolean,
-  entryType?: 'numeric' | 'text',
-  placeholder: string,
-  slots?: number,
-  required?: boolean,
+const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
+  name,
+  masked = false,
+  entryType = 'numeric',
+  placeholder = "",
+  slots = 4,
+  required = false,
+  disabled = false,
+  className = "",
+  wrapperClassname = "",
+  onChange,
   children
 }) => {
   // constants
@@ -62,11 +87,12 @@ const OTPEntryBox = ({ masked = false, entryType = 'numeric', placeholder, slots
   const INPUT_TYPE = masked ? 'password' : (entryType === 'numeric' ? 'tel' : 'text');
   const OTP_VALUE_ARR = typeof value === 'string' ? value.split('').slice(0, MAX_NUMBER_INPUTS) : [];
   const OTP_PLACEHOLDER_ARR = typeof placeholder === 'string' ? placeholder.split('').slice(0, MAX_NUMBER_INPUTS) : [];
-  const INPUT_CORE_PROPS = { type: INPUT_TYPE, name: "cloned[]", required, minLength: "1", maxlength: "1", size: "1", inputMode: "numeric" };
+  const INPUT_CORE_PROPS = { type: INPUT_TYPE, required, disabled, tabIndex: 0, minLength: "1", maxlength: "1", size: "1", inputMode: "numeric" };
 
-  const [inputRefs] = useState(
-    Array.from({ length: MAX_NUMBER_INPUTS }, () => React.createRef<HTMLInputElement | undefined>(undefined))
-  );
+  const hiddenInputRef = useRef<HTMLInputElement | null>(null);
+  // const [inputRefs] = useState(
+  //   Array.from({ length: MAX_NUMBER_INPUTS }, () => React.createRef<HTMLInputElement | undefined>(undefined))
+  // );
   const handleInputFocusOnClick = (event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => event.target.select();
   // Priority: entryType > allCharactersAllowed
   const [selectedRegex] = useState<RegExp>(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
@@ -91,31 +117,129 @@ const OTPEntryBox = ({ masked = false, entryType = 'numeric', placeholder, slots
     return prevInputRef.current ? prevInputRef.current.focus(), true : false;
   };
 
-  const handleInputValue = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }): void => {
-    const inputValue = event.target.value;
+  const handleOnInputChange = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }): void => {
+  
     const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
+    const inputText = event.target.value;
 
-    if (selectedRegex.test(inputValue)) {
+    if (selectedRegex.test(inputText)) {
       setInputLettersArray([
         ...inputLettersArray.slice(0, index),
-        inputValue,
+        inputText,
         ...inputLettersArray.slice(index + 1)
       ]);
       focusNextInput(index);
     }
   };
 
+  const handleOnInputPaste = (event: React.ClipboardEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+    event.preventDefault();
+
+    const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
+    const pastedText = (event.clipboardData.getData('text/plain') || '').slice(0, MAX_NUMBER_INPUTS - index).split('');
+    const isOverMaxLength = (index + pastedText.length) >= MAX_NUMBER_INPUTS;
+
+    if (isOverMaxLength) {
+      setInputLettersArray([
+        ...inputLettersArray.slice(0, index),
+        ...pastedText,
+      ].slice(0, MAX_NUMBER_INPUTS));
+    } else {
+      setInputLettersArray([
+        ...inputLettersArray.slice(0, index),
+        ...pastedText,
+        ...inputLettersArray.slice(pastedData.length + 1)
+      ].slice(0, MAX_NUMBER_INPUTS));
+    }
+    
+    focusNextInput(index + pastedText.length - 2);
+  };
+
+  const handleOnBeforeInputKeyDown = (event: React.CompositionEvent<HTMLInputElement>) => {
+    const data = event.data;
+    console.log(">>>>>> [input data]: ", data);
+  };
+
+  const handleOnInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+    const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
+
+    if (
+      event.keyCode === 8 || event.key === 'Backspace' || 
+      event.keyCode === 46 || event.key === 'Delete'
+    ) {
+      const value = inputLettersArray[index];
+      setInputLettersArray([
+        ...inputLettersArray.slice(0, index),
+        '',
+        ...inputLettersArray.slice(index + 1)
+      ]);
+      if (!value) {
+        focusPrevInput(index);
+      }
+    } else if (
+      event.keyCode === 37 || event.key === 'ArrowLeft'
+    ) {
+      focusPrevInput(index);
+    } else if (
+      event.keyCode === 39 || event.key === 'ArrowRight'
+    ) {
+      focusNextInput(index);
+    }
+  };
+
+  /*
+
+  EXAMPLE CODE FOR `onPasteCapture`::::
+
+  import React from 'react';
+
+function MyComponent() {
+  const handlePasteCapture = (event) => {
+    // Access clipboard data
+    const pastedText = event.clipboardData.getData('text');
+    console.log('Pasted during capture phase:', pastedText);
+
+    // Optional: Prevent default paste behavior
+    // event.preventDefault(); 
+    // console.log('Default paste prevented.');
+  };
+
+  return (
+    <input 
+      type="text" 
+      onPasteCapture={handlePasteCapture} 
+      placeholder="Paste something here" 
+    />
+  );
+}
+
+export default MyComponent;
+  */
+
   return(
-    <ClonedFormInputElements
-      count={slots}
-      elementProps={INPUT_CORE_PROPS}
-      keyPrefix={"otpInput"}
-      onChange={handleInputValue}
-      onPaste={}
-      onFocus={}
-    >
-      {children}
-    </ClonedFormInputElements>
+    <div className={wrapperClassname}>
+      <input
+        type={"hidden"}
+        name={name}
+        defaultValue={defaultValue}
+        onChange={typeof onChange === 'function' ? onChange : undefined}
+        ref={hiddenInputRef}
+      >
+      <ClonedFormInputElements
+        count={slots}
+        elementProps={INPUT_CORE_PROPS}
+        keyPrefix={"otpInput"}
+        defaultValues={defaultValue}
+        onChange={handleOnInputChange}
+        onPaste={handleOnInputPaste}
+        onFocus={}
+        onKeyDown={handleOnInputKeyDown}
+        onBeforeInput={handleOnBeforeInputKeyDown}
+        className={className}
+      >
+        {children}
+      </ClonedFormInputElements>
+    </div>
   );
 };
 
