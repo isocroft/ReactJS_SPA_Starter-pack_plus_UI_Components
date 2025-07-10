@@ -13,6 +13,7 @@ type OTPEntryBoxProps = {
   name: string;
   masked?: boolean;
   entryType?: 'numeric' | 'text';
+  inputMode?: 'numeric' | 'text' | 'decimal' | 'tel';
   placeholder?: string;
   slots?: number;
   required?: boolean;
@@ -21,7 +22,9 @@ type OTPEntryBoxProps = {
   className?: string;
   wrapperClassname?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => void;
-  onComplete?: (value: string) => void; 
+  onComplete?: (value: string) => void;
+  pasteTransformer?: (pastedText: string) => string;
+  noScriptCSSFallback?: string | null;
 };
 
 type CustomElementTagProps<T extends React.ElementType> =
@@ -34,17 +37,20 @@ function ClonedFormInputElements ({
   children,
   count = 1,
   keyPrefix = "cloned",
-  elementProps = { type: "text" },
+  elementProps = { type: "text", placeholder: "", inputMode: "tel" },
   defaultValues = "",
   ...props
 }: {
   count?: number,
   keyPrefix?: string,
   defaultvalues?: string,
-  elementProps?: Pick<React.ComponentPropsWithRef<"input">, "type" | "inputMode" | "maxLength" | "minLength" | "size" | "tabIndex" | "disabled">,
+  elementProps?: Pick<React.ComponentPropsWithRef<"input">, "type" | "inputMode" | "maxLength" | "minLength" | "size" | "tabIndex" | "disabled" | "placeholder">,
 } & CustomElementTagProps<"nav" | "header" | "section" | "div"> &
     Omit<React.ComponentProps<"div">, "align">
 ) {
+  const OTP_PLACEHOLDER_ARR = typeof elementProps.placeholder === 'string' && elementProps.placeholder.length > 0
+    ? placeholder.split('').slice(0, count)
+    : [];
   const childrenArray = React.Children.toArray(children);
   const firstChild = childrenArray[0];
 
@@ -55,7 +61,16 @@ function ClonedFormInputElements ({
   const clonedElements = Array.from({ length: count }, (_, index) => {
     return React.cloneElement<InputBoxProps>(
       firstChild,
-      { key: `${keyPrefix.toLowerCase()}-${index}`, ...elementProps, defaultValue: elementProps.type === 'tel' ? Number(defaultValues.charAt(index)) : defaultValues.charAt(index), valueSync: true, `data-${keyPrefix.toLowerCase()}-index`: String(index) }
+      {
+        key: `${keyPrefix.toLowerCase()}-${index}`,
+        ...elementProps,
+        defaultValue: elementProps.type === 'tel' ? Number(defaultValues.charAt(index)) : defaultValues.charAt(index),
+        valueSync: true,
+        name: "",
+        form: "", // Stop input from being submitted by any HTML form: `<input form="none" name="_">` OR `<input form="" name="">`
+        `data-${keyPrefix.toLowerCase()}-index`: String(index),
+        placeholder: OTP_PLACEHOLDER_ARR[index] || "*"
+      }
     );
   });
 
@@ -70,12 +85,14 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   name,
   masked = false,
   entryType = 'numeric',
+  inputMode = 'numeric',
   placeholder = "",
   slots = 4,
   required = false,
   disabled = false,
   className = "",
   wrapperClassname = "",
+  pasteTransformer = (pastedText: string) => pastedText,
   onChange,
   children
 }) => {
@@ -87,8 +104,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   const ALL_REGEX = /^.+$/;
   const INPUT_TYPE = masked ? 'password' : (entryType === 'numeric' ? 'tel' : 'text');
   const OTP_VALUE_ARR = typeof value === 'string' ? value.split('').slice(0, MAX_NUMBER_INPUTS) : [];
-  const OTP_PLACEHOLDER_ARR = typeof placeholder === 'string' ? placeholder.split('').slice(0, MAX_NUMBER_INPUTS) : [];
-  const INPUT_CORE_PROPS = { type: INPUT_TYPE, required, disabled, tabIndex: 0, minLength: "1", maxlength: "1", size: "1", inputMode: "numeric" };
+  const INPUT_CORE_PROPS = { type: INPUT_TYPE, required, placeholder, disabled, tabIndex: 0, minLength: "1", maxlength: "1", size: "1", inputMode };
 
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
   // const [inputRefs] = useState(
@@ -137,7 +153,9 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
     event.preventDefault();
 
     const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
-    const pastedText = (event.clipboardData.getData('text/plain') || '').slice(0, MAX_NUMBER_INPUTS - index).split('');
+    const rawPastedText = pasteTransformer(event.clipboardData.getData('text/plain') || '');
+    const pastedText = rawPastedText.slice(0, MAX_NUMBER_INPUTS - index).split('');
+    
     const isOverMaxLength = (index + pastedText.length) >= MAX_NUMBER_INPUTS;
 
     if (isOverMaxLength) {
@@ -159,6 +177,11 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   const handleOnBeforeInputKeyDown = (event: React.CompositionEvent<HTMLInputElement>) => {
     const data = event.data;
     console.log(">>>>>> [input data]: ", data);
+  };
+
+  const handleOnInputFocus = (event: React.FocusEvent<HTMLElement> & { target: HTMLInputElement }) => {
+    const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
+    console.log(">>>>>>> [input focused with index]: ", index);
   };
 
   const handleOnInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
@@ -226,6 +249,10 @@ export default MyComponent;
         onChange={typeof onChange === 'function' ? onChange : undefined}
         ref={hiddenInputRef}
       >
+      <input
+        type={"hidden"}
+        name={"_charset_"}
+      >
       <ClonedFormInputElements
         count={slots}
         elementProps={INPUT_CORE_PROPS}
@@ -233,7 +260,7 @@ export default MyComponent;
         defaultValues={defaultValue}
         onChange={handleOnInputChange}
         onPaste={handleOnInputPaste}
-        onFocus={}
+        onFocus={handleOnInputFocus}
         onKeyDown={handleOnInputKeyDown}
         onBeforeInput={handleOnBeforeInputKeyDown}
         className={className}
