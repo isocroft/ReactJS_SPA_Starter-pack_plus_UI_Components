@@ -103,35 +103,58 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   const NUMBER_REGEX = /^[0-9]+$/;
   const ALL_REGEX = /^.+$/;
   const INPUT_TYPE = masked ? 'password' : (entryType === 'numeric' ? 'tel' : 'text');
-  const OTP_VALUE_ARR = typeof value === 'string' ? value.split('').slice(0, MAX_NUMBER_INPUTS) : [];
+  //const OTP_VALUE_ARR = typeof defaultValue === 'string' ? defaultValue.split('').slice(0, MAX_NUMBER_INPUTS) : [];
   const INPUT_CORE_PROPS = { type: INPUT_TYPE, required, placeholder, disabled, tabIndex: 0, minLength: "1", maxlength: "1", size: "1", inputMode };
 
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
-  // const [inputRefs] = useState(
-  //   Array.from({ length: MAX_NUMBER_INPUTS }, () => React.createRef<HTMLInputElement | undefined>(undefined))
-  // );
-  const handleInputFocusOnClick = (event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => event.target.select();
+
+  const setInputLettersArray = (letters: string[]): boolean => {
+    let returnValue = false;
+    if (!Array.isArray(letters)) {
+      return returnValue;
+    }
+
+    if (hiddenInputRef.current) {
+      const newValue = letters.join('');
+      if (hiddenInputRef.current.value !== newValue) {
+        /* @CHECK: https://www.designcise.com/web/tutorial/how-to-trigger-change-event-on-html-hidden-input-element-using-javascript */
+        hiddenInputRef.current.value = newValue;
+        returnValue = hiddenInputRef.current.dispatchEvent(new Event("change"));
+      }
+    }
+
+    return returnValue;
+  };
+
+  const getInputLettersString = (): string => {
+    if  (hiddenInputRef.current) {
+      return hiddenInputRef.current.value;
+    }
+
+    return '';
+  };
+
+  const handleInputFocusOnClick = (event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+    event.target.select();
+  };
+
   // Priority: entryType > allCharactersAllowed
   const [selectedRegex] = useState<RegExp>(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
   
-  const focusNextInput = (index: number, parentNode): boolean => {
+  const focusNextInput = (index: number, nextInputNode: HTMLInputElement | null): boolean => {
     if (index >= MAX_NUMBER_INPUTS - 1 || index < -1) {
       return false;
     }
   
-    const nextInputRef = //inputRefs[index + 1];
-  
-    return nextInputRef.current ? nextInputRef.current.focus(), true : false;
+    return nextInputNode ? nextInputNode.focus(), true : false;
   };
   
-  const focusPrevInput = (index: number, parentNode): boolean => {
+  const focusPrevInput = (index: number, prevInputNode: HTMLInputElement | null): boolean => {
     if (index <= 0) {
       return false;
     }
   
-    const prevInputRef = //inputRefs[index - 1];
-  
-    return prevInputRef.current ? prevInputRef.current.focus(), true : false;
+    return prevInputNode ? prevInputNode.focus(), true : false;
   };
 
   const handleOnInputChange = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }): void => {
@@ -145,7 +168,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
         inputText,
         ...inputLettersArray.slice(index + 1)
       ]);
-      focusNextInput(index);
+      focusNextInput(index, event.target.nextElementSibling);
     }
   };
 
@@ -170,8 +193,16 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
         ...inputLettersArray.slice(pastedData.length + 1)
       ].slice(0, MAX_NUMBER_INPUTS));
     }
-    
-    focusNextInput(index + pastedText.length - 2);
+
+    let nextIndex = index + pastedText.length - 1;
+    let nextInputSibling = event.target.nextElementSibling;
+
+    while (nextIndex > 0) {
+      nextInputSibling = nextInputSibling.nextElementSibling;
+      --nextIndex;
+    }
+
+    focusNextInput(index + pastedText.length - 1, nextInputSibling);
   };
 
   const handleOnBeforeInputKeyDown = (event: React.CompositionEvent<HTMLInputElement>) => {
@@ -191,23 +222,23 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
       event.keyCode === 8 || event.key === 'Backspace' || 
       event.keyCode === 46 || event.key === 'Delete'
     ) {
-      const value = inputLettersArray[index];
+      const value = getInputLettersString().charAt(index);
       setInputLettersArray([
         ...inputLettersArray.slice(0, index),
         '',
         ...inputLettersArray.slice(index + 1)
       ]);
       if (!value) {
-        focusPrevInput(index);
+        focusPrevInput(index, event.target.previousElementSibling);
       }
     } else if (
       event.keyCode === 37 || event.key === 'ArrowLeft'
     ) {
-      focusPrevInput(index);
+      focusPrevInput(index, event.target.previousElementSibling);
     } else if (
       event.keyCode === 39 || event.key === 'ArrowRight'
     ) {
-      focusNextInput(index);
+      focusNextInput(index, event.target.nextElementSibling);
     }
   };
 
@@ -245,7 +276,7 @@ export default MyComponent;
       <input
         type={"hidden"}
         name={name}
-        defaultValue={defaultValue}
+        value={defaultValue}
         onChange={typeof onChange === 'function' ? onChange : undefined}
         ref={hiddenInputRef}
       >
