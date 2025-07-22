@@ -146,7 +146,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   // Priority: entryType > allCharactersAllowed
   const [selectedRegex] = useState<RegExp>(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
   
-  const focusNextInput = (index: number, parentNode: HTMLInputElement | null): boolean => {
+  const focusNextInput = (index: number, parentNode: HTMLElement | null): boolean => {
     if (index >= MAX_NUMBER_INPUTS - 1 || index < -1) {
       return false;
     }
@@ -157,7 +157,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
     return nextInputNode ? nextInputNode.focus(), true : false;
   };
   
-  const focusPrevInput = (index: number, parentNode: HTMLInputElement | null): boolean => {
+  const focusPrevInput = (index: number, parentNode: HTMLElement | null): boolean => {
     if (index <= 0) {
       return false;
     }
