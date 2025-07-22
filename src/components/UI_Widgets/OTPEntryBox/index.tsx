@@ -103,8 +103,17 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   const NUMBER_REGEX = /^[0-9]+$/;
   const ALL_REGEX = /^.+$/;
   const INPUT_TYPE = masked ? 'password' : (entryType === 'numeric' ? 'tel' : 'text');
-  //const OTP_VALUE_ARR = typeof defaultValue === 'string' ? defaultValue.split('').slice(0, MAX_NUMBER_INPUTS) : [];
-  const INPUT_CORE_PROPS = { type: INPUT_TYPE, required, placeholder, disabled, tabIndex: 0, minLength: "1", maxlength: "1", size: "1", inputMode };
+  const INPUT_CORE_PROPS = {
+    type: INPUT_TYPE,
+    required,
+    placeholder,
+    disabled,
+    tabIndex: 0,
+    minLength: MIN_LENGTH_INPUT,
+    maxlength: MAX_LENGTH_INPUT,
+    size: 1,
+    inputMode
+  };
 
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -134,32 +143,35 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
     return '';
   };
 
-  const handleInputFocusOnClick = (event: React.MouseEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
-    event.target.select();
-  };
-
   // Priority: entryType > allCharactersAllowed
   const [selectedRegex] = useState<RegExp>(entryType === 'numeric' ? NUMBER_REGEX : ALL_REGEX);
   
-  const focusNextInput = (index: number, nextInputNode: HTMLInputElement | null): boolean => {
+  const focusNextInput = (index: number, parentNode: HTMLInputElement | null): boolean => {
     if (index >= MAX_NUMBER_INPUTS - 1 || index < -1) {
       return false;
     }
-  
+
+    const nextInputNode = parentNode ? parentNode.querySelector(
+      `input[data-${keyPrefix.toLowerCase()}-index="${index + 1}"]`
+    ) : null;
     return nextInputNode ? nextInputNode.focus(), true : false;
   };
   
-  const focusPrevInput = (index: number, prevInputNode: HTMLInputElement | null): boolean => {
+  const focusPrevInput = (index: number, parentNode: HTMLInputElement | null): boolean => {
     if (index <= 0) {
       return false;
     }
-  
+
+    const prevInputNode = parentNode ? parentNode.querySelector(
+      `input[data-${keyPrefix.toLowerCase()}-index="${index - 1}"]`
+    ) : null;
     return prevInputNode ? prevInputNode.focus(), true : false;
   };
 
   const handleOnInputChange = (event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }): void => {
   
     const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
+    const inputLettersArray = getInputLettersString().split('');
     const inputText = event.target.value;
 
     if (selectedRegex.test(inputText)) {
@@ -168,7 +180,17 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
         inputText,
         ...inputLettersArray.slice(index + 1)
       ]);
-      focusNextInput(index, event.target.nextElementSibling);
+      focusNextInput(index, event.target.parentNode);
+    }
+  };
+
+  const handlePasteCapture = (event: React.ClipboardEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+    const rawPastedText = event.clipboardData.getData('text/plain');
+    const pastedText = rawPastedText.slice(0, MAX_NUMBER_INPUTS - 1);
+
+    /* @HINT: Prevent default paste behavior */
+    if (!selectedRegex.test(pastedText)) {
+      event.preventDefault();
     }
   };
 
@@ -178,7 +200,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
     const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
     const rawPastedText = pasteTransformer(event.clipboardData.getData('text/plain') || '');
     const pastedText = rawPastedText.slice(0, MAX_NUMBER_INPUTS - index).split('');
-    
+    const inputLettersArray = getInputLettersString().slice('');
     const isOverMaxLength = (index + pastedText.length) >= MAX_NUMBER_INPUTS;
 
     if (isOverMaxLength) {
@@ -194,15 +216,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
       ].slice(0, MAX_NUMBER_INPUTS));
     }
 
-    let nextIndex = index + pastedText.length - 1;
-    let nextInputSibling = event.target.nextElementSibling;
-
-    while (nextIndex > 0) {
-      nextInputSibling = nextInputSibling.nextElementSibling;
-      --nextIndex;
-    }
-
-    focusNextInput(index + pastedText.length - 1, nextInputSibling);
+    focusNextInput(index + pastedText.length - 2, event.target.parentNode);
   };
 
   const handleOnBeforeInputKeyDown = (event: React.CompositionEvent<HTMLInputElement>) => {
@@ -213,6 +227,7 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
   const handleOnInputFocus = (event: React.FocusEvent<HTMLElement> & { target: HTMLInputElement }) => {
     const index = Number(event.target.dataset[`${keyPrefix.toLowerCase()}Index`]);
     console.log(">>>>>>> [input focused with index]: ", index);
+    event.target.select();
   };
 
   const handleOnInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
@@ -222,57 +237,30 @@ const OTPEntryBox: FC<React.PropsWithChildren<OTPEntryBoxProps>> = ({
       event.keyCode === 8 || event.key === 'Backspace' || 
       event.keyCode === 46 || event.key === 'Delete'
     ) {
-      const value = getInputLettersString().charAt(index);
+      const inputLettersString = getInputLettersString();
+      const inputLettersArray = inputLettersString.slice('');
+      const value = inputLettersString.charAt(index);
       setInputLettersArray([
         ...inputLettersArray.slice(0, index),
         '',
         ...inputLettersArray.slice(index + 1)
       ]);
       if (!value) {
-        focusPrevInput(index, event.target.previousElementSibling);
+        focusPrevInput(index, event.target.parentNode);
       }
     } else if (
       event.keyCode === 37 || event.key === 'ArrowLeft'
     ) {
-      focusPrevInput(index, event.target.previousElementSibling);
+      focusPrevInput(index, event.target.parentNode);
     } else if (
       event.keyCode === 39 || event.key === 'ArrowRight'
     ) {
-      focusNextInput(index, event.target.nextElementSibling);
+      focusNextInput(index, event.target.parentNode);
     }
   };
 
-  /*
-
-  EXAMPLE CODE FOR `onPasteCapture`::::
-
-  import React from 'react';
-
-function MyComponent() {
-  const handlePasteCapture = (event) => {
-    // Access clipboard data
-    const pastedText = event.clipboardData.getData('text');
-    console.log('Pasted during capture phase:', pastedText);
-
-    // Optional: Prevent default paste behavior
-    // event.preventDefault(); 
-    // console.log('Default paste prevented.');
-  };
-
-  return (
-    <input 
-      type="text" 
-      onPasteCapture={handlePasteCapture} 
-      placeholder="Paste something here" 
-    />
-  );
-}
-
-export default MyComponent;
-  */
-
   return(
-    <div className={wrapperClassname}>
+    <div className={wrapperClassname} onPasteCapture={handlePasteCapture}>
       <input
         type={"hidden"}
         name={name}
@@ -280,10 +268,10 @@ export default MyComponent;
         onChange={typeof onChange === 'function' ? onChange : undefined}
         ref={hiddenInputRef}
       >
-      <input
-        type={"hidden"}
-        name={"_charset_"}
-      >
+       {/*<input
+          type={"hidden"}
+          name={"_charset_"}
+        >*/}
       <ClonedFormInputElements
         count={slots}
         elementProps={INPUT_CORE_PROPS}
