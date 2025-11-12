@@ -360,9 +360,12 @@ export const useMutationObserver = (
   ref,
   callback,
   options = {
-    attributes: true,
+    attributes: false,
+    attributeFilter: [],
+    attributeOldValue: false,
     characterData: false,
-    childList: false,
+    characterOldValue: false,
+    childList: true,
     subtree: false,
   }
 ) => {
