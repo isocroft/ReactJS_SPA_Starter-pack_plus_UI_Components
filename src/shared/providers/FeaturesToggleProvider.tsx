@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useRef, useState, useEffect, useReducer } from "react";
 
 export type FeatureFlagEnvs = "development" | "production" | "test";
 
@@ -22,8 +22,23 @@ function FeaturesToggleProvider ({
   enabledFeaturesTable: FeatureEnvsTable,
   authUserOptions: { "[identifier]": string, "[access_control]": string }
 }) {
+  const apiResponse = useRef(enabledFeaturesTable[environment] || []);
+  const [, rerender] = useReducer(() => ({}));
+  /* @INFO: `fetch(...)` is supported in both the browser and in NodeJS an Bun runtimes */
+  const [apiResponsePromise] = useState(() => fetch({ url: "https://live.api.featurelybits.com/get/flags", method: "GET" }));
+
+  useEffect(() => {
+    apiResponsePromise.then((response) => {
+      if (apiResponse.current.length === 0) {
+        /* @TODO: ... */
+      }
+      apiResponse.current = response.data[environment];
+      rerender();
+    });
+  }, [environment]);
+  
   return (
-    <FeaturesToggleContext.Provider value={{ enabledFeatures: enabledFeaturesTable[environment], authUserOptions }}>
+    <FeaturesToggleContext.Provider value={{ enabledFeatures: apiResponse.current, authUserOptions }}>
       {children}
     </FeaturesToggleContext.Provider>
   );
