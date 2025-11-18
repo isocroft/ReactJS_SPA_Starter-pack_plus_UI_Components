@@ -1,33 +1,66 @@
-import React, { FC, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import SelectBox from "../SelectBox";
 
+import type { FC } from "react";
 import type { SelectBoxProps } from "../SelectBox";
 
-const ContextSelectBox: Omit<SelectBoxProps, "ref" | "onBlur" | "onChange"> & { ErrorComponent?: React.FunctionComponent<{ isDirty: boolean, invalid: boolean, errorMessage: string | null }> } = ({
-  name,
+const ContextSelectBox: FC<
+  Omit<SelectBoxProps, "ref"> & {
+    shouldUnregister?: boolean;
+    requiredErrorMessage?: string;
+    ErrorComponent?: React.FunctionComponent<{
+      isDirty: boolean;
+      invalid: boolean;
+      errorMessage: string | null;
+    }>;
+  }
+> = ({
+  name = "",
   children,
-  className,
-  wrapperClassName,
-  labelPosition,
-  valueSync,
-  renderOptions,
-  labelClassName,
-  chevronSize,
-  chevronOpacity,
-  widthFillAvailable,
+  className = "",
+  wrapperClassName = "",
+  valueSync = false,
+  chevronSize = 10,
+  chevronOpacity = 0.76,
+  widthFillAvailable = false,
   ErrorComponent,
+  shouldUnregister = false,
+  requiredErrorMessage,
+  required,
+  disabled,
   ...props
 }) => {
-  const { register, unregister, getFieldState, formState } = useFormContext();
-  const { isDirty, invalid, error } = getFieldState(name, formState);
-  const { ref, onBlur, onChange, name } = register(name, { required: props.required, disabled: props.disabled })
+  const { register, getFieldState, formState } = useFormContext();
+
+  let { isDirty, invalid, error } = getFieldState(name, formState);
 
   useEffect(() => {
-    return () => {
-      unregister(name);
-    }
-  }, [name]);
+    const fieldState = getFieldState(name, formState);
+    invalid = fieldState.invalid;
+    error = fieldState.error;
+  }, [isDirty]);
+
+  const mergedRegisterOptions: Record<string, unknown> = {
+    required:
+      required === true
+        ? requiredErrorMessage || `${name} is required`
+        : undefined,
+    disabled,
+    shouldUnregister,
+  };
+
+  if (typeof props.onChange === "function") {
+    mergedRegisterOptions.onChange = props.onChange;
+    delete props["onChange"];
+  }
+
+  if (typeof props.onBlur === "function") {
+    mergedRegisterOptions.onBlur = props.onBlur;
+    delete props["onBlur"];
+  }
+
+  const { onChange, onBlur, ref } = register(name, mergedRegisterOptions);
 
   return (
     <>
@@ -40,15 +73,19 @@ const ContextSelectBox: Omit<SelectBoxProps, "ref" | "onBlur" | "onChange"> & { 
         className={className}
         wrapperClassName={wrapperClassName}
         valueSync={valueSync}
-        renderOptions={renderOptions}
-        labelClassName={labelClassName}
-        chevronSize={chevronIconSize}
-        chevronOpacity={chevronIconFillColor}
+        chevronSize={chevronSize}
+        chevronOpacity={chevronOpacity}
         widthFillAvailable={widthFillAvailable}
       >
         {children}
       </SelectBox>
-      {ErrorComponent ? <ErrorComponent isDirty={isDirty} invalid={invalid} errorMessage={error?.message || null} /> : null}
+      {ErrorComponent ? (
+        <ErrorComponent
+          isDirty={isDirty}
+          invalid={invalid}
+          errorMessage={error?.message || null}
+        />
+      ) : null}
     </>
   );
 };
