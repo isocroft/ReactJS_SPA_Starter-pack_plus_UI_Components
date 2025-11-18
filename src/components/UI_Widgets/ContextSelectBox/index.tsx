@@ -13,8 +13,9 @@ const ContextSelectBox: Omit<SelectBoxProps, "ref" | "onBlur" | "onChange"> & { 
   valueSync,
   renderOptions,
   labelClassName,
-  chevronIconSize,
-  chevronIconFillColor,
+  chevronSize,
+  chevronOpacity,
+  widthFillAvailable,
   ErrorComponent,
   ...props
 }) => {
@@ -38,12 +39,12 @@ const ContextSelectBox: Omit<SelectBoxProps, "ref" | "onBlur" | "onChange"> & { 
         {...props}
         className={className}
         wrapperClassName={wrapperClassName}
-        labelPosition={labelPosition}
         valueSync={valueSync}
         renderOptions={renderOptions}
         labelClassName={labelClassName}
-        chevronIconSize={chevronIconSize}
-        chevronIconFillColor={chevronIconFillColor}
+        chevronSize={chevronIconSize}
+        chevronOpacity={chevronIconFillColor}
+        widthFillAvailable={widthFillAvailable}
       >
         {children}
       </SelectBox>
