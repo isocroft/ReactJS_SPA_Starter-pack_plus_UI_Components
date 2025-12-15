@@ -1,4 +1,4 @@
-import React, { /*useTransition,*/ PropsWithChildren } from "react";
+import React, { /*useTransition,*/ Suspense } from "react";
 import {
   Route,
 } from "react-router-dom";
@@ -8,6 +8,7 @@ import { ErrorBoundary } from "../shared/providers/ErrorBoundary";
 import GlobalRoutingProvider, { GlobalRoutingContextProps } from "./GlobalRoutingProvider";
 import { RoutePaths } from "../routes/routes.paths";
 
+import type { PropsWithChildren } from "react";
 import type { Location } from "history";
 import type { RoutesInterface } from "./routes/routes.config";
 
@@ -77,23 +78,25 @@ const RoutePages = ({ routes, FallbackUI }: {
 }: Pick<HashRouterProps, "getUserConfirmation"> */
   return (
     <ErrorBoundary FallbackUI={FallbackUI ? FallbackUI : ErrorFallbackUI}>
-      <Switch>
-        {routes.map((route) => {
-          return (
-            <Route
-              key={route.path}
-              exact={route.exact}
-              path={route.path}
-              component={() => {
-                return (
-                  <route.component />
-                );
-              }}
-            />
-          );
-        })}
-        <Redirect to={RoutePaths.NOT_FOUND} />
-      </Switch>
+      <Suspense fallback={<div>Loading page data...</div>}>
+        <Switch>
+          {routes.map((route) => {
+            return (
+              <Route
+                key={route.path}
+                exact={route.exact}
+                path={route.path}
+                component={() => {
+                  return (
+                    <route.component />
+                  );
+                }}
+              />
+            );
+          })}
+          <Redirect to={RoutePaths.NOT_FOUND} />
+        </Switch>
+      </Suspense>
     </ErrorBoundary>
   );
 };
