@@ -1,5 +1,7 @@
-import React, { FC } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
+
+import type { FC, ReactElement, ReactNode } from "react";
 
 import { hasChildren, isSubChild } from "../../../helpers/render-utils";
 
@@ -23,7 +25,7 @@ const renderChildren = (
     const [parentChild] = topChildren;
     if (
       !oneChild ||
-      !React.isValidElement(parentChild) ||
+      !React.isValidElement<ReactElement & { children: ReactNode, close: () => void }>(parentChild) ||
       parentChild?.type === React.Fragment
     ) {
       console.error("[Error]: invalid Modal inner wrapper component found");
@@ -36,7 +38,7 @@ const renderChildren = (
       if (parent === "Modal") {
         const [parentChild] = topChildren;
         if (
-          !React.isValidElement(parentChild) ||
+          !React.isValidElement<ReactElement & { children: ReactNode, close: () => void }>(parentChild) ||
           !("props" in parentChild) ||
           (typeof parentChild.props.children !== "object" &&
             parentChild.props.children !== null) ||
@@ -50,7 +52,7 @@ const renderChildren = (
         }
 
         return topChildren.map((child) => {
-          if (!React.isValidElement(child)) {
+          if (!React.isValidElement<ReactElement & { children: ReactNode, close: () => void }>(child)) {
             return null;
           }
 
@@ -58,6 +60,10 @@ const renderChildren = (
           return (
             <child.type {...childProps}>
               {React.Children.map(child.props.children, (innerChild) => {
+                if (!React.isValidElement<ReactElement & { children: ReactNode, close: () => void }>(innerChild)) {
+                  return null;
+                }
+              
                 switch (true) {
                   case parent === "Modal" && isSubChild(innerChild, "Header"):
                   case parent === "Modal" && isSubChild(innerChild, "Footer"):
