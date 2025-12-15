@@ -1,5 +1,6 @@
 export default {
   PROD: process.env.NODE_ENV === "production",
+  DEV: process.env.NODE_ENV === "development",
   BUGSNAG: {
     apiKey: process.env.BUGSNAG_API_KEY
   },
