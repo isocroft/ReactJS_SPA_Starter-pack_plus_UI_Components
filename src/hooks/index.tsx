@@ -1,5 +1,6 @@
-import React, { useRef, useMemo, useContext, useState, useEffect } from "react";
-import { useIsDOMElementVisibleOnScreen, useEffectMemo, useEffectCallback } from "react-busser";
+import React, { useRef, useMemo, useContext, useState, useEffect, useTransition } from "react";
+import { useHistory } from "react-router-dom";
+import { useIsDOMElementVisibleOnScreen, useIsFirstRender, useEffectMemo, useEffectCallback } from "react-busser";
 import { toast, useSonner } from "sonner";
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
@@ -155,6 +156,204 @@ export function useMemoList<L extends unknown[]>(list: L, callback = (() => unde
   return useMemo(callback.bind(null, cachedList), [cachedList]);
 }
 
+export function useReactQueryCache<D = unknown, E = unknown>(
+    { noRenderOnWrite = false, queryKey } = {
+      queryKey: [],
+    } as ReactQueryCacheOptions<D>,
+    initial: D | undefined
+  ) {
+    let queryKeysCache = useRef<Map<string, TypeSafeQueryKey<D>>>(
+      new Map()
+    ).current;
+    let queryNoRerenderCache = useRef<WeakMap<object & {}, D>>(
+      new WeakMap()
+    ).current;
+    const queryClient = useQueryClient();
+    const queryCache = queryClient.getQueryCache();
+  
+    useEffect(() => {
+      return () => {
+        /* @ts-expect-error */
+        queryKeysCache = null;
+        /* @ts-expect-error */
+        queryNoRerenderCache = null;
+      };
+    }, []);
+  
+    if (typeof queryKey !== "object") {
+      throw new Error("`queryKey` missing for `useReactQueryCache(..)` hook");
+    }
+  
+    if (initial) {
+      const noRenderCacheData = queryNoRerenderCache.get(queryKey) || undefined;
+  
+      if (!noRenderCacheData) {
+        queryNoRerenderCache.set(queryKey, initial);
+        queryKeysCache.set(String(queryKey), queryKey);
+      }
+    }
+  
+    return {
+      fetchQueryCacheData(
+        queryKey: NonNullable<TypeSafeQueryKey<D>>
+      ): D | undefined {
+        let queryKeyRef = undefined;
+  
+        if (noRenderOnWrite) {
+          queryKeyRef = queryKeysCache.get(String(queryKey));
+        }
+  
+        if (!queryKeyRef || typeof queryKeyRef !== "object") {
+          return undefined;
+        }
+  
+        return noRenderOnWrite
+          ? queryNoRerenderCache.get(queryKeyRef)
+          : (queryClient.getQueryData(queryKey) as D);
+      },
+      cancelOngoingQueries(queryKey: TypeSafeQueryKey<D>): Promise<void> {
+        if (typeof queryKey !== "object") {
+          return Promise.reject(undefined);
+        }
+  
+        return queryClient.cancelQueries({ queryKey });
+      },
+      isCurrentlyMutating(mutationKey: TypeSafeMutationKey): number {
+        return typeof queryClient.isMutating === "function"
+          ? queryClient.isMutating({ mutationKey })
+          : 0;
+      },
+      isCurrentlyFetching(queryKey: TypeSafeQueryKey<D>): number {
+        if (typeof queryKey !== "object") {
+          return 0;
+        }
+  
+        return typeof queryClient.isFetching === "function"
+          ? queryClient.isFetching({ queryKey })
+          : 0;
+      },
+      updateQueryCacheData(
+        queryKey: NonNullable<TypeSafeQueryKey<D>>,
+        callback = (oldData: D | undefined) => oldData
+      ): D | undefined {
+        if (typeof callback !== "function" || typeof queryKey !== "object") {
+          return undefined;
+        }
+  
+        return noRenderOnWrite
+          ? queryNoRerenderCache.set(
+              queryKey,
+              callback(queryNoRerenderCache.get(queryKey)) as NonNullable<D>
+            ) &&
+              queryKeysCache.set(String(queryKey), queryKey) &&
+              queryNoRerenderCache.get(queryKey)
+          : queryClient.setQueryData<D | undefined>(
+              queryKey,
+              callback as (oldData: D | undefined) => NonNullable<D>
+            );
+      },
+      forceUpdateQueryCacheData(
+        queryKey: NonNullable<TypeSafeQueryKey<D>>,
+        data: D
+      ): D | undefined {
+        if (typeof queryKey !== "object") {
+          return data;
+        }
+  
+        if (!data || typeof data === "function") {
+          return;
+        }
+  
+        return queryClient.setQueryData<D | undefined>(queryKey, data);
+      },
+      invalidateQueryCache(
+        queryKey: TypeSafeQueryKey<D>,
+        exact = false
+      ): Promise<void> {
+        if (typeof queryKey !== "object") {
+          return Promise.reject(undefined);
+        }
+  
+        return queryClient.invalidateQueries({ queryKey, exact });
+      },
+      invalidateQueryCacheWithPredicate(
+        predicate: InvalidateQueryFilters["predicate"]
+      ): Promise<void> {
+        return queryClient.invalidateQueries({ predicate });
+      },
+      getDataFromCache(
+        queryKey: NonNullable<TypeSafeQueryKey<D>>,
+      ): D | undefined {
+        if (typeof queryKey !== "object") {
+          return undefined;
+        }
+  
+        if (!noRenderOnWrite) {
+          const query = queryCache.find<D, E>({ queryKey });
+          return query?.state?.data || initial;
+        }
+  
+        const noRenderCacheData = queryNoRerenderCache.get(queryKey) || undefined;
+        return noRenderCacheData;
+      },
+    } as const;
+};
+
+export const useRouteQueryPrefetch = (
+  {
+    queryOptions,
+    prefetchOnMount = false,
+    cacheAndPersist = false
+  }: { queryOptions: UseQueryOptions, prefetchOnMount: boolean, cacheAndPersist: boolean }) => {
+    const history = useHistory();
+    const queryClient = useQueryClient();
+    const [isPending, startTransition] = useTransition()
+    const isFirstRender = useIsFirstRender();
+  
+    React.useEffect(() => {
+      if (isFirstRender && prefetchOnMount) {
+        /* @HINT:  Prefetch in background just after component mount */
+        if (!cacheAndPersist) {
+          queryClient.prefetchQuery(queryOptions);
+        } else {
+          try {
+            /* @CHECK: https://tanstack.com/query/latest/docs/reference/QueryClient#queryclientensurequerydata */
+            queryClient.ensureQueryData(queryOptions);
+            /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+          } catch (_) { /* eslint-disable no-empty */ }
+        }
+      }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    }, [prefetchOnMount, cacheAndPersist, isFirstRender]);
+    
+    const handlePathNavigation = async (urlPathname = '/', queryOptions = { queryKey: [], queryFn: () => null }) => {
+      /* @HINT: Prefetch during route navigation */
+      await queryClient.prefetchQuery(queryOptions);
+      history.push(urlPathname);
+    };
+    
+    const onRouteNavigationTriggered = (e: React.MouseEvent<HTMLElement> & { target: HTMLElement }) => {
+      if (isPending) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+      
+      e.persist();
+      
+      startTransition(async () => {
+        const { pathname } = new URL(e.target.getAttribute('data-href') || "/", window.location.origin);
+        /* @ts-ignore */
+        await handlePathNavigation(pathname, queryOptions);
+      });
+    };
+  
+    return {
+      isRoutePrefetching: isPending,
+      onRouteNavigation: onRouteNavigationTriggered
+    } as const;  
+};
+
 export const useOptimisticMutation = <
   TData = unknown,
   TError = unknown,
@@ -169,9 +368,10 @@ export const useOptimisticMutation = <
   queryCacheData = undefined,
   noRerenderOnWrite = false,
   ...props
-}): OptimisticProps<TData, TError, TVariables, TQueryFnData> => {
+}: OptimisticProps<TData, TError, TVariables, TQueryFnData>) => {
   const {
      updateQueryCacheData,
+     fetchQueryCacheData,
      forceUpdateQueryCacheData,
      invalidateQueryCache,
      cancelOngoingQueries,
@@ -184,7 +384,7 @@ export const useOptimisticMutation = <
   
   const computedMutationKey = useEffectMemo(() => ([...queryKey, ...(mutationKey ?? [])]),
     [mutationKey, queryKey]
-  );
+  ) as unknown[];;
     
   return useMutation({
     ...props,
@@ -202,7 +402,9 @@ export const useOptimisticMutation = <
 
       return () => {
         if (!noRerenderOnWrite) {
-           forceUpdateQueryCacheData(queryKey, snapshotResult);
+          if (snapshotResult) {
+            forceUpdateQueryCacheData(queryKey, snapshotResult);
+          }
         }
       };
     },
