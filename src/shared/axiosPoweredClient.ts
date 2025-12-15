@@ -1,16 +1,12 @@
-import axios, {
-  AxiosError,
-  AxiosResponse,
-  AxiosRequestConfig,
-  AxiosHeaders,
-} from "axios";
+import axios, { AxiosError, AxiosHeaders } from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
 
+import type { AxiosResponse, AxiosRequestConfig } from "axios";
 export type { AxiosError };
 
-export interface OptionsArgs<BodyType, ParamType = any> {
+export interface OptionsArgs<BodyType, ParamType = unknown> {
   body?: BodyType;
-  headers?: { [key: string]: any };
+  headers?: { [key: string]: string };
   params?: ParamType;
   isFormData?: boolean;
   [optionKey: string]: unknown;
@@ -28,23 +24,26 @@ export interface ServerResponse<Data> {
   message: string;
 }
 
-/**
- For axios v0.x.x & axios-mock-adapater v1.x.x 
-
-const mock = new AxiosMockAdapter(axios);
-const savedMockAdapter = axios.defaults.adapter
-const originalAdapter = mock.originalAdapter;
-
-*/
-
-/**
- * For axios v1.x.x & axios-mock-adapater v2.x.x
- */
-const originalAdapter = axios.defaults.adapter;
-const axiosMock = new AxiosMockAdapter(axios);
-const savedMockAdapter = axiosMock.adapter();
+let $axiosMock: AxiosMockAdapter | undefined;
 
 function toggleAxiosMockAdapter({ overwriteMock = false }) {
+  /**
+
+  For axios v0.x.x & axios-mock-adapater v1.x.x 
+
+  const mock = new AxiosMockAdapter(axios);
+  const savedMockAdapter = axios.defaults.adapter
+  const originalAdapter = mock.originalAdapter;
+
+  */
+
+  /**
+   * For axios v1.x.x & axios-mock-adapater v2.x.x
+   */
+  const originalAdapter = axios.defaults.adapter;
+  const axiosMock = new AxiosMockAdapter(axios);
+  const savedMockAdapter = axiosMock.adapter();
+
   if (overwriteMock) {
     if (
       process.env.NODE_ENV === "production" ||
@@ -59,21 +58,24 @@ function toggleAxiosMockAdapter({ overwriteMock = false }) {
   if (axios.defaults.adapter === originalAdapter) {
     axios.defaults.adapter = savedMockAdapter;
     /* @ts-ignore */
-    toggleAxiosMock.$$mockApi = true;
+    toggleAxiosMockAdapter.$$mockApi = true;
   } else {
-    axios.defaults.adapter = savedMockAdapter;
+    axios.defaults.adapter = originalAdapter;
     /* @ts-ignore */
-    toggleAxiosMock.$$mockApi = false;
+    toggleAxiosMockAdapter.$$mockApi = false;
   }
+
+  return axiosMock;
 }
 
-toggleAxiosMockAdapter.$$mockApi = false;
-toggleAxiosMockAdapter({ overwriteMock: true });
+if (process.env.NODE_ENV === "test") {
+  $axiosMock = toggleAxiosMockAdapter({ overwriteMock: true });
+}
 
 async function axiosClientWrapper<
-  ResponseType extends Record<string, any>,
-  BodyType = {},
-  ParamType = any
+  ResponseType extends Record<string, unknown>,
+  BodyType = unknown,
+  ParamType = unknown
 >(
   endpoint: string,
   method: "GET" | "PATCH" | "POST" | "PUT" | "DELETE" | "HEAD",
@@ -117,7 +119,7 @@ async function axiosClientWrapper<
     },
     status: 0,
     statusText: "<unknown error>",
-    headers,
+    headers: new AxiosHeaders(headers),
     config: {
       headers: new AxiosHeaders(headers),
     },
@@ -126,25 +128,22 @@ async function axiosClientWrapper<
   try {
     axiosResponse = await axios(`${endpoint}`, options);
 
-    if (axiosResponse?.data && axiosResponse?.data.status === false) {
+    if (axiosResponse.data && axiosResponse.data.status === false) {
       throw new Error("server signalled failure");
     }
 
-    return axiosResponse?.data;
+    return axiosResponse.data;
   } catch (error) {
     if (error !== undefined) {
       return Promise.reject(error);
     }
   }
 
-  return axiosResponse?.data && axiosResponse?.data.status === false
+  return axiosResponse.data && axiosResponse.data.status === false
     ? Promise.reject(new Error("server signalled failure"))
-    : axiosResponse?.data;
+    : axiosResponse.data;
 }
 
-export {
-  axios,
-  axiosMock,
-  toggleAxiosMockAdapter,
-  axiosClientWrapper as client,
-};
+export default axios;
+
+export { $axiosMock, axiosClientWrapper as $client };
