@@ -4,7 +4,7 @@ import {
 } from "react-router-dom";
 import { Redirect, Switch } from "react-router";
 
-import { ErrorBoundary } from "../shared/providers/ErrorBoundary";
+import ErrorBoundary from "../shared/providers/ErrorBoundary";
 import GlobalRoutingProvider, { GlobalRoutingContextProps } from "./GlobalRoutingProvider";
 import { RoutePaths } from "../routes/routes.paths";
 
