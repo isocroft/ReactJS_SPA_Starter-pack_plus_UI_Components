@@ -1,15 +1,88 @@
 /**
+ * isNotA_Number:
+ *
+ * @param {*=} value
+ *
+ * @returns {Boolean}
+ */
+function isNotA_Number<C = unknown>(value?: C) {
+  let localNumberValue = Boolean(+(value||"")) ? value : -Infinity;
+  
+  if (typeof value === "string") {
+    if (value.length === 0) return true;
+    localNumberValue = Number(value);
+    return Number.isNaN(localNumberValue);
+  }
+
+  if (typeof value === "number") {
+    return false;
+  }
+
+  if (localNumberValue !== -Infinity) {
+    return (typeof value === "number" && !Number.isSafeInteger(value));
+  }
+
+  return !Number.isFinite(value);
+}
+
+/**
+ * nairaFormat:
+ *
+ * @param {String} numericValue
+ *
+ * @returns {String}
+ */
+export function nairaFormat (numericValue: string) {
+  if (isNotA_Number(numericValue)){
+    throw new TypeError("nairaFormat(...): argument 1 is not numeric");
+  }
+
+  return typeof window.Intl === "undefined"
+  ? `₦${localeFormat(numericValue)}`
+  : new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN"
+  }).format(Number(numericValue));
+}
+/**
+ * nairaSplitFormat:
+ *
+ * @param {String} numericValue
+ *
+ * @returns {Object<{ naira: string, kobo: string }>}
+ */
+export function nairaSplitFormat (numericValue: string) {
+  const numberValue = nairaFormat(numericValue);
+  const [naira, kobo] = numberValue.includes(".") ? numberValue.split(".") : ["0", "00"];
+
+  return { naira, kobo: `.${kobo}` as string } as const;
+}
+
+/**
+ * localeFormat:
+ *
+ * @param {String} numericValue
+ *
+ * @returns {String}
+ */
+function localeFormat(numericValue: string) {
+  return 'toLocaleString' in ({}) && typeof Object.prototype.toLocaleString === 'function'
+    ? (Number(numericValue) + 0.001).toLocaleString().slice(0, -1)
+    : String(Number(numericValue).toFixed(2)).replace(/^0/, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/**
  * getOrdinalSuffixForNumber:
  *
  * 
  * @param {Number} ordinal
- * @param {Boolean} asWord
+ * @param {Boolean=} asWord
  *
  * @returns {String}
  *
  */
 export const getOrdinalSuffixForNumber = (ordinal: number, asWord = false): string => {
-  if (Number.isNaN(ordinal) || typeof ordinal !== "number") {
+  if (isNotA_Number(ordinal)) {
     throw new TypeError("getOrdinalSuffixForNumber(...): argument 1 is not a number");
   }
 
@@ -48,7 +121,7 @@ export const getOrdinalSuffixForNumber = (ordinal: number, asWord = false): stri
  *
  */
 export const getShortSuffixForAmount = (amount: number): string => {
-  if (Number.isNaN(amount) || typeof amount !== "number") {
+  if (isNotA_Number(amount)) {
     throw new TypeError("getShortSuffixForAmount(...): argument 1 is not a number");
   }
 
@@ -95,11 +168,11 @@ export function getShortSuffixForBytes(
 ) {
   const { decimals = 0, sizeType = "normal" } = opts
 
-  if (Number.isNaN(bytes) || typeof bytes !== "number") {
+  if (isNotA_Number(bytes)) {
     throw new TypeError("getShortSuffixForBytes(...): argument 1 is not a number");
   }
 
-  if (Number.isNaN(decimals) || typeof decimals !== "number") {
+  if (isNotA_Number(decimals)) {
     throw new TypeError("getShortSuffixForBytes(...): In argument 2; `decimals` is not a number");
   }
 
