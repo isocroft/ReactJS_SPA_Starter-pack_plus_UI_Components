@@ -11,7 +11,7 @@ export const removeHyphensFromText = (textWithHyphens: string) => {
     throw new TypeError("removeHyphensFromText(...): argument 1 is not a string");
   }
 
-  if ('replaceAll' in textWithHyphens) {
+  if ('replaceAll' in String.prototype) {
     return textWithHyphens.replaceAll("-", "");
   }
 
@@ -83,7 +83,7 @@ export const truncateText = (text: string) => {
  * stringToBytes:
  *
  * @param {String} text
- * @param {"ascii" | "utf-8"  "utf-16le" | "utf-16be"} encoding
+ * @param {"ascii" | "utf-8" | "utf-16le" | "utf-16be"} encoding
  *
  * @returns {Array<Number>}
  */
@@ -112,5 +112,5 @@ export function stringToBytes(text: string, encoding = 'ascii') {
 		return bytes;
 	}
 
-	return (text.split('').map(character => character.charCodeAt(0))) as const; // eslint-disable-line unicorn/prefer-code-point
+	return (text.split('').map(character => character.charCodeAt(0))); // eslint-disable-line unicorn/prefer-code-point
 }
