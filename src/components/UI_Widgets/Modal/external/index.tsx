@@ -8,7 +8,7 @@ import Modal from "../";
 type ModalControls = {
   show: (
     node: React.ReactNode,
-    reference: React.MutableRefObject<HTMLDivElement | null>,
+    reference: React.MutableRefObject<(HTMLDivElement & HTMLDialogElement) | null>,
     callback: () => void
   ) => string;
   close: (modalId: string) => void;
@@ -38,7 +38,7 @@ function useModalCore(styles: {
       let id = modalRefId;
 
       if (typeof HTMLDialogElement == "function") {
-        const { position, ref } = markModalsPosition.current[id];
+        const { ref } = markModalsPosition.current[id];
 
         delete markModalsPosition.current[id];
   
