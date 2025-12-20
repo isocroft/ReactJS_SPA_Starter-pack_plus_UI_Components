@@ -282,12 +282,10 @@ export const useModal = (
     !controls
       ? {
           show() {
-            console.error("unable to fulfill `show()` call for [useModal()]");
-            return "";
+            throw new Error("unable to fulfill `show()` call for [useModal()]");
           },
           close() {
-            console.error("unable to fulfill `close()` call for [useModal()]");
-            return undefined;
+            throw new Error("unable to fulfill `close()` call for [useModal()]");
           },
         }
       : controls,
