@@ -139,10 +139,10 @@ const useModalControls = (
     describedBy: string;
   }
 ) => {
-  const modalNode = useRef<React.ReactNode | null>(null);
+  const modalNode = useRef<React.ReactElement<{ id?: string }> | null>(null);
   const [modalVisibilityState, setModalVisibilityState, unsetParamsOnUrl] =
     useSearchParamsState<"hidden" | "visible">(id, false, "hidden");
-  const [modalRef] = useOutsideClick<HTMLDivElement>((subject) => {
+  const [modalRef] = useOutsideClick<HTMLDivElement & HTMLDialogElement>((subject) => {
     setModalVisibilityState((prevModalVisibilityState) => {
       if (prevModalVisibilityState === "visible") {
         return "hidden";
@@ -150,7 +150,7 @@ const useModalControls = (
       return prevModalVisibilityState;
     });
     /* @NOTE: Close the modal if any DOM element outside it is clicked */
-    if (subject !== null) {
+    if (subject) {
       controls.close(subject.id);
     }
   });
