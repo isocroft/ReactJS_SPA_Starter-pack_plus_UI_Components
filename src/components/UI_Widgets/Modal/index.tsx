@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
+import { useLockBodyScroll } from "react-busser";
 
 import type { FC, ReactElement, ReactNode } from "react";
 
@@ -87,7 +88,7 @@ const renderChildren = (
           case parent !== "Modal":
             if (
               $innerChild &&
-              React.isValidElement<React.ReactNode & { close: () => void }>(
+              React.isValidElement<ReactElement & { close: () => void }>(
                 $innerChild
               )
             ) {
@@ -163,6 +164,7 @@ const Modal = Object.assign(
     (HTMLDivElement & HTMLDialogElement),
     React.HTMLAttributes<(HTMLDivElement & HTMLDialogElement)> & {
       wrapperClassName?: string;
+      onClose?: () => void;
       close: () => void;
     }
   >(function Modal(props, ref) {
@@ -172,26 +174,39 @@ const Modal = Object.assign(
       className = "",
       children: allChildren,
       close,
+      onClose,
       ...modalProps
     } = props;
 
+    useLockBodyScroll();
+
+    useEffect(() => {
+      return () => {
+        if (typeof window.HTMLDialogElement !== 'function') {
+          if (typeof onClose === "function") {
+            onClose();
+          }
+        }
+      };
+    }, []);
+    
     return ReactDOM.createPortal(
       typeof window.HTMLDialogElement === 'function'
-      ? (<dialog className={className || ""} id={id} role="dialog" aria-modal ref={ref} onClose={() => undefined}>
+      ? (<dialog className={className} id={id} role="dialog" aria-modal ref={ref} onClose={onClose}>
           {renderChildren(allChildren, {
             close: close,
             parent: "Modal",
           })}
       </dialog>)
       : (<div
-        className={className || ""}
+        className={className}
         id={id}
         ref={ref}
         role="dialog"
         aria-modal
         {...modalProps}
       >
-        <div className={wrapperClassName || ""}>
+        <div className={wrapperClassName}>
           {renderChildren(allChildren, {
             close,
             parent: "Modal",
