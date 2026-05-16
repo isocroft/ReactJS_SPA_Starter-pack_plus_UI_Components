@@ -22,11 +22,15 @@ export interface RoutesInterface {
     | ReactRoutingFunctionalComponent;
 }
 
-interface DecoratedComponentProps<T = object> {
+interface DecoratedComponentProps<
+  D extends unknown,
+  E extends Error,
+  T = object
+> {
   Title: string;
   Header: React.FC<
     Pick<RouteComponentProps<{}, StaticContext, T>, "history"> & {
-      queries: Record<string, UseQueryResult | null>,
+      queries: Record<string, UseQueryResult<D, E> | null>;
       user: {
         permission: string;
         bio?: Record<string, string | number>;
@@ -34,14 +38,20 @@ interface DecoratedComponentProps<T = object> {
     }
   >;
   PageElement: React.LazyExoticComponent<
-    React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
+    React.ComponentType<
+      { queries: Record<string, UseQueryResult<D, E> | null> } | undefined
+    >
   >;
-  useDataLoader: (location: Location) => Record<string, UseQueryResult | null>;
+  useDataLoader: (
+    location: Location
+  ) => Record<string, UseQueryResult<D, E> | null>;
   renderProp: (
     location: Location,
-    queries: Record<string, UseQueryResult | null>,
+    queries: Record<string, UseQueryResult<D, E> | null>,
     PageElement: React.LazyExoticComponent<
-      React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
+      React.ComponentType<
+        { queries: Record<string, UseQueryResult<D, E> | null> } | undefined
+      >
     >,
     user: {
       permission: string;
@@ -50,10 +60,12 @@ interface DecoratedComponentProps<T = object> {
   ) => JSX.Element | null;
 }
 
-function dataLoaderQueriesLoading(queries: Record<string, UseQueryResult | null>) {
+function dataLoaderQueriesLoading<
+  T extends Record<string, UseQueryResult | null>
+>(queries: T) {
   let result = false;
   for (let key in queries) {
-    query = queries[key] || { isLoading: false };
+    const query = queries[key] || { isLoading: false };
     result = result || query.isLoading;
     if (result) {
       break;
@@ -62,18 +74,18 @@ function dataLoaderQueriesLoading(queries: Record<string, UseQueryResult | null>
   return result;
 }
 
-const PageRenderer: React.FC<DecoratedComponentProps> = ({
+const PageRenderer = <D extends unknown, E extends Error>({
   Header,
   renderProp,
   useDataLoader,
   Title,
   PageElement,
-}) => {
+}: DecoratedComponentProps<D, E>) => {
   const [titleTag] = Array.from(
     document.documentElement.getElementsByTagName("title")
   );
 
-  titleTag.textContent = Title + " | React App";
+  titleTag!.textContent = Title + " | React App";
   document.title = Title + " | React App";
 
   //const previousPathname = usePreviousRoutePathname();
@@ -85,7 +97,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
   });
 
   if (dataLoaderQueriesLoading(queries)) {
-    return (<div>{Loading...}</div>);
+    return <div>{"Loading..."}</div>;
   }
 
   return (
@@ -98,7 +110,7 @@ const PageRenderer: React.FC<DecoratedComponentProps> = ({
           bio: {},
         })}
       />
-      <Suspense fallback={<div>Loading....</div>}>
+      <Suspense fallback={<div>{"Loading..."}</div>}>
         {renderProp(
           history.location,
           queries,
@@ -119,7 +131,10 @@ export const ProtectedRoutes: RoutesInterface[] = [
     exact: true,
     isPrivate: true,
     component: () => (
-      <PageRenderer
+      <PageRenderer<
+        Array<{ id: number; make: string; partsCount: number } | undefined>,
+        Error
+      >
         Header={VehicleRoute.Header}
         renderProp={VehicleRoute.renderProp}
         Title={VehicleRoute.Title}

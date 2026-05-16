@@ -1,10 +1,19 @@
-import React from "react";
+import * as React from "react";
 import { Span } from "@opentelemetry/api";
 
 export {};
 
+declare const UNDEFINED_VOID_ONLY: unique symbol;
+type VoidOrUndefinedOnly = void | { [UNDEFINED_VOID_ONLY]: never };
+
+declare module "react" {
+  namespace React {
+    type TransitionFunction = () => void | Promise<void>;
+  }
+}
+
 declare class Stringified<T> extends String {
-  private ___stringified: T
+  private ___stringified: T;
 }
 
 type HeadwayConfig = {
@@ -13,7 +22,7 @@ type HeadwayConfig = {
   trigger: string;
   position?: {
     x: string;
-    y: string
+    y: string;
   };
   translations?: {
     title: string;
@@ -47,6 +56,12 @@ type NewRelicTraceData = {
 };
 
 declare global {
+  namespace React {
+    type TransitionFunction = () =>
+      | VoidOrUndefinedOnly
+      | Promise<VoidOrUndefinedOnly>;
+  }
+
   interface DocumentEventMap {
     ["filezonedropaction"]: CustomEvent<{ files: FileList | null }>;
   }
@@ -61,12 +76,21 @@ declare global {
 
   interface DataTransfer {
     dropEffect: "none" | "copy" | "link" | "move";
-    effectAllowed : "none" | "copy" | "copyLink" | "move";
-    setData: (format: string, data: string) => void
+    effectAllowed:
+      | "link"
+      | "none"
+      | "copy"
+      | "move"
+      | "copyLink"
+      | "copyMove"
+      | "linkMove"
+      | "all"
+      | "uninitialized";
+    setData: (format: string, data: string) => void;
   }
 
-  interface DragEvent extends Event { 
-    dataTransfer: DataTransfer
+  interface DragEvent extends Event {
+    dataTransfer: DataTransfer | null;
   }
 
   interface File extends Blob {
@@ -86,18 +110,26 @@ declare global {
     gtag: (...args: any[]) => void;
     JSON: {
       stringify<T>(
-          value: T,
-          replacer?: (key: string, value: any) => any,
-          space?: string | number
-      ): string & Stringified<T>
-      parse<T>(text: string | Stringified<T>, reviver?: (key: any, value: any) => any): T | null
-      parse(text: string, reviver?: (key: any, value: any) => any): any
+        value: T,
+        replacer?: (key: string, value: any) => any,
+        space?: string | number
+      ): string & Stringified<T>;
+      parse<T>(
+        text: string | Stringified<T>,
+        reviver?: (key: any, value: any) => any
+      ): T | null;
+      parse(text: string, reviver?: (key: any, value: any) => any): any;
     };
     Cookies: {
-      get: (name: string) => string | undefined
+      get: (name: string) => string | undefined;
     };
     bindingSpan: Span | undefined;
-    startBindingSpan: (spanName: string, traceId: string, spanId: string, traceFlags: number) => void;
+    startBindingSpan: (
+      spanName: string,
+      traceId: string,
+      spanId: string,
+      traceFlags: number
+    ) => void;
     Headway: {
       init: (config: HeadwayConfig) => void;
     };

@@ -25,7 +25,12 @@ if (config.PROD) {
 }
 */
 
-import type { ComponentType, ErrorInfo, ReactNode, FunctionComponent } from "react";
+import type {
+  ComponentType,
+  ErrorInfo,
+  ReactNode,
+  FunctionComponent,
+} from "react";
 import type { RouteComponentProps } from "react-router";
 import type { Location } from "history";
 
@@ -34,18 +39,25 @@ import type { Location } from "history";
 //   changeParam: ReturnType<typeof useSearchParamStateValueUpdate>;
 // }
 
-type OnErrorCallback = (event: Event, cb: (err: null | Error, shouldSend?: boolean) => void) => void | boolean | Promise<void | boolean>;
+type OnErrorCallback = (
+  event: Event,
+  cb: (err: null | Error, shouldSend?: boolean) => void
+) => void | boolean | Promise<void | boolean>;
 
-export type ErrorFallbackUIProps = { error: Error, location: Location, resetErrorBoundary?: (...args: any[]) => void };
+export type ErrorFallbackUIProps = {
+  error: Error;
+  location: Location;
+  resetErrorBoundary?: (...args: any[]) => void;
+};
 
 interface ErrorBoundaryProps extends RouteComponentProps {
   onError?: OnErrorCallback;
   FallbackComponent?: ComponentType<{
-    error: Error
-    info: ErrorInfo
-    clearError: () => void
+    error: Error;
+    info: ErrorInfo;
+    clearError: () => void;
   }>;
-  FallbackUI?: FunctionComponent<ErrorFallbackUIProps>;
+  FallbackUI: FunctionComponent<ErrorFallbackUIProps>;
   children: ReactNode;
 }
 
@@ -67,8 +79,8 @@ interface ErrorBoundaryState {
 //     return ComponentWithRouterProp;
 // }
 
-const DEV_ENV = process.env.;
-const PROD_ENV = import.meta.env.PROD;
+const DEV_ENV = process.env.NODE_ENV;
+const PROD_ENV = process.env.PROD;
 
 class ErrorBoundaryComponent extends React.Component<
   ErrorBoundaryProps,
@@ -91,47 +103,57 @@ class ErrorBoundaryComponent extends React.Component<
     //   in div (created by App)
     //   in App
     if (DEV_ENV) {
-        console.error(
-            "Uncaught error:",
-            error, // error.message, error.stack
-            info // info.componentStack
-        );
+      console.error(
+        "Uncaught error:",
+        error, // error.message, error.stack
+        info // info.componentStack
+      );
     } else if (PROD_ENV) {
-        // @TODO: Replace this `console.info('.')` line with error reporting logic.
-        // @FIXME: Use [TrackJS], [Sentry] or [BugSnag] 
-        console.info('.');
+      // @TODO: Replace this `console.info('.')` line with error reporting logic.
+      // @FIXME: Use [TrackJS], [Sentry] or [BugSnag]
+      console.info(".");
     }
   }
 
   resetErrorBoundary() {
     this.setState({ hasError: false, error: null });
     if (DEV_ENV) {
-        console.info("Error Boundary reset.");
+      console.info("Error Boundary reset.");
     }
   }
 
-  componentDidUpdate (prevProps: ErrorBoundaryProps, prevState: ErrorBoundaryState) {
+  componentDidUpdate(
+    prevProps: ErrorBoundaryProps,
+    prevState: ErrorBoundaryState
+  ) {
     if (prevProps && prevProps.location.key !== this.props.location.key) {
       if (prevState.hasError === true) {
-        this.setState({ hasError: false})
+        this.setState({ hasError: false });
       }
       return;
     }
 
     if (this.state.hasError && this.state.error !== null) {
-      switch (this.state.error.message) {  
+      switch (this.state.error.message) {
         case "Invalid Permissions":
-          this.props.history.replace(`${window.location.pathname}?errorMessage=Invalid%20Permissions`);
-        break;
+          this.props.history.replace(
+            `${window.location.pathname}?errorMessage=Invalid%20Permissions`
+          );
+          break;
       }
-    }  
-  }  
+    }
+  }
 
   render() {
     if (this.state.hasError && this.state.error !== null) {
       const { FallbackUI } = this.props;
+      this.props.history;
       // Render any custom Fallback UI
-      return FallbackUI ? <FallbackUI error={this.state.error} location={this.props.location} /> : <p>Error: {this.state.error?.message}</p>;
+      return FallbackUI ? (
+        <FallbackUI error={this.state.error} location={this.props.location} />
+      ) : (
+        <p>Error: {this.state.error?.message}</p>
+      );
     }
 
     return this.props.children;

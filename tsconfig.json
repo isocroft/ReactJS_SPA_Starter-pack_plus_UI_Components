@@ -3,7 +3,8 @@
         "node_modules"
     ],
     "include": [
-        "src"
+        "src",
+        "./typings/react-busser-components.d.ts"
     ],
     "compilerOptions": {
         "strict": true,
@@ -25,9 +26,9 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "types": ["node"],
+        "types": ["node", "jest"],
         "typeRoots": [
-            "./typings/react-busser-components.d.ts",
+            "./typings",
             "./node_modules/@types"
           ]
     }

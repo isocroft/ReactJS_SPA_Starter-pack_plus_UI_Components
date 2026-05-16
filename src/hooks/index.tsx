@@ -1,8 +1,25 @@
-import React, { useRef, useMemo, useContext, useState, useEffect, useTransition } from "react";
+import React, {
+  useRef,
+  useMemo,
+  useContext,
+  useState,
+  useEffect,
+  useTransition,
+} from "react";
 import { useHistory } from "react-router-dom";
-import { useIsDOMElementVisibleOnScreen, useIsFirstRender, useEffectMemo, useEffectCallback } from "react-busser";
+import {
+  useIsDOMElementVisibleOnScreen,
+  useIsFirstRender,
+  useEffectMemo,
+  useEffectCallback,
+} from "react-busser";
 import { toast, useSonner } from "sonner";
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import moment from "moment";
 
 import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvider";
@@ -16,12 +33,12 @@ import type {
   InvalidateQueryFilters,
   UseMutationOptions,
   UseQueryOptions,
-  QueryKey
+  QueryKey,
 } from "@tanstack/react-query";
 
 export type FeatureToggleHandlers = {
-  isDisabledFor: (feature: string) => boolean,
-  isEnabledFor: (feature: string, segments?: string[]) => boolean
+  isDisabledFor: (feature: string) => boolean;
+  isEnabledFor: (feature: string, segments?: string[]) => boolean;
 };
 
 export type InfiniteScrollQueryOptions<TK, TR, TMV, TE> = {
@@ -34,29 +51,35 @@ type TypeSafeQueryKey<TQueryFnData> = UseQueryOptions<TQueryFnData>["queryKey"];
 type TypeSafeMutationKey = NonNullable<UseMutationOptions["mutationKey"]>;
 
 interface OptimisticProps<
-    TData = unknown,
-    TError = unknown,
-    TVariables = void,
-    TQueryFnData = unknown
-> extends Omit<UseMutationOptions<TData, TError, TVariables, () => void>, "onError" | "onMutate" | "onSettled"> {
-    /**
-     * @NOTE:
-     * 
-     * The mutation context is omitted in the params here 
-     * because rollback of data snapshot is done
-     * automatically in the error callback.
-     */
-    onError?: (variables: TVariables, error: TError) => void;
-    queryKey: TypeSafeQueryKey<TQueryFnData>;
-    updaterFn?: (variables: TVariables, input: TQueryFnData | undefined) => TQueryFnData | undefined;
-    noRerenderOnWrite?: boolean;
-    queryCacheData?: TQueryFnData | undefined;
-    invalidates?: QueryKey;
+  TData = unknown,
+  TError = unknown,
+  TVariables = void,
+  TQueryFnData = unknown
+> extends Omit<
+    UseMutationOptions<TData, TError, TVariables, () => void>,
+    "onError" | "onMutate" | "onSettled"
+  > {
+  /**
+   * @NOTE:
+   *
+   * The mutation context is omitted in the params here
+   * because rollback of data snapshot is done
+   * automatically in the error callback.
+   */
+  onError?: (variables: TVariables, error: TError) => void;
+  queryKey: TypeSafeQueryKey<TQueryFnData>;
+  updaterFn?: (
+    variables: TVariables,
+    input: TQueryFnData | undefined
+  ) => TQueryFnData | undefined;
+  noRerenderOnWrite?: boolean;
+  queryCacheData?: TQueryFnData | undefined;
+  invalidates?: QueryKey;
 }
 
 type ReactQueryCacheOptions<TQFnData> = {
-  noRenderOnWrite?: boolean,
-  queryKey: TypeSafeQueryKey<TQFnData>
+  noRenderOnWrite?: boolean;
+  queryKey: TypeSafeQueryKey<TQFnData>;
 };
 
 const murmurhash = () => {
@@ -130,14 +153,14 @@ export const useToastManager = ({
 };
 
 export function useArrayCache<A extends unknown[]>(list: A) {
-  // this holds reference to previous value 
-  const ref = useRef([]);
+  // this holds reference to previous value
+  const ref = useRef<unknown[]>([]);
   // check if each element of the old and new array match
   const areArraysConsideredTheSame =
     ref.current.length !== 0 && list.length === ref.current.length
       ? list.every((element, index) => {
-        return element === ref.current[index];
-      })
+          return element === ref.current[index];
+        })
       : false;
 
   // latest ref pattern
@@ -148,210 +171,226 @@ export function useArrayCache<A extends unknown[]>(list: A) {
     }
   });
 
-  return (areArraysConsideredTheSame ? ref.current : list) as const;
+  return areArraysConsideredTheSame ? ref.current : list;
 }
 
-export function useMemoList<L extends unknown[]>(list: L, callback = (() => undefined)) {
+export function useMemoList<L extends unknown[]>(
+  list: L,
+  callback = () => undefined
+) {
   const cachedList = useArrayCache(list);
   return useMemo(callback.bind(null, cachedList), [cachedList]);
 }
 
 export function useReactQueryCache<D = unknown, E = unknown>(
-    { noRenderOnWrite = false, queryKey } = {
-      queryKey: [],
-    } as ReactQueryCacheOptions<D>,
-    initial: D | undefined
-  ) {
-    let queryKeysCache = useRef<Map<string, TypeSafeQueryKey<D>>>(
-      new Map()
-    ).current;
-    let queryNoRerenderCache = useRef<WeakMap<object & {}, D>>(
-      new WeakMap()
-    ).current;
-    const queryClient = useQueryClient();
-    const queryCache = queryClient.getQueryCache();
-  
-    useEffect(() => {
-      return () => {
-        /* @ts-expect-error */
-        queryKeysCache = null;
-        /* @ts-expect-error */
-        queryNoRerenderCache = null;
-      };
-    }, []);
-  
-    if (typeof queryKey !== "object") {
-      throw new Error("`queryKey` missing for `useReactQueryCache(..)` hook");
-    }
-  
-    if (initial) {
-      const noRenderCacheData = queryNoRerenderCache.get(queryKey) || undefined;
-  
-      if (!noRenderCacheData) {
-        queryNoRerenderCache.set(queryKey, initial);
-        queryKeysCache.set(String(queryKey), queryKey);
-      }
-    }
-  
-    return {
-      fetchQueryCacheData(
-        queryKey: NonNullable<TypeSafeQueryKey<D>>
-      ): D | undefined {
-        let queryKeyRef = undefined;
-  
-        if (noRenderOnWrite) {
-          queryKeyRef = queryKeysCache.get(String(queryKey));
-        }
-  
-        if (!queryKeyRef || typeof queryKeyRef !== "object") {
-          return undefined;
-        }
-  
-        return noRenderOnWrite
-          ? queryNoRerenderCache.get(queryKeyRef)
-          : (queryClient.getQueryData(queryKey) as D);
-      },
-      cancelOngoingQueries(queryKey: TypeSafeQueryKey<D>): Promise<void> {
-        if (typeof queryKey !== "object") {
-          return Promise.reject(undefined);
-        }
-  
-        return queryClient.cancelQueries({ queryKey });
-      },
-      isCurrentlyMutating(mutationKey: TypeSafeMutationKey): number {
-        return typeof queryClient.isMutating === "function"
-          ? queryClient.isMutating({ mutationKey })
-          : 0;
-      },
-      isCurrentlyFetching(queryKey: TypeSafeQueryKey<D>): number {
-        if (typeof queryKey !== "object") {
-          return 0;
-        }
-  
-        return typeof queryClient.isFetching === "function"
-          ? queryClient.isFetching({ queryKey })
-          : 0;
-      },
-      updateQueryCacheData(
-        queryKey: NonNullable<TypeSafeQueryKey<D>>,
-        callback = (oldData: D | undefined) => oldData
-      ): D | undefined {
-        if (typeof callback !== "function" || typeof queryKey !== "object") {
-          return undefined;
-        }
-  
-        return noRenderOnWrite
-          ? queryNoRerenderCache.set(
-              queryKey,
-              callback(queryNoRerenderCache.get(queryKey)) as NonNullable<D>
-            ) &&
-              queryKeysCache.set(String(queryKey), queryKey) &&
-              queryNoRerenderCache.get(queryKey)
-          : queryClient.setQueryData<D | undefined>(
-              queryKey,
-              callback as (oldData: D | undefined) => NonNullable<D>
-            );
-      },
-      forceUpdateQueryCacheData(
-        queryKey: NonNullable<TypeSafeQueryKey<D>>,
-        data: D
-      ): D | undefined {
-        if (typeof queryKey !== "object") {
-          return data;
-        }
-  
-        if (!data || typeof data === "function") {
-          return;
-        }
-  
-        return queryClient.setQueryData<D | undefined>(queryKey, data);
-      },
-      invalidateQueryCache(
-        queryKey: TypeSafeQueryKey<D>,
-        exact = false
-      ): Promise<void> {
-        if (typeof queryKey !== "object") {
-          return Promise.reject(undefined);
-        }
-  
-        return queryClient.invalidateQueries({ queryKey, exact });
-      },
-      invalidateQueryCacheWithPredicate(
-        predicate: InvalidateQueryFilters["predicate"]
-      ): Promise<void> {
-        return queryClient.invalidateQueries({ predicate });
-      },
-      getDataFromCache(
-        queryKey: NonNullable<TypeSafeQueryKey<D>>,
-      ): D | undefined {
-        if (typeof queryKey !== "object") {
-          return undefined;
-        }
-  
-        if (!noRenderOnWrite) {
-          const query = queryCache.find<D, E>({ queryKey });
-          return query?.state?.data || initial;
-        }
-  
-        const noRenderCacheData = queryNoRerenderCache.get(queryKey) || undefined;
-        return noRenderCacheData;
-      },
-    } as const;
-};
+  { noRenderOnWrite = false, queryKey } = {
+    queryKey: [],
+  } as ReactQueryCacheOptions<D>,
+  initial: D | undefined
+) {
+  let queryKeysCache = useRef<Map<string, TypeSafeQueryKey<D>>>(
+    new Map()
+  ).current;
+  let queryNoRerenderCache = useRef<WeakMap<object & {}, D>>(
+    new WeakMap()
+  ).current;
+  const queryClient = useQueryClient();
+  const queryCache = queryClient.getQueryCache();
 
-export const useRouteQueryPrefetch = (
-  {
-    queryOptions,
-    prefetchOnMount = false,
-    cacheAndPersist = false
-  }: { queryOptions: UseQueryOptions, prefetchOnMount: boolean, cacheAndPersist: boolean }) => {
-    const history = useHistory();
-    const queryClient = useQueryClient();
-    const [isPending, startTransition] = useTransition()
-    const isFirstRender = useIsFirstRender();
-  
-    React.useEffect(() => {
-      if (isFirstRender && prefetchOnMount) {
-        /* @HINT:  Prefetch in background just after component mount */
-        if (!cacheAndPersist) {
-          queryClient.prefetchQuery(queryOptions);
-        } else {
-          try {
-            /* @CHECK: https://tanstack.com/query/latest/docs/reference/QueryClient#queryclientensurequerydata */
-            queryClient.ensureQueryData(queryOptions);
-            /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-          } catch (_) { /* eslint-disable no-empty */ }
-        }
-      }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, [prefetchOnMount, cacheAndPersist, isFirstRender]);
-    
-    const handlePathNavigation = async (urlPathname = '/', queryOptions = { queryKey: [], queryFn: () => null }) => {
-      /* @HINT: Prefetch during route navigation */
-      await queryClient.prefetchQuery(queryOptions);
-      history.push(urlPathname);
+  useEffect(() => {
+    return () => {
+      /* @ts-expect-error */
+      queryKeysCache = null;
+      /* @ts-expect-error */
+      queryNoRerenderCache = null;
     };
-    
-    const onRouteNavigationTriggered = (e: React.MouseEvent<HTMLElement> & { target: HTMLElement }) => {
-      if (isPending) {
-        e.stopPropagation();
-        e.preventDefault();
+  }, []);
+
+  if (typeof queryKey !== "object") {
+    throw new Error("`queryKey` missing for `useReactQueryCache(..)` hook");
+  }
+
+  if (initial) {
+    const noRenderCacheData = queryNoRerenderCache.get(queryKey) || undefined;
+
+    if (!noRenderCacheData) {
+      queryNoRerenderCache.set(queryKey, initial);
+      queryKeysCache.set(String(queryKey), queryKey);
+    }
+  }
+
+  return {
+    fetchQueryCacheData(
+      queryKey: NonNullable<TypeSafeQueryKey<D>>
+    ): D | undefined {
+      let queryKeyRef = undefined;
+
+      if (noRenderOnWrite) {
+        queryKeyRef = queryKeysCache.get(String(queryKey));
+      }
+
+      if (!queryKeyRef || typeof queryKeyRef !== "object") {
+        return undefined;
+      }
+
+      return noRenderOnWrite
+        ? queryNoRerenderCache.get(queryKeyRef)
+        : (queryClient.getQueryData(queryKey) as D);
+    },
+    cancelOngoingQueries(queryKey: TypeSafeQueryKey<D>): Promise<void> {
+      if (typeof queryKey !== "object") {
+        return Promise.reject(undefined);
+      }
+
+      return queryClient.cancelQueries({ queryKey });
+    },
+    isCurrentlyMutating(mutationKey: TypeSafeMutationKey): number {
+      return typeof queryClient.isMutating === "function"
+        ? queryClient.isMutating({ mutationKey })
+        : 0;
+    },
+    isCurrentlyFetching(queryKey: TypeSafeQueryKey<D>): number {
+      if (typeof queryKey !== "object") {
+        return 0;
+      }
+
+      return typeof queryClient.isFetching === "function"
+        ? queryClient.isFetching({ queryKey })
+        : 0;
+    },
+    updateQueryCacheData(
+      queryKey: NonNullable<TypeSafeQueryKey<D>>,
+      callback = (oldData: D | undefined) => oldData
+    ): D | undefined {
+      if (typeof callback !== "function" || typeof queryKey !== "object") {
+        return undefined;
+      }
+
+      return noRenderOnWrite
+        ? queryNoRerenderCache.set(
+            queryKey,
+            callback(queryNoRerenderCache.get(queryKey)) as NonNullable<D>
+          ) &&
+            queryKeysCache.set(String(queryKey), queryKey) &&
+            queryNoRerenderCache.get(queryKey)
+        : queryClient.setQueryData<D | undefined>(
+            queryKey,
+            callback as (oldData: D | undefined) => NonNullable<D>
+          );
+    },
+    forceUpdateQueryCacheData(
+      queryKey: NonNullable<TypeSafeQueryKey<D>>,
+      data: D
+    ): D | undefined {
+      if (typeof queryKey !== "object") {
+        return data;
+      }
+
+      if (!data || typeof data === "function") {
         return;
       }
-      
-      e.persist();
-      
-      startTransition(async () => {
-        const { pathname } = new URL(e.target.getAttribute('data-href') || "/", window.location.origin);
-        /* @ts-ignore */
-        await handlePathNavigation(pathname, queryOptions);
-      });
-    };
-  
-    return {
-      isRoutePrefetching: isPending,
-      onRouteNavigation: onRouteNavigationTriggered
-    } as const;  
+
+      return queryClient.setQueryData<D | undefined>(queryKey, data);
+    },
+    invalidateQueryCache(
+      queryKey: TypeSafeQueryKey<D>,
+      exact = false
+    ): Promise<void> {
+      if (typeof queryKey !== "object") {
+        return Promise.reject(undefined);
+      }
+
+      return queryClient.invalidateQueries({ queryKey, exact });
+    },
+    invalidateQueryCacheWithPredicate(
+      predicate: InvalidateQueryFilters["predicate"]
+    ): Promise<void> {
+      return queryClient.invalidateQueries({ predicate });
+    },
+    getDataFromCache(
+      queryKey: NonNullable<TypeSafeQueryKey<D>>
+    ): D | undefined {
+      if (typeof queryKey !== "object") {
+        return undefined;
+      }
+
+      if (!noRenderOnWrite) {
+        const query = queryCache.find<D, E>({ queryKey });
+        return query?.state?.data || initial;
+      }
+
+      const noRenderCacheData = queryNoRerenderCache.get(queryKey) || undefined;
+      return noRenderCacheData;
+    },
+  } as const;
+}
+
+export const useRouteQueryPrefetch = ({
+  queryOptions,
+  prefetchOnMount = false,
+  cacheAndPersist = false,
+}: {
+  queryOptions: UseQueryOptions;
+  prefetchOnMount: boolean;
+  cacheAndPersist: boolean;
+}) => {
+  const history = useHistory();
+  const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
+  const isFirstRender = useIsFirstRender();
+
+  React.useEffect(() => {
+    if (isFirstRender && prefetchOnMount) {
+      /* @HINT:  Prefetch in background just after component mount */
+      if (!cacheAndPersist) {
+        queryClient.prefetchQuery(queryOptions);
+      } else {
+        try {
+          /* @CHECK: https://tanstack.com/query/latest/docs/reference/QueryClient#queryclientensurequerydata */
+          queryClient.ensureQueryData(queryOptions);
+          /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+        } catch (_) {
+          /* eslint-disable no-empty */
+        }
+      }
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [prefetchOnMount, cacheAndPersist, isFirstRender]);
+
+  const handlePathNavigation = async (
+    urlPathname = "/",
+    queryOptions = { queryKey: [], queryFn: () => null }
+  ) => {
+    /* @HINT: Prefetch during route navigation */
+    await queryClient.prefetchQuery(queryOptions);
+    history.push(urlPathname);
+  };
+
+  const onRouteNavigationTriggered = (
+    e: React.MouseEvent<HTMLElement> & { target: HTMLElement }
+  ) => {
+    if (isPending) {
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+
+    e.persist();
+
+    startTransition(() => {
+      const { pathname } = new URL(
+        e.target.getAttribute("data-href") || "/",
+        window.location.origin
+      );
+      /* @ts-ignore */
+      return handlePathNavigation(pathname, queryOptions);
+    });
+  };
+
+  return {
+    isRoutePrefetching: isPending,
+    onRouteNavigation: onRouteNavigationTriggered,
+  } as const;
 };
 
 export const useOptimisticMutation = <
@@ -370,34 +409,35 @@ export const useOptimisticMutation = <
   ...props
 }: OptimisticProps<TData, TError, TVariables, TQueryFnData>) => {
   const {
-     updateQueryCacheData,
-     fetchQueryCacheData,
-     forceUpdateQueryCacheData,
-     invalidateQueryCache,
-     cancelOngoingQueries,
-     isCurrentlyMutating,
-     getDataFromCache,
-   } = useReactQueryCache<TQueryFnData, TError>(
-    { noRenderOnWrite:  noRerenderOnWrite, queryKey },
+    updateQueryCacheData,
+    fetchQueryCacheData,
+    forceUpdateQueryCacheData,
+    invalidateQueryCache,
+    cancelOngoingQueries,
+    isCurrentlyMutating,
+    getDataFromCache,
+  } = useReactQueryCache<TQueryFnData, TError>(
+    { noRenderOnWrite: noRerenderOnWrite, queryKey },
     queryCacheData
   );
-  
-  const computedMutationKey = useEffectMemo(() => ([...queryKey, ...(mutationKey ?? [])]),
+
+  const computedMutationKey = useEffectMemo(
+    () => [...queryKey, ...(mutationKey ?? [])],
     [mutationKey, queryKey]
-  ) as unknown[];;
-    
+  ) as unknown[];
+
   return useMutation({
     ...props,
     mutationKey: computedMutationKey,
     onMutate: async (variables) => {
       await cancelOngoingQueries(queryKey);
-       
+
       const snapshotResult = fetchQueryCacheData(queryKey);
 
       updateQueryCacheData(queryKey, (oldData) => {
         return typeof updaterFn === "function"
-           ? updaterFn(variables, oldData)
-           :  getDataFromCache(queryKey);
+          ? updaterFn(variables, oldData)
+          : getDataFromCache(queryKey);
       });
 
       return () => {
@@ -408,9 +448,9 @@ export const useOptimisticMutation = <
         }
       };
     },
-    onError: (error, variables, rollback = (() => undefined)) => {
+    onError: (error, variables, rollback = () => undefined) => {
       rollback();
-      
+
       if (typeof onError === "function") {
         onError(variables, error);
       }
@@ -421,67 +461,78 @@ export const useOptimisticMutation = <
           await invalidateQueryCache(invalidates);
         }
       }
-    }
+    },
   });
 };
 
-export function useInfiniteScrollForQueries  <K, D, T, E = Error>(
+export function useInfiniteScrollForQueries<K, D, T, E = Error>(
   queryOptions: InfiniteScrollQueryOptions<K, D, T, E>,
   scrollOptions = { rootMargin: "0px", threshold: 1 }
 ) {
-  const { fetchNextPage, hasNextPage, ...query } = useInfiniteQuery(queryOptions);
-  const [ isIntersecting, domElementRef ] = useIsDOMElementVisibleOnScreen(scrollOptions);
+  const { fetchNextPage, hasNextPage, ...query } =
+    useInfiniteQuery(queryOptions);
+  const [isIntersecting, domElementRef] =
+    useIsDOMElementVisibleOnScreen(scrollOptions);
 
   const fetcher = useEffectCallback(fetchNextPage, { immutableRef: true });
-       
+
   useEffect(() => {
     if (isIntersecting && hasNextPage) {
       fetcher();
     }
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isIntersecting, hasNextPage]);
 
-  const queryResult = { ...query, hasNextPage, fetchNextPage } as InfiniteQueryResult<D, T, E>;
+  const queryResult = {
+    ...query,
+    hasNextPage,
+    fetchNextPage,
+  } as InfiniteQueryResult<D, T, E>;
 
   return [queryResult, domElementRef] as const;
 }
 
-export const useFeatureToggle = <R = Record<string, unknown>>(user: R) => {
+export function useFeatureToggle<R = Record<string, unknown>>(user: R) {
   const features = useContext(FeaturesToggleContext);
 
-  const userIdentifierTag = features.authOwnerOptions["[identifier]"];
-  const userAccessControlTag = features.authOwnerOptions["[access_control]"];
-  const userRecord = user || { [userIdentifierTag]: "", [userAccessControlTag]: "" };
+  const userIdentifierTag = features.authUserOptions["[identifier]"];
+  const userAccessControlTag = features.authUserOptions["[access_control]"];
+  const userRecord = user || {
+    [userIdentifierTag]: "",
+    [userAccessControlTag]: "",
+  };
 
   const flagId = userRecord[userIdentifierTag] as string;
   const flagAccessType = userRecord[userAccessControlTag] as string;
 
   return {
-    getAllEnabledFeatures () {
+    getAllEnabledFeatures() {
       return features.enabledFeatures.slice(0);
     },
-    isDisabledFor (feature: string) {
+    isDisabledFor(feature: string) {
       if (typeof feature !== "string") {
         return true;
       }
-  
-      const featureDetails = features.enabledFeatures.find((enabledFeature) => {
-        return enabledFeature.startsWith(feature.toLowerCase())
-      }) || "_";
+
+      const featureDetails =
+        features.enabledFeatures.find((enabledFeature) => {
+          return enabledFeature.startsWith(feature.toLowerCase());
+        }) || "_";
 
       return featureDetails === "_";
     },
-    isEnabledFor (feature: string, segments?: string[] = []) {
+    isEnabledFor(feature: string, segments: string[] = []) {
       if (typeof feature !== "string" || !Array.isArray(segments)) {
         return false;
       }
 
-      const featureDetails = features.enabledFeatures.find((enabledFeature) => {
-        return enabledFeature.startsWith(feature.toLowerCase())
-      }) || "_";
+      const featureDetails =
+        features.enabledFeatures.find((enabledFeature) => {
+          return enabledFeature.startsWith(feature.toLowerCase());
+        }) || "_";
 
       if (featureDetails === "_") {
-        return false
+        return false;
       }
 
       const [, optionsString] = featureDetails.split("|");
@@ -494,52 +545,67 @@ export const useFeatureToggle = <R = Record<string, unknown>>(user: R) => {
 
       return optionsList.some((option) => {
         const [optionName, optionValue] = option.split("=");
-
+        let optionValueNormalized;
         switch (optionName) {
           case "role":
-            const optionValueNormalized = optionValue.substring(1, optionValue.length-1).trim();
+            optionValueNormalized = optionValue
+              ?.substring(1, optionValue?.length - 1)
+              .trim();
             if (optionValueNormalized.length === 0) {
-              return false
+              return false;
             }
-            return (optionValueNormalized.split(',')).includes(flagAccessType);
+            return optionValueNormalized.split(",").includes(flagAccessType);
             break;
           case "segments":
-            const optionValueNormalized = optionValue.substring(1, optionValue.length-1).trim();
+            optionValueNormalized = optionValue
+              ?.substring(1, optionValue?.length - 1)
+              .trim();
             if (optionValueNormalized.length === 0) {
-              return false
+              return false;
             }
-            return segments.length === 0 ? optionValueNormalized === '*' : segments.every((segment) => {
-              const allowedSegements = optionValueNormalized.split(',');
-              return allowedSegments.includes(segment);
-            });
+            return segments.length === 0
+              ? optionValueNormalized === "*"
+              : segments.every((segment) => {
+                  const allowedSegments = optionValueNormalized.split(",");
+                  return allowedSegments.includes(segment);
+                });
             break;
           case "qualifier":
             const allowedPercentage = Number(optionValue);
-            
+
             if (Number.isNaN(percentage)) {
               return false;
             }
 
-            return murmurhash(`${feature.toUpperCase()}-${flagId}`) / MAX_UNSIGNED_INT_32 < allowedPercentage
+            return (
+              murmurhash(`${feature.toUpperCase()}-${flagId}`) /
+                MAX_UNSIGNED_INT_32 <
+              allowedPercentage
+            );
             break;
           default:
-            return false
+            return false;
             break;
         }
-      })
-    }
+      });
+    },
   } as FeatureToggleHandlers;
-};
+}
 
-export const useCurrentTime = (formatting = 'hh:mm A', intervalDuration = (1000 * 60)) => {
-  const [currentTime, setCurrentTime] = useState(() => moment().format(formatting))
+export const useCurrentTime = (
+  formatting = "hh:mm A",
+  intervalDuration = 1000 * 60
+) => {
+  const [currentTime, setCurrentTime] = useState(() =>
+    moment().format(formatting)
+  );
 
   useEffect(() => {
     const updateTime = () => {
-      setCurrentTime(moment().format(formatting))
-    }
+      setCurrentTime(moment().format(formatting));
+    };
 
-    let interval = null;
+    let interval: NodeJS.Timeout | null = null;
 
     if (interval === null) {
       /* @HINT: Update time immediately on mount */
@@ -547,13 +613,13 @@ export const useCurrentTime = (formatting = 'hh:mm A', intervalDuration = (1000 
     }
 
     /* @NOTE: Default is to update the time every minute */
-    interval = setInterval(updateTime, intervalDuration)
+    interval = setInterval(updateTime, intervalDuration);
 
     return () => {
       clearInterval(interval);
-    }
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [formatting, intervalDuration])
+    };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [formatting, intervalDuration]);
 
   return currentTime;
 };
@@ -572,7 +638,7 @@ export const useMutationObserver = (
   }
 ) => {
   useEffect(() => {
-    let observer = null;
+    let observer: MutationObserver | null = null;
     if (ref.current) {
       observer = new window.MutationObserver(callback);
       observer.observe(ref.current, options);
@@ -583,12 +649,12 @@ export const useMutationObserver = (
         observer.disconnect();
       }
     };
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 };
 
-export function useObserveDOMMutations (
-  callback = (() => undefined),
+export function useObserveDOMMutations(
+  callback = (x) => undefined,
   options = {
     childList: true,
     subtree: true,
@@ -596,42 +662,61 @@ export function useObserveDOMMutations (
     attributeFilter: [],
     attributeOldValue: false,
     characterData: false,
-    characterOldValue: false
+    characterOldValue: false,
   },
-  rootElementId = '#root'
+  rootElementId = "#root"
 ) {
-  const [observer] = useState(() => (typeof window !== "undefined" ? new MutationObserver(function (mutations, instance) {
-    const reactAppRootElem = window.document.querySelector(rootElementId);
-    
-    if (!reactAppRootElem) {
-      instance.disconnect();
-      return;
-    }
+  const [observer] = useState(() =>
+    typeof window !== "undefined"
+      ? new MutationObserver(function (mutations, instance) {
+          const reactAppRootElem = window.document.querySelector(rootElementId);
 
-    callback(mutations);
-  }) : {}));
+          if (!reactAppRootElem) {
+            instance.disconnect();
+            return;
+          }
+
+          callback(mutations);
+        })
+      : {
+          observe() {},
+          takeRecords() {
+            return [];
+          },
+          disconnect() {},
+        }
+  );
 
   useEffect(() => {
     function onPageIsInteractive() {
-      if (window.document.readyState === "interactive"
-          || window.document.readyState === "complete") {
-        observer.observe(
-          window.document,
-          options.attributes === false
-            /* @HINT: Ensure that the mutation observer doesn't throw an error/exception */
-            /* @CHECK: https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe#exceptions */
-            ? Object.assign({ attributeFilter: undefined }, options)
-            : options
-        );
+      if (
+        window.document.readyState === "interactive" ||
+        window.document.readyState === "complete"
+      ) {
+        if (observer) {
+          observer.observe(
+            window.document,
+            options.attributes === false
+              ? /* @HINT: Ensure that the mutation observer doesn't throw an error/exception */
+                /* @CHECK: https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe#exceptions */
+                Object.assign({ attributeFilter: undefined }, options)
+              : options
+          );
+        }
       }
     }
 
-    window.document.addEventListener("readystatechange", onPageIsInteractive, false);
+    window.document.addEventListener(
+      "readystatechange",
+      onPageIsInteractive,
+      false
+    );
 
     return () => {
-      let mutations = typeof observer.takeRecords === "function"
-        ? observer.takeRecords()
-        : [];
+      let mutations =
+        typeof observer.takeRecords === "function"
+          ? observer.takeRecords()
+          : [];
 
       observer.disconnect();
 
@@ -639,7 +724,11 @@ export function useObserveDOMMutations (
         callback(mutations);
       }
 
-      window.document.removeEventListener("readystatechange", onPageIsInteractive, false);
+      window.document.removeEventListener(
+        "readystatechange",
+        onPageIsInteractive,
+        false
+      );
     };
   }, []);
 }
@@ -647,8 +736,10 @@ export function useObserveDOMMutations (
 export const useScrollPosition = <T extends HTMLElement>(
   ref?: React.MutableRefObject<T>
 ) => {
-  const [scrollPosition, setScrollPosition] = useState<[number, number]>([0, 0]);
-  
+  const [scrollPosition, setScrollPosition] = useState<[number, number]>([
+    0, 0,
+  ]);
+
   useEffect(() => {
     if (!ref || !ref.current) {
       return;
@@ -656,10 +747,10 @@ export const useScrollPosition = <T extends HTMLElement>(
 
     const targetElement = ref ? ref.current : window;
     const handleScroll = () => {
-      const currentScrollPosition: [number, number] = ref ?
-      [ref.current.scrollTop, ref.current.scrollLeft] :
-      [window.scrollX, window.scrollY]; 
-      setScrollPosition(currentScrollPosition)
+      const currentScrollPosition: [number, number] = ref
+        ? [ref.current.scrollTop, ref.current.scrollLeft]
+        : [window.scrollX, window.scrollY];
+      setScrollPosition(currentScrollPosition);
     };
 
     handleScroll();
@@ -668,10 +759,10 @@ export const useScrollPosition = <T extends HTMLElement>(
     return () => {
       targetElement.removeEventListener("scroll", handleScroll, false);
     };
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
-  return scrollPosition as const;
+  return scrollPosition;
 };
 
 /**
@@ -685,17 +776,14 @@ export const useScrollPosition = <T extends HTMLElement>(
 export function useCallbackRef<T extends (...args: never[]) => unknown>(
   callback: T | undefined
 ): T {
-  const callbackRef = useRef(callback)
+  const callbackRef = useRef(callback);
 
   useEffect(() => {
-    callbackRef.current = callback
-  })
+    callbackRef.current = callback;
+  });
 
   // https://github.com/facebook/react/issues/19240
-  return useMemo(
-    () => ((...args) => callbackRef.current?.(...args)) as T,
-    []
-  )
+  return useMemo(() => ((...args) => callbackRef.current?.(...args)) as T, []);
 }
 
 export function useGlobalState<D = unknown>(key: string | string[], value: D) {
@@ -727,8 +815,8 @@ export function useGlobalState<D = unknown>(key: string | string[], value: D) {
     const _queryKey = Array.isArray($key)
       ? ["USER_Q", ...$key]
       : ["USER_Q", $key];
-    queryClient.invalidateQueries(_queryKey);
-    queryClient.refetchQueries(_queryKey);
+    queryClient.invalidateQueries({ queryKey: _queryKey });
+    queryClient.refetchQueries({ queryKey: _queryKey });
   };
 
   return [data, setState, clearState] as const;

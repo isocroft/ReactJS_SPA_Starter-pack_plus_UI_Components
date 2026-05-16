@@ -16,36 +16,35 @@ export const usePageDataLoader = () => {
     isError: false,
     isSuccess: true,
     error: null,
-    status: 'idle',
+    status: "idle",
     refetch: () => Promise.resolve({}),
-    fetchNextPage: () => ({})
-  /* @ts-ignore */
-  } as UseQueryResult<Array<{ id: number }>, Error>;
+    fetchNextPage: () => ({}),
+  };
 
-  return { home: query } as Record<string, UseQueryResult>;
+  return { home: query };
 };
 
 export const RoutePath = RoutePaths.HOME;
 
 export const PageHeader = ({
-  history
+  history,
 }: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
-  queries: Record<string, UseQueryResult | null>,
+  queries: Record<string, UseQueryResult | null>;
   user: {
     permission: string;
     bio?: Record<string, string | number>;
   };
 }) => {
   const BreadCrumbsList = useRoutingBreadCrumbsData(breadcrumbsMap, {
-    onNavigation ({ previousPathname }) {
+    onNavigation({ previousPathname }) {
       console.log("navigation=>prev: ", previousPathname);
-    }
+    },
   });
   return (
     <>
       <h2>{"Home"}</h2>
       <div id="breadcrumbs">
-       <BreadCrumbsList className="" />
+        <BreadCrumbsList className="" />
       </div>
     </>
   );
@@ -57,7 +56,9 @@ export const renderPage = (
   location: Location,
   queries: Record<string, UseQueryResult | null>,
   PageElement: React.LazyExoticComponent<
-    React.ComponentType<{ queries: Record<string, UseQueryResult | null> } | undefined>
+    React.ComponentType<
+      { queries: Record<string, UseQueryResult | null> } | undefined
+    >
   >
 ) => {
   return <PageElement key={location.key} queries={queries} />;
