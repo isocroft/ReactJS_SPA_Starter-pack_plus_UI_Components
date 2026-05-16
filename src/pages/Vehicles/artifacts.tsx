@@ -50,7 +50,7 @@ export const usePageDataLoader = (location: Location<unknown>) => {
     isSuccess: true,
     error: null,
     isError: false,
-    status: "idle",
+    status: "success",
     refetch: () => Promise.resolve({}),
     fetchNextPage: () => ({}),
   };
@@ -63,10 +63,18 @@ export const usePageDataLoader = (location: Location<unknown>) => {
 
 export const renderPage = (
   location: Location,
-  queries: Record<string, UseQueryResult<Vehicle, Error> | null>,
+  queries: Record<
+    string,
+    UseQueryResult<Array<Vehicle | undefined>, Error> | null
+  >,
   PageElement: React.LazyExoticComponent<
     React.ComponentType<
-      | { queries: Record<string, UseQueryResult<Vehicle, Error> | null> }
+      | {
+          queries: Record<
+            string,
+            UseQueryResult<Array<Vehicle | undefined>, Error> | null
+          >;
+        }
       | undefined
     >
   >,

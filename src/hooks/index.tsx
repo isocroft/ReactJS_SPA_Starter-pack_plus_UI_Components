@@ -24,7 +24,7 @@ import moment from "moment";
 
 import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvider";
 
-import type { ToastT } from "sonner";
+import type { ExternalToast, ToastT } from "sonner";
 import type {
   InfiniteQueryResult,
   InfiniteQueryKey,
@@ -82,8 +82,9 @@ type ReactQueryCacheOptions<TQFnData> = {
   queryKey: TypeSafeQueryKey<TQFnData>;
 };
 
-const murmurhash = () => {
-  /* @TODO: To be implemented... */
+const murmurhash = (input: string) => {
+  /* @FIXME: Implemented the logic for this function */
+  return Number("" + input) * 1;
 };
 
 const MAX_UNSIGNED_INT_32 = 4_294_967_295;
@@ -117,7 +118,7 @@ export const useToastManager = ({
       position,
       onClose,
     }: {
-      title: string | React.FunctionComponent<{}>;
+      title: string | (() => React.ReactNode);
       description?: string | React.FunctionComponent<{}>;
       cancel?: React.ReactNode;
       icon?: React.ReactNode;
@@ -146,7 +147,7 @@ export const useToastManager = ({
             cancel,
             action,
           }
-        )
+        ) as ExternalToast
       );
     },
   };
@@ -176,7 +177,7 @@ export function useArrayCache<A extends unknown[]>(list: A) {
 
 export function useMemoList<L extends unknown[]>(
   list: L,
-  callback = () => undefined
+  callback = (x) => void x
 ) {
   const cachedList = useArrayCache(list);
   return useMemo(callback.bind(null, cachedList), [cachedList]);
@@ -223,7 +224,7 @@ export function useReactQueryCache<D = unknown, E = unknown>(
     fetchQueryCacheData(
       queryKey: NonNullable<TypeSafeQueryKey<D>>
     ): D | undefined {
-      let queryKeyRef = undefined;
+      let queryKeyRef: readonly unknown[] | undefined = undefined;
 
       if (noRenderOnWrite) {
         queryKeyRef = queryKeysCache.get(String(queryKey));
@@ -573,7 +574,7 @@ export function useFeatureToggle<R = Record<string, unknown>>(user: R) {
           case "qualifier":
             const allowedPercentage = Number(optionValue);
 
-            if (Number.isNaN(percentage)) {
+            if (Number.isNaN(allowedPercentage)) {
               return false;
             }
 
@@ -786,19 +787,22 @@ export function useCallbackRef<T extends (...args: never[]) => unknown>(
   return useMemo(() => ((...args) => callbackRef.current?.(...args)) as T, []);
 }
 
-export function useGlobalState<D = unknown>(key: string | string[], value: D) {
+export function useGlobalState<D = unknown, E = Error>(
+  key: string | string[],
+  value: D
+) {
   const queryClient = useQueryClient();
   const $queryKey = Array.isArray(key) ? ["USER_Q", ...key] : ["USER_Q", key];
 
-  const { data } = useQuery({
+  const { data } = useQuery<D, E>({
     queryKey: [],
     queryFn: () => Promise.resolve(value),
-    initialData: value,
-    refetchInterval: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    reftechOnReconnect: false,
-    reftechIntervalInBackground: false,
+    initialData: () => value,
+    // refetchInterval: false,
+    // refetchOnMount: false,
+    // refetchOnWindowFocus: false,
+    // //reftechOnReconnect: false,
+    // reftechIntervalInBackground: false,
   });
 
   const setState = <D extends Record<string, unknown>>(

@@ -12,13 +12,35 @@ export const usePageDataLoader = () => {
   /* @HINT: Pretending to be a call to `useQuery()` */
   const query = {
     data: [{ id: 123 }, { id: 456 }],
-    isLoading: false,
-    isError: false,
-    isSuccess: true,
-    error: null,
-    status: "idle",
-    refetch: () => Promise.resolve({}),
+    isLoadingError: false as false,
+    isRefetchError: false as false,
+    isPlaceholderData: false as false,
+    isFetched: false as false,
+    isFetchedAfterMount: false as false,
+    isInitialLoading: false as false,
+    isPaused: false as false,
+    errorUpdatedAt: 0,
+    failureCount: 0,
+    failureReason: null,
+    errorUpdateCount: 0,
+    dataUpdatedAt: 0,
+    isRefetching: false as false,
+    isStale: false as false,
+    fetchStatus: "idle" as const,
+    promise: Promise.resolve([]),
+    status: "success" as const,
+    refetch: () =>
+      Promise.resolve({ data: [] } as unknown as UseQueryResult<
+        undefined[],
+        Error
+      >),
     fetchNextPage: () => ({}),
+    isPending: false as false,
+    isFetching: false as false,
+    isLoading: false as false,
+    isError: false as false,
+    isSuccess: true as true,
+    error: null,
   };
 
   return { home: query };

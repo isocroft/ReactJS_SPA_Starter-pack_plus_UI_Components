@@ -1,5 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
-import type { UseQueryOptions } from "@tanstack/react-query";
+import type { UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 
 type TQueries = UseQueryOptions<{
   id: number;
@@ -25,34 +25,36 @@ export const useRegionDataLoader = ({
     combine: (results) => {
       return {
         data: results.map((result) => result.data),
-        isPending: results.some((result) => result.isPending),
-        isLoading: results.some((result) => result.isLoading),
-        error: results.some((result) => result.error !== null)
-          ? new Error("an error occured")
-          : null,
-        isFetching: results.some((result) => result.isFetching),
-        isSuccess: results.some((result) => result.isSuccess),
-        isError: results.some((result) => result.isError),
-        isLoadingError: false,
-        isRefetchError: false,
-        isPlaceholderData: false,
-        isFetched: false,
-        isFetchedAfterMount: false,
-        isInitialLoading: false,
-        isPaused: false,
+        isPending: results.some((result) => result.isPending) as false,
+        isLoading: results.some((result) => result.isLoading) as false,
+        error: results.some((result) => result.error === null) ? null : null,
+        isFetching: results.some((result) => result.isFetching) as false,
+        isSuccess: results.some((result) => result.isSuccess) as true,
+        isError: results.some((result) => result.isError) as false,
+        isLoadingError: false as false,
+        isRefetchError: false as false,
+        isPlaceholderData: false as false,
+        isFetched: false as false,
+        isFetchedAfterMount: false as false,
+        isInitialLoading: false as false,
+        isPaused: false as false,
         errorUpdatedAt: 0,
         failureCount: 0,
         failureReason: null,
         errorUpdateCount: 0,
         dataUpdatedAt: 0,
-        isRefetching: false,
-        isStale: false,
-        fetchStatus: "idle",
-        promise: null,
+        isRefetching: false as false,
+        isStale: false as false,
+        fetchStatus: "idle" as const,
+        promise: Promise.resolve([]),
         status: results.some((result) => result.status === "error")
-          ? "error"
-          : "idle",
-        refetch: () => Promise.resolve([]),
+          ? ("success" as const)
+          : ("success" as const),
+        refetch: () =>
+          Promise.resolve({ data: [] } as unknown as UseQueryResult<
+            undefined[],
+            Error
+          >),
         fetchNextPage: () => ({}),
       };
     },

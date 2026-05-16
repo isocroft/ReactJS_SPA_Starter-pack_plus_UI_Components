@@ -13,8 +13,10 @@ import type { JSX } from "react";
  * @returns {Object}
  */
 export const lazyWithRetry = <
-  Props extends {
-    queries: Record<string, UseQueryResult | null>;
+  D extends unknown,
+  E extends Error,
+  Props = {
+    queries: Record<string, UseQueryResult<D, E> | null>;
   }
 >(
   componentImport: () => Promise<{
@@ -77,9 +79,11 @@ export const lazyWithRetry = <
  * @returns {Promise<*>}
  */
 export function componentLoader<
-  M extends {
+  D extends unknown,
+  E extends Error,
+  M = {
     default: (injected?: {
-      queries: Record<string & {}, UseQueryResult | null>;
+      queries: Record<string, UseQueryResult<D, E> | null>;
     }) => JSX.Element | null;
   }
 >(lazyComponent: () => Promise<M>, attemptsLeft = 3) {
@@ -93,7 +97,7 @@ export function componentLoader<
             reject(error);
             return;
           }
-          componentLoader(lazyComponent, attemptsLeft - 1).then(
+          componentLoader<D, E, M>(lazyComponent, attemptsLeft - 1).then(
             resolve,
             reject
           );

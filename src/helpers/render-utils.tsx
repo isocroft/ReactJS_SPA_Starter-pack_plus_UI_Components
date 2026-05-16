@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import type { Location } from "history";
 
-import { twMerge } from "tailwind-merge";
+import { ClassNameValue, twMerge } from "tailwind-merge";
 
 /**
  * composeClassesModule:
@@ -11,8 +11,8 @@ import { twMerge } from "tailwind-merge";
  *
  * @returns {String}
  */
-export const composeClassesModule = (...styles: unknown[]): string => {
-  return Array.from(new Set(styles.filter((item) => item).join(' ')));
+export const composeClassesModule = (...styles: ClassNameValue[]): string => {
+  return Array.from(new Set(styles.filter((item) => item).join(" "))).join(" ");
 };
 
 /* @EXAMPLE: composeClassesModule("form-date-picker", "sr-inert-only", "panel-wrapper") */
@@ -24,7 +24,7 @@ export const composeClassesModule = (...styles: unknown[]): string => {
  *
  * @returns {String}
  */
-export const composeClassTailwind = (...styles: unknown[]): string => {
+export const composeClassesTailwind = (...styles: ClassNameValue[]): string => {
   return twMerge(...styles);
 };
 
@@ -40,13 +40,16 @@ export const composeClassTailwind = (...styles: unknown[]): string => {
  *
  */
 export const htmlEncode = (rawText: string): string => {
-  return (rawText || "").replace(/[\u00A0-\u9999<>&]/gim, function (mark: string) {
-    return '&#' + mark.charCodeAt(0) + ';'
-  })
+  return (rawText || "").replace(
+    /[\u00A0-\u9999<>&]/gim,
+    function (mark: string) {
+      return "&#" + mark.charCodeAt(0) + ";";
+    }
+  );
 };
 
 /*!
- * @EXAMPLE: 
+ * @EXAMPLE:
  *
  * const encodedHTML = htmlEncode('<h1><img onerror="javascript:return null" /></h1>');
  *
@@ -64,14 +67,17 @@ export const htmlEncode = (rawText: string): string => {
  *
  */
 export const htmlDecode = (encodedText: string): string | null => {
-  const doc = new window.DOMParser().parseFromString(encodedText || "&nbsp;", 'text/html')
-  const docElem = doc.documentElement as Node
- 
-  return docElem.textContent
+  const doc = new window.DOMParser().parseFromString(
+    encodedText || "&nbsp;",
+    "text/html"
+  );
+  const docElem = doc.documentElement as Node;
+
+  return docElem.textContent;
 };
 
 /*!
- * @EXAMPLE: 
+ * @EXAMPLE:
  *
  * const decodedHTML = htmlDecode("&lt;h1&gt;Hi there!&lt;/h1&gt;");
  *
@@ -92,16 +98,15 @@ export const htmlDecode = (encodedText: string): string | null => {
  */
 export const formatHTMLEntity = (
   textValue: string,
-  entityHexVal: string,
-  prefix: string = ''
+  entityHexValue: string,
+  prefix: string = ""
 ): string => {
-  const isNumeric = /^\d{2,5}$/.test(entityHexValue)
-  const number = parseInt(isNumeric ? "8" : entityHexValue, 16)
- 
+  const isNumeric = /^\d{2,5}$/.test(entityHexValue);
+  const number = parseInt(isNumeric ? "8" : entityHexValue, 16);
+
   return (
-    (textValue ? textValue + ' ' : '') +
-    prefix + String.fromCharCode(number)
-  )
+    (textValue ? textValue + " " : "") + prefix + String.fromCharCode(number)
+  );
 };
 
 /* @EXAMPLE: <p className="wrapper">{formatHTMLEntity('View Full Project', '279D')}</p> */
@@ -115,7 +120,10 @@ export const formatHTMLEntity = (
  *
  * @returns {Boolean}
  */
-export const hasChildren = (children: React.ReactNode | React.ReactNode[], count: number): boolean => {
+export const hasChildren = (
+  children: React.ReactNode | React.ReactNode[],
+  count: number
+): boolean => {
   if (!Boolean(children) && count === 0) {
     return true;
   }
@@ -163,27 +171,41 @@ export const removeFromChildren = (
  * retrieveChildComponent:
  *
  */
-function retrieveChildComponent<A = any, T extends (...args: A[]) => React.JSX.Element>(
+function retrieveChildComponent<
+  A extends keyof React.JSX.IntrinsicElements,
+  T extends (...args: A[]) => React.JSX.Element
+>(
   children: React.ReactNode | React.ReactNode[],
   type: T,
-  { mode = "module", propsOverride = { } }: { mode: "utility" | "module", propsOverride?: Partial<Parameters<T>[0]> }
+  {
+    mode = "module",
+    propsOverride = {},
+  }: {
+    mode: "utility" | "module";
+    propsOverride?: Partial<React.ComponentPropsWithRef<Parameters<T>[0]>>;
+  }
 ) {
   const childrenArr = React.Children.toArray(children);
   let child = childrenArr.find(
-    (child) => React.isValidElement(child) && child.type === type
+    (child) =>
+      React.isValidElement<React.ComponentPropsWithRef<A>>(child) &&
+      child.type === type
   ) as React.ReactElement<
-    Parameters<T>[0],
+    React.ComponentPropsWithRef<A>,
     string | React.JSXElementConstructor<A>
   >;
 
   if (child && propsOverride) {
     const { className, ...rest } = child.props;
-    child = React.cloneElement(child, {
-      className: mode === "module"
+    const newClassName =
+      mode === "module"
         ? composeClassesModule(className, propsOverride?.className || "")
-        : composeClassesTailwind(className, propsOverride?.className || ""),
+        : composeClassesTailwind(className, propsOverride?.className || "");
+
+    child = React.cloneElement(child, {
+      className: newClassName,
       ...rest,
-    });
+    } as React.ComponentPropsWithRef<A>);
   }
 
   return child;
@@ -193,29 +215,42 @@ function retrieveChildComponent<A = any, T extends (...args: A[]) => React.JSX.E
  * retrieveChildComponennts:
  *
  */
-export function retrieveChildComponents<A = any, T extends (...args: A[]) => React.JSX.Element>(
+export function retrieveChildComponents<
+  A extends keyof React.JSX.IntrinsicElements,
+  T extends (...args: A[]) => React.JSX.Element
+>(
   children: React.ReactNode | React.ReactNode[],
   type: T,
-  { mode = "module", propsOverride = { } }: { mode: "utility" | "module", propsOverride?: Partial<Parameters<T>[0]> }
+  {
+    mode = "module",
+    propsOverride = {},
+  }: {
+    mode: "utility" | "module";
+    propsOverride?: Partial<React.ComponentPropsWithRef<Parameters<T>[0]>>;
+  }
 ) {
-  
   const childrenArr = React.Children.toArray(children);
   const child = (
     childrenArr.filter(
-      (child) => React.isValidElement(child) && child.type === type
+      (child) =>
+        React.isValidElement<React.ComponentPropsWithRef<A>>(child) &&
+        child.type === type
     ) as React.ReactElement<
-      Parameters<T>[0],
+      React.ComponentPropsWithRef<A>,
       string | React.JSXElementConstructor<A>
     >[]
   ).map((child) => {
     if (child && propsOverride) {
       const { className, ...rest } = child.props;
-      child = React.cloneElement(child, {
-        className: mode === "module"
+      const newClassName =
+        mode === "module"
           ? composeClassesModule(className, propsOverride?.className || "")
-          : composeClassesTailwind(className, propsOverride?.className || ""),
+          : composeClassesTailwind(className, propsOverride?.className || "");
+
+      child = React.cloneElement(child, {
+        className: newClassName,
         ...rest,
-      });
+      } as React.ComponentPropsWithRef<A>);
     }
     return child;
   });
@@ -238,9 +273,7 @@ export const isSubChild = <C extends React.ReactNode>(
       return "";
     }
     /* @ts-ignore */
-    return "render" in $child?.type
-      ? $child?.type?.render?.name
-      : $child?.type;
+    return "render" in $child?.type ? $child?.type?.render?.name : $child?.type;
   };
 
   return (
@@ -260,13 +293,13 @@ export const renderBreadcrumbs = ({
   breadcrumbsMap = {},
   className = "breadcrumbList",
   currentLocation = null,
-  breadcrumbArrowNode = <span>{">"}</span>
+  breadcrumbArrowNode = <span>{">"}</span>,
 }: {
-  breadcrumbs: Location[],
-  breadcrumbsMap: Record<string, string>,
-  className: string,
-  currentLocation: Location | null,
-  breadcrumbArrowNode: React.ReactElement
+  breadcrumbs: Location[];
+  breadcrumbsMap: Record<string, string>;
+  className: string;
+  currentLocation: Location | null;
+  breadcrumbArrowNode: React.ReactElement;
 }) => {
   const count = breadcrumbs.length;
   return (
@@ -296,7 +329,11 @@ export const renderBreadcrumbs = ({
                   marginLeft: "5px",
                 }}
               >
-                <Link key={String(index)} to={breadcrumb.pathname} isActive={breadcrumb.pathname === currentLocation?.pathname}>
+                <Link
+                  key={String(index)}
+                  to={breadcrumb.pathname}
+                  isActive={breadcrumb.pathname === currentLocation?.pathname}
+                >
                   {breadcrumbsMap[breadcrumb.pathname]}
                 </Link>
               </li>

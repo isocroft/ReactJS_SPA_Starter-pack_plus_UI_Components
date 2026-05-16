@@ -7,7 +7,10 @@ import type { Vehicle } from "../../components/UI_Regions/VehicleParts/index";
 const Vehicles = (
   injected:
     | {
-        queries: Record<string, UseQueryResult<Array<Vehicle>, Error>>;
+        queries: Record<
+          string,
+          UseQueryResult<Array<Vehicle | undefined>, Error> | null
+        >;
       }
     | undefined
 ) => {

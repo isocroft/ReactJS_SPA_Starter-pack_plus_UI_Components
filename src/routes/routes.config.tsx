@@ -44,7 +44,7 @@ interface DecoratedComponentProps<
   >;
   useDataLoader: (
     location: Location
-  ) => Record<string, UseQueryResult<D, E> | null>;
+  ) => Record<string & {}, UseQueryResult<D, E> | null>;
   renderProp: (
     location: Location,
     queries: Record<string, UseQueryResult<D, E> | null>,
@@ -131,10 +131,7 @@ export const ProtectedRoutes: RoutesInterface[] = [
     exact: true,
     isPrivate: true,
     component: () => (
-      <PageRenderer<
-        Array<{ id: number; make: string; partsCount: number } | undefined>,
-        Error
-      >
+      <PageRenderer
         Header={VehicleRoute.Header}
         renderProp={VehicleRoute.renderProp}
         Title={VehicleRoute.Title}

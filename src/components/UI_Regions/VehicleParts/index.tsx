@@ -6,7 +6,10 @@ export type Vehicle = { id: number; make: string; partsCount: number };
 const VehicleParts = ({
   queries,
 }: {
-  queries: Record<"vehicleParts", UseQueryResult<Vehicle[], Error>>;
+  queries: Record<
+    "vehicleParts",
+    UseQueryResult<Array<Vehicle | undefined>, Error> | null
+  >;
 }) => {
   if (!queries || !queries.vehicleParts) {
     return null;
