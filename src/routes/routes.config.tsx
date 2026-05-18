@@ -32,7 +32,8 @@ interface DecoratedComponentProps<
     Pick<RouteComponentProps<{}, StaticContext, T>, "history"> & {
       queries: Record<string, UseQueryResult<D, E> | null>;
       user: {
-        permission: string;
+        roles: string[];
+        permissions: string[];
         bio?: Record<string, string | number>;
       };
     }
@@ -42,9 +43,9 @@ interface DecoratedComponentProps<
       { queries: Record<string, UseQueryResult<D, E> | null> } | undefined
     >
   >;
-  useDataLoader: (
+  useDataLoader(
     location: Location
-  ) => Record<string & {}, UseQueryResult<D, E> | null>;
+  ): Record<string & {}, UseQueryResult<D, E> | null>;
   renderProp: (
     location: Location,
     queries: Record<string, UseQueryResult<D, E> | null>,
@@ -54,7 +55,8 @@ interface DecoratedComponentProps<
       >
     >,
     user: {
-      permission: string;
+      roles: string[];
+      permissions: string[];
       bio?: Record<string, string | number>;
     }
   ) => JSX.Element | null;
@@ -106,7 +108,14 @@ const PageRenderer = <D extends unknown, E extends Error>({
         history={history}
         queries={queries}
         user={getFromStorage("user", {
-          permission: "owner",
+          roles: ["owner"],
+          permissions: [
+            "permission.grant",
+            "resource.delete",
+            "workflow.approve",
+            "permission.revoke",
+            "access.approve",
+          ],
           bio: {},
         })}
       />
@@ -116,7 +125,14 @@ const PageRenderer = <D extends unknown, E extends Error>({
           queries,
           PageElement,
           getFromStorage("user", {
-            permission: "owner",
+            roles: ["owner"],
+            permissions: [
+              "permission.grant",
+              "resource.delete",
+              "workflow.approve",
+              "permission.revoke",
+              "access.approve",
+            ],
             bio: {},
           })
         )}

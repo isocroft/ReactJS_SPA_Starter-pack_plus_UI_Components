@@ -1,11 +1,43 @@
 import { useQueries } from "@tanstack/react-query";
 import type { UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 
-type TQueries = UseQueryOptions<{
+type VehiclePart = {
   id: number;
   make: string;
   partsCount: number;
-}>[];
+};
+type TQueries = UseQueryOptions<VehiclePart>[];
+
+/* @USAGE: tanstack hook signature for `useQueries` may vary
+  based on how you want to use  the  result
+*/
+/* 
+import { useQueries, UseQueryOptions } from '@tanstack/react-query'      
+      
+const result = useQueries<Array<string>>({
+  queries: [
+    {
+      queryKey: ['key1'],
+      queryFn: () => 'string',
+    },
+  ],
+})
+
+result // type='UseQueryResult<unknown, Error>[]'
+
+// Current solution
+type TQueries = UseQueryOptions<string>[]
+const arrayResult = useQueries<TQueries>({
+  queries: [
+    {
+      queryKey: ['key1'],
+      queryFn: () => 'string',
+    },
+  ],
+}) 
+
+arrayResult // type='(DefinedUseQueryResult<string, Error> | QueryObserverLoadingErrorResult<string, Error> | QueryObserverLoadingResult<string, Error> | QueryObserverPendingResult<string, Error> | QueryObserverPlaceholderResult<string, Error>)[]'
+*/
 
 export const useRegionDataLoader = ({
   vehicleIds,
@@ -47,12 +79,10 @@ export const useRegionDataLoader = ({
         isStale: false as false,
         fetchStatus: "idle" as const,
         promise: Promise.resolve([]),
-        status: results.some((result) => result.status === "error")
-          ? ("success" as const)
-          : ("success" as const),
+        status: "success" as const,
         refetch: () =>
           Promise.resolve({ data: [] } as unknown as UseQueryResult<
-            undefined[],
+            VehiclePart[],
             Error
           >),
         fetchNextPage: () => ({}),

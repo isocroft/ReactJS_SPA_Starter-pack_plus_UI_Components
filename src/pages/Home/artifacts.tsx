@@ -8,10 +8,10 @@ import { breadcrumbsMap } from "../../routes/routes.breadcrumbs.map";
 import { useRoutingBreadCrumbsData } from "../../layouts/GlobalRoutingProvider";
 import { RoutePaths } from "../../routes/routes.paths";
 
-export const usePageDataLoader = () => {
+export const usePageDataLoader = (location: Location<unknown>) => {
   /* @HINT: Pretending to be a call to `useQuery()` */
   const query = {
-    data: [{ id: 123 }, { id: 456 }],
+    data: [{ id: 123 }, { id: 456 }] as Array<{ id: number }>,
     isLoadingError: false as false,
     isRefetchError: false as false,
     isPlaceholderData: false as false,
@@ -27,33 +27,40 @@ export const usePageDataLoader = () => {
     isRefetching: false as false,
     isStale: false as false,
     fetchStatus: "idle" as const,
-    promise: Promise.resolve([]),
+    promise: Promise.resolve([{ id: 123 }, { id: 456 }] as Array<{
+      id: number;
+    }>),
     status: "success" as const,
     refetch: () =>
-      Promise.resolve({ data: [] } as unknown as UseQueryResult<
-        undefined[],
+      Promise.resolve({ data: [{ id: 376 }] } as unknown as UseQueryResult<
+        Array<{ id: number }>,
         Error
       >),
     fetchNextPage: () => ({}),
     isPending: false as false,
     isFetching: false as false,
     isLoading: false as false,
+    error: null,
     isError: false as false,
     isSuccess: true as true,
-    error: null,
-  };
+  } as UseQueryResult<Array<{ id: number }>, Error>;
 
-  return { home: query };
+  return {
+    home: query,
+  };
 };
 
 export const RoutePath = RoutePaths.HOME;
 
 export const PageHeader = ({
   history,
+  queries,
+  user,
 }: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
-  queries: Record<string, UseQueryResult | null>;
+  queries: Record<"home", UseQueryResult<Array<{ id: number }>, Error> | null>;
   user: {
-    permission: string;
+    roles: string[];
+    permissions: string[];
     bio?: Record<string, string | number>;
   };
 }) => {
@@ -76,10 +83,16 @@ export const PageTitle = "Home *";
 
 export const renderPage = (
   location: Location,
-  queries: Record<string, UseQueryResult | null>,
+  queries: Record<string, UseQueryResult<Array<{ id: number }>, Error> | null>,
   PageElement: React.LazyExoticComponent<
     React.ComponentType<
-      { queries: Record<string, UseQueryResult | null> } | undefined
+      | {
+          queries: Record<
+            string,
+            UseQueryResult<Array<{ id: number }>, Error> | null
+          >;
+        }
+      | undefined
     >
   >
 ) => {

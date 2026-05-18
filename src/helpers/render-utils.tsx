@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import type { Location } from "history";
 
 import { ClassNameValue, twMerge } from "tailwind-merge";
@@ -329,13 +329,22 @@ export const renderBreadcrumbs = ({
                   marginLeft: "5px",
                 }}
               >
-                <Link
+                <NavLink
                   key={String(index)}
                   to={breadcrumb.pathname}
-                  isActive={breadcrumb.pathname === currentLocation?.pathname}
+                  isActive={(match, location) => {
+                    if (!match) return false;
+                    if (currentLocation) {
+                      return breadcrumb.pathname === currentLocation.pathname;
+                    }
+                    return breadcrumb.pathname === location.pathname;
+                    // Example: Only active if a specific query param exists
+                    // const searchParams = new URLSearchParams(location.search);
+                    // return searchParams.get("view") === "detailed";
+                  }}
                 >
                   {breadcrumbsMap[breadcrumb.pathname]}
-                </Link>
+                </NavLink>
               </li>
               {index === count - 1 ? null : breadcrumbArrowNode}
             </div>

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { Span } from "@opentelemetry/api";
 
 export {};
@@ -8,7 +8,9 @@ type VoidOrUndefinedOnly = void | { [UNDEFINED_VOID_ONLY]: never };
 
 declare module "react" {
   namespace React {
-    type TransitionFunction = () => void | Promise<void>;
+    type TransitionFunction = () =>
+      | VoidOrUndefinedOnly
+      | Promise<VoidOrUndefinedOnly>;
   }
 }
 

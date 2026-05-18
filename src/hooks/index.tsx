@@ -26,10 +26,10 @@ import { FeaturesToggleContext } from "../shared/providers/FeaturesToggleProvide
 
 import type { ExternalToast, ToastT } from "sonner";
 import type {
-  InfiniteQueryResult,
-  InfiniteQueryKey,
-  InfiniteQueryFunction,
-  InfiniteQueryOptions,
+  DefinedInitialDataInfiniteOptions,
+  UseInfiniteQueryResult,
+  QueryFunction,
+  UseInfiniteQueryOptions,
   InvalidateQueryFilters,
   UseMutationOptions,
   UseQueryOptions,
@@ -41,10 +41,16 @@ export type FeatureToggleHandlers = {
   isEnabledFor: (feature: string, segments?: string[]) => boolean;
 };
 
-export type InfiniteScrollQueryOptions<TK, TR, TMV, TE> = {
-  queryKey: InfiniteQueryKey<TK>;
-  queryFn?: InfiniteQueryFunction<TR, TK, TMV>;
-  config?: InfiniteQueryOptions<TR, TMV, TE>;
+export type InfiniteScrollQueryOptions<
+  TK extends unknown[],
+  TR,
+  TMV,
+  TD,
+  TE
+> = {
+  queryKey: QueryKey;
+  queryFn?: QueryFunction<TR, TK, TMV>;
+  config?: UseInfiniteQueryOptions<TR, TE, TD, TK, TMV>;
 };
 
 type TypeSafeQueryKey<TQueryFnData> = UseQueryOptions<TQueryFnData>["queryKey"];
@@ -384,7 +390,7 @@ export const useRouteQueryPrefetch = ({
         window.location.origin
       );
       /* @ts-ignore */
-      return handlePathNavigation(pathname, queryOptions);
+      handlePathNavigation(pathname, queryOptions);
     });
   };
 
@@ -466,8 +472,8 @@ export const useOptimisticMutation = <
   });
 };
 
-export function useInfiniteScrollForQueries<K, D, T, E = Error>(
-  queryOptions: InfiniteScrollQueryOptions<K, D, T, E>,
+export function useInfiniteScrollForQueries<D, E = Error>(
+  queryOptions: DefinedInitialDataInfiniteOptions<D, E>,
   scrollOptions = { rootMargin: "0px", threshold: 1 }
 ) {
   const { fetchNextPage, hasNextPage, ...query } =
@@ -488,7 +494,7 @@ export function useInfiniteScrollForQueries<K, D, T, E = Error>(
     ...query,
     hasNextPage,
     fetchNextPage,
-  } as InfiniteQueryResult<D, T, E>;
+  } as UseInfiniteQueryResult<D, E>;
 
   return [queryResult, domElementRef] as const;
 }
@@ -606,9 +612,9 @@ export const useCurrentTime = (
       setCurrentTime(moment().format(formatting));
     };
 
-    let interval: NodeJS.Timeout | null = null;
+    let interval: NodeJS.Timeout | undefined = undefined;
 
-    if (interval === null) {
+    if (interval === undefined) {
       /* @HINT: Update time immediately on mount */
       updateTime();
     }

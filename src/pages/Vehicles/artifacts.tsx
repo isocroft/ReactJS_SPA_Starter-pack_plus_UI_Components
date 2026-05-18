@@ -15,10 +15,16 @@ export const RoutePath = RoutePaths.VEHICLES;
 
 export const PageHeader = ({
   history,
+  queries,
+  user,
 }: Pick<RouteComponentProps<{}, StaticContext, object>, "history"> & {
-  queries: Record<string, UseQueryResult<Vehicle, Error> | null>;
+  queries: Record<
+    string,
+    UseQueryResult<Array<Vehicle | undefined>, Error> | null
+  >;
   user: {
-    permission: string;
+    roles: string[];
+    permissions: string[];
     bio?: Record<string, string | number>;
   };
 }) => {
@@ -78,14 +84,18 @@ export const renderPage = (
       | undefined
     >
   >,
-  user: { permission: string; bio?: Record<string, string | number> }
+  user: {
+    roles: string[];
+    permissions: string[];
+    bio?: Record<string, string | number>;
+  }
 ) => {
   const TriggerErrorBoundary = () => {
     throw new Error("Invalid page request");
   };
 
   if (location.pathname === RoutePath) {
-    switch (user.permission) {
+    switch (user.permissions[0]) {
       case "admin":
       case "owner":
         return <PageElement key={location.key} queries={queries} />;
