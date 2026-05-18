@@ -9,7 +9,7 @@ import { withRouter } from "react-router";
 
 // import packageInfo from '../../package.json';
 
-/*
+/* --- Take this into the <PageRenderer /> component in 'routes/routes.config.tsx'
 if (config.PROD) {
   Bugsnag.setUser(
     id,
