@@ -1,6 +1,8 @@
 import React from "react";
 import { Span } from "@opentelemetry/api";
 
+import type { jest as globalJest } from "@jest/globals";
+
 export {};
 
 declare const UNDEFINED_VOID_ONLY: unique symbol;
@@ -58,6 +60,10 @@ type NewRelicTraceData = {
 };
 
 declare global {
+  namespace jest {
+    const mocked: typeof globalJest.mocked;
+  }
+
   namespace React {
     type TransitionFunction = () =>
       | VoidOrUndefinedOnly

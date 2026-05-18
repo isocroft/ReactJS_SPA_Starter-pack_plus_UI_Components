@@ -4,7 +4,11 @@
     ],
     "include": [
         "src",
-        "./typings/react-busser-components.d.ts"
+        "tests",
+        "./typings/react-busser-components.d.ts",
+        "reportWebTraces.ts",
+        "reportWebVitals.ts",
+        "setupTestHelper.ts"
     ],
     "compilerOptions": {
         "strict": true,

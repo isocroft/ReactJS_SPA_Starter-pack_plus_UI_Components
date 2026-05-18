@@ -111,13 +111,13 @@ async function withTracing<T extends unknown>(
  let currentSpan: Span | null = null;
  
  if (window.bindingSpan) {
-   const rootContext = api.trace.setSpan(context.active(), window.bindingSpan);
+   const rootContext = api.trace.setSpan(api.context.active(), window.bindingSpan);
    currentSpan = tracer.startSpan(spanName, undefined, rootContext);
  } else {
    currentSpan = tracer.startSpan(spanName);
  }
 
-  return context.with(trace.setSpan(context.active(), currentSpan), async () => {
+  return api.context.with(api.trace.setSpan(api.context.active(), currentSpan), async () => {
     let result: {} | null = null;
     try {
       if (isAsync(workUnit)) {
