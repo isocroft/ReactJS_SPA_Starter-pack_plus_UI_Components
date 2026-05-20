@@ -18,7 +18,83 @@ import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions"
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
 import { XMLHttpRequestInstrumentation } from "@opentelemetry/instrumentation-xml-http-request";
 
+import type { SpanAttributes } from "@opentelemetry/api";
+
 import { envDevelopment, envTest } from "./src/shared/constants";
+
+const isPrimitive = (target) => {
+  return ["number", "boolean", "string", "bigint"].includes(typeof target);
+};
+
+const isError = (
+  target: unknown
+): target is {
+  name: string;
+  code?: number | string | symbol;
+  message: string;
+} => {
+  if (!(target instanceof Object)) {
+    return false;
+  }
+
+  if (target instanceof Error) {
+    return true;
+  }
+
+  return (
+    typeof target["code"] === "number" ||
+    typeof target["code"] === "string" ||
+    typeof target["code"] === "symbol" ||
+    target["_tag"] ||
+    (typeof target["name"] === "string" &&
+      typeof target["message"] === "string")
+  );
+};
+
+const stringify = (target?: unknown | null) => {
+  if (typeof target === "string") {
+    return target;
+  }
+
+  try {
+    return JSON.stringify(target);
+  } catch (error) {
+    return String(target);
+  }
+};
+
+const normalizeAsError = (
+  target: unknown,
+  { cause = undefined } = {} as { cause?: Error }
+) => {
+  if (isError(target)) {
+    return target;
+  }
+
+  if (cause === null) {
+    cause = undefined;
+  }
+
+  return isPrimitive(target)
+    ? new Error(stringify(target), { cause })
+    : new Error(`Something went wrong`, { cause });
+};
+
+const isPromise = (object?: { then?: unknown } | null) => {
+  return Boolean(
+    object &&
+      object instanceof Object &&
+      (typeof object.then === "function" ||
+        Object.prototype.toString.call(object) === "[object Promise]")
+  );
+};
+
+const isAsync = (callback: Function) => {
+  const string = callback.toString().trim();
+  return !!(
+    string.match(/^async /) || callback.constructor.name === "AsyncFunction"
+  );
+};
 
 const provider = new WebTracerProvider({
   resource: new Resource({
@@ -85,22 +161,6 @@ registerInstrumentations({
   ],
 });
 
-const isPromise = (object?: { then?: unknown } | null) => {
-  return Boolean(
-    object &&
-      object instanceof Object &&
-      (typeof object.then === "function" ||
-        Object.prototype.toString.call(object) === "[object Promise]")
-  );
-};
-
-const isAsync = (callback: Function) => {
-  const string = callback.toString().trim();
-  return !!(
-    string.match(/^async /) || callback.constructor.name === "AsyncFunction"
-  );
-};
-
 const getNewSpan = ({
   spanName,
   asClient = false,
@@ -121,23 +181,32 @@ const getNewSpan = ({
 const execOnActiveSpan = <Args extends unknown, RType = any>(
   spanName: string,
   workLoad: (...args: Args[]) => RType,
+  attributes: SpanAttributes,
   ...args: Args[]
 ) => {
-  return webTracer.startActiveSpan(spanName, (span) => {
-    try {
-      const result = workLoad.apply(null, args);
-      span.setStatus({ code: SpanStatusCode.OK });
-      return result;
-    } catch (err) {
-      span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: err instanceof Error ? err.message : "An error occured!",
-      });
-      throw err;
-    } finally {
-      span.end();
+  return webTracer.startActiveSpan(
+    spanName,
+    { attributes, startTime: new Date() },
+    (span) => {
+      try {
+        const result = workLoad.apply(null, args);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return result;
+      } catch (err) {
+        const error = normalizeAsError(err);
+        if (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: error.message,
+          });
+        }
+        throw error;
+      } finally {
+        span.end();
+      }
     }
-  });
+  );
 };
 
 async function withTracing<T extends unknown>(
@@ -177,14 +246,15 @@ async function withTracing<T extends unknown>(
         }
         return result;
       } catch (error) {
-        const workUnitError = error as Error;
+        const workUnitError = normalizeAsError(error);
         if (currentSpan) {
+          currentSpan.recordException(workUnitError as Error);
           currentSpan.setStatus({
             code: SpanStatusCode.ERROR,
             message: workUnitError.message,
           });
         }
-        throw error;
+        throw workUnitError;
       } finally {
         if (currentSpan) {
           currentSpan.end();
