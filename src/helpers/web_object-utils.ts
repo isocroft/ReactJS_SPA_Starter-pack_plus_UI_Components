@@ -1,14 +1,22 @@
 /**
- * convertObjToFormData:
+ * convertRecordToFormData:
+ *
+ * @param {Object} record
  *
  * @returns {Object}
  *
  */
-export const convertObjToFormData = (obj: { [key: string]: string | Blob }) => {
+export const convertRecordToFormData = (record: { [key: string]: string | Blob }) => {
+  if (!(Boolean(record)) || !(record instanceof Object)) {
+    throw new TypeError(
+      "convertRecordToFormData(...): argument 1 is not a object"
+    );
+  }
+  
   const formData = new FormData();
-  for (const key in obj) {
-    if (obj[key]) {
-      formData.append(key, obj[key] as string | Blob);
+  for (const key in record) {
+    if (record[key]) {
+      formData.append(key, record[key] as string | Blob);
     }
   }
 
@@ -18,14 +26,14 @@ export const convertObjToFormData = (obj: { [key: string]: string | Blob }) => {
 /*!
  * @EXAMPLE:
  *
- * const { formData } = convertObjToFormData({
+ * const { formData } = convertRecordToFormData({
  *   name: "Wilson Ukachukwu",
  *   pager: new File(["foo"], "foo.txt", {
  *     type: "text/plain",
  *   })
  * })
  *
- * console.log(formData) //
+ * console.log(formData) // FormData {}
  *
  */
 
@@ -68,7 +76,6 @@ export function composeEventHandlers<E extends Event>(
  * @returns {Boolean}
  *
  */
-
 export const isLocalHost = (): boolean => {
   return window.location.port === ""
     ? ["http://localhost", "http://127.0.0.1"].includes(
@@ -147,7 +154,7 @@ export const validateWebPageURL = (urlString: string): boolean => {
  */
 
 /**
- * bloToataURL:
+ * bloToDataURL:
  *
  * @param {Blob} blob
  *
@@ -168,9 +175,15 @@ export const blobToDataURL = (blob: Blob): Promise<string> => {
 /*!
  * @EXAMPLE:
  *
- * blobToDataURL(new Blob(['hello!'], { type: "text/plain" })).then(
+ * blobToDataURL(new Blob(['Hello World!'], { type: "text/plain" })).then(
  *   (dataURL) => {
+ *   console.log(dataURL) // "data:text/plain,Hello%20World!"
+ * });
  *
+ *
+ * blobToDataURL(new Blob(new Uint8Array([225, 120, 90]), { type: "image/gif" })).then(
+ *   (dataURL) => {
+ *   console.log(dataURL) // "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
  * });
  *
  */
@@ -207,7 +220,7 @@ export const dataURLtoObjectURL = (dataURL?: string): string => {
  *   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
  * )
  *
- * console.log(objectURL) // ""
+ * console.log(objectURL) // "blob:https://coredium.com/aef24cd56bc355fea22b1"
  *
  */
 
@@ -240,6 +253,7 @@ export const dataURLtoObjectBlob = (dataURL?: string): Blob => {
  * const fileBlob = dataURItoObjectBlob(
  *  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
  * );
+ *
  * console.log(fileBlob); // Blob {size: 68, type: 'image/png'}
  */
 
@@ -331,7 +345,14 @@ export const base64StringToBlob = (
   return new Blob(byteArrays, { type: $contentType });
 };
 
-/* @EXAMPLE: const urlString = blobToDataURL(new Blob(['hello world'], { type: 'text/plain' })) */
+/*!
+ * @EXAMPLE:
+ *
+ * const urlString = blobToDataURL(new Blob(['hello world'], { type: 'text/plain' }));
+ *
+ * console.log(urlString) //
+ *
+ */
 
 /**
  * getJpegBlob:
@@ -442,57 +463,87 @@ export const isBase64String = (base64String: string): boolean => {
     : base64String.length % 4 === 0 && base64Regex.test(base64String);
 };
 
-/* @EXAMPLE: isBase64String("") */
+/*!
+ * @EXAMPLE:
+ * 
+ * const isStringified = isBase64String("");
+ *
+ * console.log(isStringified) //
+ *
+ */
 
 /**
  * getEmbedUrl:
  *
- * @param {String | Null} url
+ * @param {String} url
  * @param {Boolean} autoPlay
- *
  *
  * @returns {String}
  *
  */
-export const getEmbedUrl = (url: string | null, autoPlay = false): string => {
-  if (!url || typeof url !== "string") return "";
+export const getEmbedUrl = (url: string, autoPlay = false): string => {
+  if (!(Boolean(url)) || typeof url !== "string") {
+  	throw new TypeError(
+  	  "getEmbedUrl(...): argument 1 is not a string"
+  	);
+  }
+
+  const $autoPlay = typeof autoPlay === "boolean" ? autoPlay : Boolean(autoPlay);
+  
   try {
     const parsedUrl = new URL(url);
     const domain = parsedUrl.hostname.replace("www.", "").replace("m.", "");
     let videoId = "";
     if (domain === "youtube.com" || domain === "youtu.be") {
       if (parsedUrl.pathname.includes("/embed/")) {
-        return `${url}${autoPlay ? "?&autoplay=1&mute=1" : ""}`;
+        return `${url}${$autoPlay ? "?&autoplay=1&mute=1" : ""}`;
       }
       if (parsedUrl.pathname.includes("/watch")) {
         videoId = parsedUrl.searchParams.get("v") || "";
+        if (videoId === "") throw new SyntaxError("`videoId` is an empty string");
         return `https://www.youtube.com/embed/${videoId}${
-          autoPlay ? "?&autoplay=1&mute=1" : ""
+          $autoPlay ? "?&autoplay=1&mute=1" : ""
         }`;
       }
       if (domain === "youtu.be") {
-        videoId = parsedUrl.pathname.replace("/", "");
+        videoId = parsedUrl.pathname.replace("/", "") || "";
+        if (videoId === "") throw new SyntaxError("`videoId` is an empty string");
         return `https://www.youtube.com/embed/${videoId}${
-          autoPlay ? "?&autoplay=1&mute=1" : ""
+          $autoPlay ? "?&autoplay=1&mute=1" : ""
         }`;
       }
     } else if (domain === "vimeo.com" || domain === "player.vimeo.com") {
       if (parsedUrl.pathname.includes("/video/")) {
-        return `${url}${autoPlay ? "?&autoplay=1&muted=1" : ""}`;
+        return `${url}${$autoPlay ? "?&autoplay=1&muted=1" : ""}`;
       }
       videoId = parsedUrl.pathname.replace("/", "");
+      if (videoId === "") throw new SyntaxError("`videoId` is an empty string");
       return `https://player.vimeo.com/video/${videoId}${
-        autoPlay ? "?&autoplay=1&muted=1" : ""
+        $autoPlay ? "?&autoplay=1&muted=1" : ""
       }`;
     }
   } catch (error) {
-    console.error("Invalid URL:", error);
-    throw error;
+    const message = error instanceof SyntaxError
+  	? "getEmbedUrl(...): Cannot create embed URL"
+  	: "getEmbedUrl(...): possibly invalid URL as argument";
+
+    throw new TypeError(
+      message,
+      { cause: error }
+    );
   }
+  
   return "";
 };
 
-/* @EXAMPLE: getEmbedUrl("https://youtube.com/watch?v=9JLpWR_yHZQ", true); */
+/*!
+ * @EXAMPLE:
+ *
+ * const embedURL = getEmbedUrl("https://youtube.com/watch?v=9JLpWR_yHZQ", true);
+ *
+ * console.log(embedURL) // "https://www.youtube.com/embed/9JLpWR_yHZQ"
+ *
+ */
 
 /**
  * fileExtension:
