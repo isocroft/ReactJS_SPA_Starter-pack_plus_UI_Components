@@ -58,10 +58,22 @@ export const lazyWithRetry = <
         throw error;
       }
 
+      /* @INFO: Instead of returning an empty JSX component, return a component with indeterminate spinner */
       return { default: () => null };
     }
   });
 };
+
+/*!
+ * @EXAMPLE:
+ *
+ * const Settings = lazyWithRetry(() =>
+ *   componentLoader(() => import("./pages/Settings/index"))
+ * );
+ *
+ * console.log(Settings); // { default: () => (<section>...</section>) }
+ *
+ */
 
 /**
  * componentLoader:
@@ -99,3 +111,12 @@ export function componentLoader<
       });
   });
 }
+
+/*!
+ * @EXAMPLE:
+ *
+ * const loaderPromise = componentLoader(() => import("./pages/Settings/index"))
+ *
+ * console.log(loaderPromise); // Promise{<pending>}
+ *
+ */
