@@ -30,12 +30,6 @@ export const lazyWithRetry = <
     ) as boolean;
 
     function onBeforeUnload(e: BeforeUnloadEvent) {
-      // e.preventDefault();
-
-      // if ("returnValue" in e) {
-      //   e.returnValue = undefined;
-      // }
-
       window.removeEventListener("beforeunload", onBeforeUnload);
       window.sessionStorage.removeItem(retryStorageKey);
     }
