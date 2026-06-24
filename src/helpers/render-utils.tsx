@@ -394,10 +394,10 @@ export const renderBreadcrumbs = ({
       </ul>
     </>
   );
-
-  /*!
-   * @EXAMPLE:
-   *
-   *
-   */
 };
+
+/*!
+ * @EXAMPLE:
+ *
+ *
+ */
