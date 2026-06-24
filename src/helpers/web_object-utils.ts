@@ -508,18 +508,18 @@ export const getEmbedUrl = (url: string, autoPlay = false): string => {
       if (domain === "youtu.be") {
         videoId = parsedUrl.pathname.replace("/", "") || "";
         if (videoId === "") throw new SyntaxError("`videoId` is an empty string");
-        return `https://www.youtube.com/embed/${videoId}${
+        return `https://www.youtube-nocookie.com/embed/${videoId}${
           $autoPlay ? "?&autoplay=1&mute=1" : ""
         }`;
       }
     } else if (domain === "vimeo.com" || domain === "player.vimeo.com") {
       if (parsedUrl.pathname.includes("/video/")) {
-        return `${url}${$autoPlay ? "?&autoplay=1&muted=1" : ""}`;
+        return `${url}${$autoPlay ? "?&autoplay=1&muted=1&dnt=1" : ""}`;
       }
       videoId = parsedUrl.pathname.replace("/", "");
       if (videoId === "") throw new SyntaxError("`videoId` is an empty string");
       return `https://player.vimeo.com/video/${videoId}${
-        $autoPlay ? "?&autoplay=1&muted=1" : ""
+        $autoPlay ? "?&autoplay=1&muted=1&dnt=1" : ""
       }`;
     }
   } catch (error) {
