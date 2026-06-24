@@ -170,6 +170,11 @@ export const removeFromChildren = (
 /**
  * retrieveChildComponent:
  *
+ * @param {React.ReactNode | Array<React.ReactNode>} children
+ * @param {(...args: any[]) => JSX.Element} type
+ * @param {Object} options
+ *
+ * @returns {React.ReactNode}
  */
 function retrieveChildComponent<
   A extends keyof React.JSX.IntrinsicElements,
@@ -211,9 +216,21 @@ function retrieveChildComponent<
   return child;
 }
 
-/**
- * retrieveChildComponennts:
+/*!
+ * @EXAMPLE:
  *
+ *
+ *
+ */
+
+/**
+ * retrieveChildComponents:
+ *
+ * @param {React.ReactNode | Array<React.ReactNode>} children
+ * @param {(...args: any[]) => JSX.Element} type
+ * @param {Object} options
+ *
+ * @returns {React.ReactNode | Array<React.ReactNode>}
  */
 export function retrieveChildComponents<
   A extends keyof React.JSX.IntrinsicElements,
@@ -258,9 +275,20 @@ export function retrieveChildComponents<
   return child;
 }
 
+/*!
+ * @EXAMPLE:
+ *
+ *
+ *
+ */
+
 /**
  * isSubChild:
  *
+ * @param {React.ReactNode} child
+ * @param {String} tag
+ *
+ * @returns {Boolean}
  */
 export const isSubChild = <C extends React.ReactNode>(
   child: C,
@@ -284,9 +312,22 @@ export const isSubChild = <C extends React.ReactNode>(
   );
 };
 
+/*!
+ * @EXAMPLE:
+ *
+ *
+ * const isHeading = isSubChild(props.children, "Heading");
+ *
+ * console.log(isHeading); // true
+ *
+ */
+
 /**
  * renderBreadcrumbs:
  *
+ * @param {Object} breadcrumbOptions
+ *
+ * @returns {JSX.Element}
  */
 export const renderBreadcrumbs = ({
   breadcrumbs = [],
@@ -353,4 +394,10 @@ export const renderBreadcrumbs = ({
       </ul>
     </>
   );
+
+  /*!
+   * @EXAMPLE:
+   *
+   *
+   */
 };
