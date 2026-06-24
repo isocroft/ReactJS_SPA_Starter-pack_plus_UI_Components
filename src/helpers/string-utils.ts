@@ -9,7 +9,7 @@
 export const removeHyphensFromText = (textWithHyphens: string) => {
   if (typeof textWithHyphens !== "string") {
     throw new TypeError(
-      "removeHyphensFromText(...): argument 1 is not a string"
+      `removeHyphensFromText("${textWithHyphens}"): argument 1 is not a string`
     );
   }
 
@@ -40,13 +40,16 @@ export const removeHyphensFromText = (textWithHyphens: string) => {
  */
 export const slugifyText = (text: string, separator = "_") => {
   if (typeof text !== "string") {
-    throw new TypeError("slugifyText(...): argument 1 is not a string");
+    throw new TypeError(
+      `slugifyText("${text}", "${separator}"): argument 1 is not a string`);
   }
 
   let $separator = separator;
 
   if (typeof $separator !== "string") {
-    throw new TypeError("slugifyText(...): argument 2 is not a string");
+    throw new TypeError(
+      `slugifyText("${text}", "${separator}"): argument 2 is not a string`
+    );
   }
 
   return text
@@ -68,6 +71,58 @@ export const slugifyText = (text: string, separator = "_") => {
  */
 
 /**
+ * unSlugifyText:
+ *
+ * @param {String} slugifiedText
+ * @param {String} separator
+ * @param {Boolean} shouldTrim
+ *
+ * @returns {String}
+ *
+ */
+export const unSlugifyText = (
+  slugifiedText: string,
+  separator = '_',
+  shouldTrim = false
+): string => {
+  if (typeof text !== "string") {
+    throw new TypeError(
+      `unSlugifyText("${slugifiedText}", "${separator}", ${shouldTrim}): argument 1 is not a string`);
+  }
+
+  let $separator = separator;
+
+  if (typeof $separator !== "string") {
+    throw new TypeError(
+      `unSlugifyText("${slugifiedText}", "${separator}", ${shouldTrim}): argument 2 is not a string`
+    );
+  }
+
+  try {
+    return (slugifiedText || '')
+      .split(separator)
+        .map(
+          (slugPart) =>
+  	  `${slugPart.charAt(0).toUpperCase()}${slugPart.substring(1)}`
+        ).join(Boolean(shouldTrim) ? '' : ' ')
+  } catch (error) {
+    throw new TypeError(
+      `unSlugifyText("${slugifiedText}", "${separator}", ${shouldTrim}): cannot return unslugify input string`,
+      { cause: error }
+    );
+  }
+};
+
+/*!
+ * @EXAMPLE:
+ *
+ * const text = unSlugifyText('first_name');
+ *
+ * console.log(text); // "First_Name"
+ *
+ */
+
+/**
  * truncateText:
  *
  * @param {String} text
@@ -77,19 +132,29 @@ export const slugifyText = (text: string, separator = "_") => {
  */
 export const truncateText = (text: string, limit: number): string => {
   if (typeof text !== "string") {
-    throw new TypeError("truncateText(...): argument 1 is not a string");
+    throw new TypeError(
+      `truncateText("${text}", ${limit}): argument 1 is not a string`
+    );
   }
   if (typeof limit !== "number") {
-    throw new TypeError("truncateText(...): argument 2 is not a number");
+    throw new TypeError(
+      `truncateText("${text}", ${limit}): argument 2 is not a number`
+    );
   }
 
   // @HINT: Handle cases where the limit is negative or zero
   if (limit <= 0) {
+    console.warn(
+      `truncateText("${text}", ${limit}): argument 2 is less than or zero, therefore returns empty string`
+    );
     return "";
   }
 
   // @HINT: If the text is already within the limit, return it as-is
   if (text.length <= limit) {
+    console.warn(
+      `truncateText("${text}", ${limit}): no truncation effect on argument 1`
+    );
     return text;
   }
 
@@ -128,15 +193,19 @@ export const truncateText = (text: string, limit: number): string => {
  */
 export function stringToBytes(text: string, encoding = "ascii") {
   if (typeof text !== "string") {
-    throw new TypeError("stringToBytes(...): argument 1 is not a string");
+    throw new TypeError(
+      `stringToBytes("${text}", "${encoding}"): argument 1 is not a string`
+    );
   }
 
   if (typeof encoding !== "string") {
-    throw new TypeError("stringToBytes(...): argument 2 is not a string");
+    throw new TypeError(
+      `stringToBytes("${text}", "${encoding}"): argument 2 is not a string`
+    );
   } else {
     if (!(["ascii", "utf-8", "utf-16le", "utf-16be"].includes(encoding))) {
       throw new TypeError(
-        "stringToBytes(...): argumennt 2 is not a valid string",
+        `stringToBytes("${text}", "${encoding}"): argumennt 2 is not a valid string`,
         { cause: new Error(
             'argument 2 should one of any: [ "ascii" | "utf-8" | "utf-16le" | "utf-16be" ]'
           )
@@ -145,29 +214,36 @@ export function stringToBytes(text: string, encoding = "ascii") {
     }
   }
 
-  if (encoding === "utf-16le") {
-    const bytes = [];
-    for (let index = 0; index < text.length; index++) {
-      const code = text.charCodeAt(index); // eslint-disable-line unicorn/prefer-code-point
-      // @ts-ignore
-      bytes.push(code & 0xff, (code >> 8) & 0xff); // High byte
+  try {
+    if (encoding === "utf-16le") {
+      const bytes = [];
+      for (let index = 0; index < text.length; index++) {
+        const code = text.charCodeAt(index); // eslint-disable-line unicorn/prefer-code-point
+        // @ts-ignore
+        bytes.push(code & 0xff, (code >> 8) & 0xff); // High byte
+      }
+  
+      return bytes;
     }
-
-    return bytes;
-  }
-
-  if (encoding === "utf-16be") {
-    const bytes = [];
-    for (let index = 0; index < text.length; index++) {
-      const code = text.charCodeAt(index); // eslint-disable-line unicorn/prefer-code-point
-      // @ts-ignore
-      bytes.push((code >> 8) & 0xff, code & 0xff); // Low byte
+  
+    if (encoding === "utf-16be") {
+      const bytes = [];
+      for (let index = 0; index < text.length; index++) {
+        const code = text.charCodeAt(index); // eslint-disable-line unicorn/prefer-code-point
+        // @ts-ignore
+        bytes.push((code >> 8) & 0xff, code & 0xff); // Low byte
+      }
+  
+      return bytes;
     }
-
-    return bytes;
+  
+    return text.split("").map((character) => character.charCodeAt(0)); // eslint-disable-line unicorn/prefer-code-point
+  } catch (error) {
+    throw new TypeError(
+      `stringToBytes("${text}", "${encoding}"): cannot return array of bytes for input string`,
+      { cause: error }
+    );
   }
-
-  return text.split("").map((character) => character.charCodeAt(0)); // eslint-disable-line unicorn/prefer-code-point
 }
 
 /*!
