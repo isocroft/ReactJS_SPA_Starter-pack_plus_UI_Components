@@ -40,6 +40,12 @@ export const composeClassesTailwind = (...styles: ClassNameValue[]): string => {
  *
  */
 export const htmlEncode = (rawText: string): string => {
+  if (typeof rawText !== "string") {
+    throw new TypeError(
+	  `htmlEncode("${rawText}"): argument 1 is not a string`
+	);
+  }
+
   return (rawText || "").replace(
     /[\u00A0-\u9999<>&]/gim,
     function (mark: string) {
@@ -67,6 +73,12 @@ export const htmlEncode = (rawText: string): string => {
  *
  */
 export const htmlDecode = (encodedText: string): string | null => {
+  if (typeof encodedText !== "string") {
+    throw new TypeError(
+	  `htmlDecode("${encodedText}"): argument 1 is not a string`
+	);
+  }
+
   const doc = new window.DOMParser().parseFromString(
     encodedText || "&nbsp;",
     "text/html"
@@ -101,6 +113,24 @@ export const formatHTMLEntity = (
   entityHexValue: string,
   prefix: string = ""
 ): string => {
+  if (typeof textValue !== "string") {
+	throw new TypeError(
+	  `formatHTMLEntity("${textValue}", "${entityHexValue}", "${prefix}"): argument 1 is not a string`
+	);
+  }
+
+  if (typeof entityHexValue !== "string") {
+	throw new TypeError(
+	  `formatHTMLEntity("${textValue}", "${entityHexValue}", "${prefix}"): argument 2 is not a string`
+	);
+  }
+
+  if (typeof prefix !== "string") {
+	throw new TypeError(
+	  `formatHTMLEntity("${textValue}", "${entityHexValue}", "${prefix}"): argument 3 is not a string`
+	);
+  }
+
   const isNumeric = /^\d{2,5}$/.test(entityHexValue);
   const number = parseInt(isNumeric ? "8" : entityHexValue, 16);
 
@@ -119,6 +149,12 @@ export const formatHTMLEntity = (
  * @returns {Boolean}
  */
 export const verifyDOMElementIsWhollyWithinViewport = (element: HTMLElement) => {
+  if (!Boolean(element) || !(element instanceof window.HTMLElement)) {
+	throw new TypeError(
+	  `verifyDOMElementIsWhollyWithinViewport(${element}): argument 1 is not a DOM element`
+	);
+  }
+
   const rect = element.getBoundingClientRect();
 
   const minimumYFrame = 0;
@@ -152,6 +188,12 @@ export const verifyDOMElementIsWhollyWithinViewport = (element: HTMLElement) => 
  * @returns {Boolean}
  */
 export const verifyDOMElementIsNotWithinViewport = (element: HTMLElement) => {
+  if (!Boolean(element) || !(element instanceof window.HTMLElement)) {
+	throw new TypeError(
+	  `verifyDOMElementIsNotWithinViewport(${element}): argument 1 is not a DOM element`
+	);
+  }
+	
   const rect = element.getBoundingClientRect();
 
   const minimumYFrame = 0;
