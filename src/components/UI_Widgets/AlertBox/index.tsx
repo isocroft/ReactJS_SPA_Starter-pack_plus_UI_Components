@@ -1,5 +1,5 @@
 import  React, { FC  } from "react";
 
-const Alert: FC<{}> = ({ children }) => {
+const AlertBox: FC<{}> = ({ children }) => {
   return null;
 };
