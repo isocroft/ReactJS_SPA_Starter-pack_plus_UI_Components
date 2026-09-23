@@ -55,6 +55,6 @@ window.open('tel:+2349038829558', '_blank');
 
 const FieldsetBox = ({ children, ...props }: Omit<React.ComponentProps<"fieldset">, "role">) => {
   return (
-    <fieldset {...props} role="group">{children}</fieldset>
+    <fieldset {...props}>{children}</fieldset>
   );
 };
