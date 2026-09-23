@@ -19,7 +19,7 @@ export interface AvatarProps extends React.ComponentPropsWithRef<"div"> {
   alt?: string;
 }
   
-const Avatar: FC<AvatarProps> = ({
+const AvatarBox: FC<AvatarProps> = ({
   size,
   src = defaultImagePath,
   className = "",
@@ -198,11 +198,11 @@ export const AvatarWidget = {
 };
 
 /*
-  <Avatar
+  <AvatarBox
     widgetSize={48}
     letters={"MN"}
     alt={"Minas Nerith"}
   />
 */
 
-export default Avatar;
+export default AvatarBox;
