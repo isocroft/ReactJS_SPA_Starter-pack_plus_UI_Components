@@ -142,6 +142,59 @@ export const formatHTMLEntity = (
 /* @EXAMPLE: <p className="wrapper">{formatHTMLEntity('View Full Project', '279D')}</p> */
 
 /**
+ * isDOMElementOverflowing:
+ *
+ * @param {HTMLElement} element -
+ *
+ * @returns {Boolean}
+ */
+export const isDOMElementOverflowing = (element: HTMLElement): boolean => {
+  if (!element || !(element instanceof window.HTMLElement)) {
+    throw new TypeError(
+      `isDOMElementOverflowing(${element}): argument 1 is not a DOM element`
+    );
+  }
+  
+  const hasHorizontalOverflow = element.scrollWidth > element.clientWidth;
+  const hasVerticalOverflow = element.scrollHeight > element.clientHeight;
+
+  return hasHorizontalOverflow || hasVerticalOverflow;
+};
+
+/** @EXAMPLE: isDOMElementOverflowing() */
+
+/**
+ * isElementOverflowingParent:
+ *
+ * @param {HTMLElement} element -
+ *
+ * @returns {Boolean}
+ */
+export const isElementOverflowingParent = (element: HTMLElement) => {
+  if (!element || !(element instanceof window.HTMLElement)) {
+    throw new TypeError(`
+      isElementOverflowingParent(${element}): argument 1 is not a DOM element`
+    );
+  }
+  
+  const parent = element.parentElement;
+  if (!parent) return false;
+
+  const childRect = element.getBoundingClientRect();
+  const parentRect = parent.getBoundingClientRect();
+
+  /* @HINT: Checks if the child extends past any of the parent's four boundaries */
+  return (
+    childRect.left < parentRect.left ||
+    childRect.right > parentRect.right ||
+    childRect.top < parentRect.top ||
+    childRect.bottom > parentRect.bottom
+  );
+};
+
+/** @EXAMPLE: isElementOverflowingParent() */
+
+/**
  * verifyDOMElementIsWithinViewPort:
  *
  * @param {HTMLElement} element
